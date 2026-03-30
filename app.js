@@ -7,6 +7,8 @@ require("dotenv").config()
 
 const { errorHandler } = require("./src/utils/error");
 const indexRoutes = require("./src/routes/index");
+const {swaggerMiddleware}= require("./src/middleware/swaggerMiddleware")
+
 const app = express();
 
 app.use(express.json());
@@ -25,6 +27,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/api", indexRoutes);
+app.use("/api-docs", swaggerMiddleware);
 app.use(errorHandler);
 
 module.exports = app;

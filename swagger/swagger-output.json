@@ -1,0 +1,809 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "HRMS API",
+    "description": "API documentation for your project",
+    "version": "1.0.0"
+  },
+  "host": "192.168.0.42:5000",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter: Bearer <token>"
+    }
+  },
+  "paths": {
+    "/api/users/register": {
+  "post": {
+    "description": "Register user",
+    "parameters": [
+      {
+        "name": "body",
+        "in": "body",
+        "required": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "profilePicture": {
+              "type": "string",
+              "example": "https://example.com/profile.jpg"
+            },
+            "name": {
+              "type": "object",
+              "properties": {
+                "firstName": { "type": "string", "example": "Rahul" },
+                "middleName": { "type": "string", "example": "Kumar" },
+                "lastName": { "type": "string", "example": "Sharma" }
+              }
+            },
+            "email": {
+              "type": "string",
+              "example": "rahul.sharma@example.com"
+            },
+            "password": {
+              "type": "string",
+              "example": "Password@123"
+            },
+            "confirmPassword": {
+              "type": "string",
+              "example": "Password@123"
+            },
+            
+            "nameAsPerAadhaar": {
+              "type": "string",
+              "example": "Rahul Kumar Sharma"
+            },
+            "aadhaarNumber": {
+              "type": "string",
+              "example": "123412341234"
+            },
+            "birthDate": {
+              "type": "string",
+              "example": "1998-05-15"
+            },
+            "gender": {
+              "type": "string",
+              "example": "male"
+            },
+            "contactNumber": {
+              "type": "string",
+              "example": "9876543210"
+            },
+            "emergencyContactNumber": {
+              "type": "string",
+              "example": "9123456780"
+            },
+            "correspondenceAddress": {
+              "type": "string",
+              "example": "Surat, Gujarat"
+            },
+            "permanentAddress": {
+              "type": "string",
+              "example": "Surat, Gujarat"
+            },
+            "maritalStatus": {
+              "type": "string",
+              "example": "married"
+            },
+            "designation": {
+              "type": "string",
+              "example": "Software Developer"
+            },
+            "position": {
+              "type": "string",
+              "example": "Junior Developer"
+            },
+            "departmentName": {
+              "type": "string",
+              "example": "Backend Development"
+            },
+            "vehicleNumber": {
+              "type": "string",
+              "example": "GJ05AB1234"
+            },
+            "education": {
+              "type": "object",
+              "properties": {
+                "degree": { "type": "string", "example": "B.Tech" },
+                "collegeName": { "type": "string", "example": "SVNIT Surat" },
+                "yearOfPassing": { "type": "number", "example": 2020 }
+              }
+            },
+            "bankDetails": {
+              "type": "object",
+              "properties": {
+                "bankName": { "type": "string", "example": "SBI" },
+                "accountNumber": { "type": "string", "example": "123456789012" },
+                "ifscCode": { "type": "string", "example": "SBIN0001234" },
+                "accountHolderName": { "type": "string", "example": "Rahul Kumar Sharma" }
+              }
+            },
+            "officeTiming": {
+              "type": "object",
+              "properties": {
+                "entryTime": { "type": "string", "example": "09:00" },
+                "exitTime": { "type": "string", "example": "18:00" },
+                "totalMinutes": { "type": "number", "example": 540 },
+                "lateEntryAfterMinutes": { "type": "number", "example": 15 },
+                "overtimeAfterMinutes": { "type": "number", "example": 60 }
+              }
+            },
+            "attendanceType": {
+              "type": "string",
+              "example": "Card"
+            },
+            "considerOvertime": {
+              "type": "boolean",
+              "example": true
+            },
+            "organizationType": {
+              "type": "string",
+              "example": "BIG SCALE"
+            },
+  
+            "drsRequired": {
+              "type": "boolean",
+              "example": true
+            },
+            "sendSalarySlipEmail": {
+              "type": "boolean",
+              "example": true
+            },
+            "rentalAllowance": {
+              "type": "boolean",
+              "example": true
+            },
+            "rentalAllowanceAmount": {
+              "type": "number",
+              "example": 5000
+            },
+            "leavecreaditType": {
+              "type": "string",
+              "example": "MONTHLY"
+            },
+           
+
+            "joiningInfo": {
+              "type": "object",
+              "properties": {
+                "trainingStartDate": {
+                  "type": "string",
+                  "example": "2023-01-01"
+                },
+                "trainingDurationMonths": {
+                  "type": "number",
+                  "example": 3
+                },
+                "trainingEndDate": {
+                  "type": "string",
+                  "example": "2023-04-01"
+                },
+                "joiningDate": {
+                  "type": "string",
+                  "example": "2023-04-02"
+                },
+                "bondDurationMonths": {
+                  "type": "number",
+                  "example": 12
+                },
+                "bondCompletedDate": {
+                  "type": "string",
+                  "example": "2024-04-02"
+                }
+              }
+            },
+           
+            
+            
+            
+            "marriageDate": {
+              "type": "string",
+              "example": "2025-01-01"
+            }
+           
+            
+          },
+          "required": ["email", "password", "employeeCode"]
+        }
+      }
+    ],
+    "responses": {
+      "default": {
+        "description": "User registered successfully"
+      }
+    }
+  }
+},
+    "/api/users/login": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "admin@gmail.com"
+                },
+                "password": {
+                  "example": "admin@1234"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/users/": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "gender",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "designation",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "organizationType",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "attendanceType",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "Left",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/holidays/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "holidayDate": {
+                  "example": "any"
+                },
+                "holidayReason": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/holidays/{id}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/departementes/": {
+      "post": {
+        "description": "",
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "departmentName",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/departementes/{id}": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "departmentName": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/users/register": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "any"
+                },
+                "password": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/users/": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "gender",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "designation",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "organizationType",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "attendanceType",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "Left",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/holidays/": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "holidayDate": {
+                  "example": "any"
+                },
+                "holidayReason": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/holidays/{id}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/departementes/": {
+      "post": {
+        "description": "",
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "departmentName",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/departementes/{id}": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "departmentName": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}

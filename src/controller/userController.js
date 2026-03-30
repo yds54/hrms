@@ -91,9 +91,7 @@ exports.loginUser = async (req, res, next) => {
       { expiresIn: "1h" },
     );
 
-    return successResponse(res, 200, "Login successful", {
-      token,
-    });
+    return successResponse(res, 200, "Login successful", [`Bearer ${ token }`]);
   } catch (error) {
     next(error);
   }
