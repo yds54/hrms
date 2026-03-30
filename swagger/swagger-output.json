@@ -20,7 +20,7 @@
   },
   "paths": {
     "/api/users/register": {
-  "post": {
+  "post": {"tags":["User"],
     "description": "Register user",
     "parameters": [
       {
@@ -221,7 +221,7 @@
   }
 },
     "/api/users/login": {
-      "post": {
+      "post": {"tags":["User"],
         "description": "",
         "parameters": [
           {
@@ -248,7 +248,7 @@
       }
     },
     "/api/users/": {
-      "get": {
+      "get": {"tags":["User"],
         "description": "",
         "parameters": [
           {
@@ -300,7 +300,7 @@
       }
     },
     "/api/users/{id}": {
-      "put": {
+      "put": {"tags":["User"],
         "description": "",
         "parameters": [
           {
@@ -308,6 +308,18 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+           {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "departmentName": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -316,7 +328,7 @@
           }
         }
       },
-      "delete": {
+      "delete": {"tags":["User"],
         "description": "",
         "parameters": [
           {
@@ -334,7 +346,7 @@
       }
     },
     "/api/holidays/": {
-      "post": {
+      "post": {"tags":["Holiday"],
         "description": "",
         "parameters": [
           {
@@ -359,7 +371,7 @@
           }
         }
       },
-      "get": {
+      "get": {"tags":["Holiday"],
         "description": "",
         "parameters": [
           {
@@ -391,7 +403,7 @@
       }
     },
     "/api/holidays/{id}": {
-      "delete": {
+      "delete": {"tags":["Holiday"],
         "description": "",
         "parameters": [
           {
@@ -407,7 +419,7 @@
           }
         }
       },
-      "put": {
+      "put": {"tags":["Holiday"],
         "description": "",
         "parameters": [
           {
@@ -415,6 +427,21 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+           {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "holidayDate": {
+                  "example": "2025-04-25"
+                },
+                "holidayReason": {
+                  "example": "3rd saturday"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -425,15 +452,30 @@
       }
     },
     "/api/departementes/": {
-      "post": {
+      "post": {"tags":["departemente"],
         "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "departmentName": {
+                  "example": "Backend Development"
+                }
+               
+              }
+            }
+          }
+        ],
         "responses": {
           "403": {
             "description": "Forbidden"
           }
         }
       },
-      "get": {
+      "get": {"tags":["departemente"],
         "description": "",
         "parameters": [
           {
@@ -460,7 +502,7 @@
       }
     },
     "/api/departementes/{id}": {
-      "put": {
+      "put": {"tags":["departemente"],
         "description": "",
         "parameters": [
           {
@@ -488,7 +530,7 @@
           }
         }
       },
-      "delete": {
+      "delete": {"tags":["departemente"],
         "description": "",
         "parameters": [
           {
@@ -505,18 +547,10 @@
         }
       }
     },
-    "/users/register": {
-      "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/users/login": {
-      "post": {
+
+
+    "/api/designations/": {
+      "post": {"tags":["designation"],
         "description": "",
         "parameters": [
           {
@@ -525,125 +559,13 @@
             "schema": {
               "type": "object",
               "properties": {
-                "email": {
-                  "example": "any"
+                "departmentName": {
+                  "example": "depatment_id"
                 },
-                "password": {
-                  "example": "any"
+                "designationName":{
+                  "example":"testing"
                 }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/users/": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "gender",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "designation",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "organizationType",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "attendanceType",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "id",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "Left",
-            "in": "query",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/users/{id}": {
-      "put": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/holidays/": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "holidayDate": {
-                  "example": "any"
-                },
-                "holidayReason": {
-                  "example": "any"
-                }
+               
               }
             }
           }
@@ -654,81 +576,7 @@
           }
         }
       },
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "month",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "year",
-            "in": "query",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/holidays/{id}": {
-      "delete": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "put": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/departementes/": {
-      "post": {
-        "description": "",
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "get": {
+      "get": {"tags":["designation"],
         "description": "",
         "parameters": [
           {
@@ -754,8 +602,9 @@
         }
       }
     },
-    "/departementes/{id}": {
-      "put": {
+
+    "/api/designations/{id}": {
+      "put": {"tags":["designation"],
         "description": "",
         "parameters": [
           {
@@ -771,7 +620,10 @@
               "type": "object",
               "properties": {
                 "departmentName": {
-                  "example": "any"
+                  "example": "department_id"
+                },
+                "designationName":{
+                  "example":"abc"
                 }
               }
             }
@@ -783,7 +635,7 @@
           }
         }
       },
-      "delete": {
+      "delete": {"tags":["designation"],
         "description": "",
         "parameters": [
           {
@@ -800,6 +652,14 @@
         }
       }
     }
+    
+  
+  
+   
+   
+    
+   
+   
   },
   "security": [
     {

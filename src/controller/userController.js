@@ -5,7 +5,7 @@ require("dotenv").config();
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { Roles } = require("../utils/enum");
-const { User } = require("../model/modelIndex");
+const { USER } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { USER_STATUS } = require("../utils/enum");
 
@@ -20,7 +20,7 @@ exports.registerUser = async (req, res, next) => {
       data.profilePicture = `/uploads/${req.file.filename}`;
     }
 
-    const isUserExist = await User.findOne({
+    const isUserExist = await USER.findOne({
       email: data.email,
       isDeleted: false,
     });
@@ -33,7 +33,7 @@ exports.registerUser = async (req, res, next) => {
     data.password = hashedPassword;
 
     if (!data.employeeCode) {
-      const lastUser = await User.findOne({
+      const lastUser = await USER.findOne({
         employeeCode: { $exists: true },
       }).sort({ createdAt: -1 });
 
@@ -47,7 +47,7 @@ exports.registerUser = async (req, res, next) => {
       data.employeeCode = `BS${String(nextNumber).padStart(3, "0")}`;
     }
 
-    const user = new User(data);
+    const user = new USER(data);
 
     await user.save();
 
@@ -66,7 +66,7 @@ exports.loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({
+    const user = await USER.findOne({
       email,
       status: USER_STATUS.ACTIVE,
       isDeleted: false,
@@ -91,7 +91,7 @@ exports.loginUser = async (req, res, next) => {
       { expiresIn: "1h" },
     );
 
-    return successResponse(res, 200, "Login successful", [`Bearer ${ token }`]);
+    return successResponse(res, 200, "Login successful",  { token });
   } catch (error) {
     next(error);
   }
@@ -118,7 +118,7 @@ exports.viewallUser = async (req, res, next) => {
 
 
     const { data, pagination } = await paginate({
-      model: User,
+      model: USER,
       query: _whereCondition,
       page: Number(page),
       limit: Number(limit),
@@ -145,7 +145,7 @@ exports.updateUser = async (req, res, next) => {
       data.profilePicture = `/uploads/${req.file.filename}`;
     }
 
-    const existingUser = await User.findOne({
+    const existingUser = await USER.findOne({
       _id: id,
       isDeleted: false,
     });
@@ -175,12 +175,12 @@ exports.updateUser = async (req, res, next) => {
 
     flattenObject(data);
 
-    updateData.isUpdated = true;
+   // updateData.isUpdated = true;
     if (req.user) {
       updateData.updatedBy = req.user.id;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
+    const updatedUser = await USER.findByIdAndUpdate(
       id,
       { $set: updateData },
       { new: true, runValidators: true },
@@ -198,7 +198,7 @@ exports.deleteUser = async(req,res,next)=>{
   try{
       const{id:userID}= req.params;
 
-      const user = await User.findById(userID);
+      const user = await USER.findById(userID);
 
       if(!user||user.isDeleted)
       throw new AppError("User not found", 404);

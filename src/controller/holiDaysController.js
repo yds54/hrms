@@ -3,7 +3,7 @@ require("dotenv").config();
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { Roles } = require("../utils/enum");
-const { Holiday } = require("../model/modelIndex");
+const { HOLIDAY } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { USER_STATUS } = require("../utils/enum");
 
@@ -19,7 +19,7 @@ exports.addHoliday = async (req, res, next) => {
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
-    const existing = await Holiday.findOne({
+    const existing = await HOLIDAY.findOne({
       holidayDate: date,
       isDeleted: false,
     });
@@ -28,7 +28,7 @@ exports.addHoliday = async (req, res, next) => {
       throw new AppError("Holiday already exists for this date", 409);
     }
 
-    const lastHoliday = await Holiday.findOne({
+    const lastHoliday = await HOLIDAY.findOne({
       month,
       year,
       isDeleted: false,
@@ -40,7 +40,7 @@ exports.addHoliday = async (req, res, next) => {
       nextSrNo = lastHoliday.srNo + 1;
     }
 
-    const holiday = new Holiday({
+    const holiday = new HOLIDAY({
       holidayDate: date,
       holidayReason,
       month,
@@ -72,7 +72,7 @@ exports.viewAllHolidays = async (req, res, next) => {
     }
 
     const { data, pagination } = await paginate({
-      model: Holiday,
+      model: HOLIDAY,
       query: _whereCondition,
       page,
       limit,
@@ -91,7 +91,7 @@ exports.deleteHoliday = async (req, res, next) => {
   try {
     const { id: holidayId } = req.params;
 
-    const holiday = await Holiday.findById(holidayId);
+    const holiday = await HOLIDAY.findById(holidayId);
 
     if (!holiday) throw new AppError("Holiday not found", 404);
 
@@ -110,7 +110,7 @@ exports.updateHoliday = async (req, res, next) => {
     const { id } = req.params;
     const data = { ...req.body };
 
-    const existingHoliday = await Holiday.findOne({
+    const existingHoliday = await HOLIDAY.findOne({
       _id: id,
       isDeleted: false,
     });
@@ -125,7 +125,7 @@ exports.updateHoliday = async (req, res, next) => {
       data.year = date.getFullYear();
 
       //  recalculate srNo if month/year changed
-      const lastHoliday = await Holiday.findOne({
+      const lastHoliday = await HOLIDAY.findOne({
         month: data.month,
         year: data.year,
         isDeleted: false,
@@ -137,7 +137,7 @@ exports.updateHoliday = async (req, res, next) => {
 
     data.updatedBy = req.user?.id || null;
 
-    const updatedHoliday = await Holiday.findByIdAndUpdate(
+    const updatedHoliday = await HOLIDAY.findByIdAndUpdate(
       id,
       { $set: data },
       { new: true, runValidators: true },

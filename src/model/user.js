@@ -131,10 +131,10 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
      
-    isUpdated: {
-      type: Boolean,
-      default: false,
-    },
+    // isUpdated: {
+    //   type: Boolean,
+    //   default: false,
+    // },
 
     isLeft:{type:Boolean,default:false},
 
@@ -150,4 +150,4 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("user", userSchema);

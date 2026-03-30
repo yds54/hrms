@@ -2,48 +2,48 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  addDepartment,
-  updateDepartment,
-  deleteDepartment,
-  getAllDepartments,
-} = require("../controller/departmentController");
+  addDesignation,
+  getAllDesignation,
+  updateDesignation,
+  deleteDesignation,
+} = require("../controller/designationController");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles, ROLES } = require("../middleware/roleAuthorization");
 const {
-  adddepartmentValidation,
-  getdepartmentValidation,
-  updateDepartmentValidation,
-  deleteDepartmentValidation,
-} = require("../validation/departmentValidation");
+  addDesignationValidation,
+  getDesignationValidation,
+  updateDesignationValidation,
+  deleteDesignationValidation,
+} = require("../validation/designationValidation");
 const { validate } = require("express-validation");
 
 router.post(
   "/",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(adddepartmentValidation),
-  addDepartment,
+  validate(addDesignationValidation),
+  addDesignation,
 );
 router.get(
   "/",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(getdepartmentValidation),
-  getAllDepartments,
+  validate(getDesignationValidation),
+  getAllDesignation,
 );
 router.put(
   "/:id",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(updateDepartmentValidation),
-  updateDepartment,
+  validate(updateDesignationValidation),
+  updateDesignation,
 );
 router.delete(
   "/:id",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(deleteDepartmentValidation),
-  deleteDepartment,
+  validate(deleteDesignationValidation),
+  deleteDesignation,
 );
 
 module.exports = router;

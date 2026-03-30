@@ -2,21 +2,21 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
-const { Department } = require("../model/modelIndex");
+const { DEPARTMENT } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 
 exports.addDepartment = async (req, res, next) => {
   try {
     const data = { ...req.body };
 
-    const isDepartmentExist = await Department.findOne({
+    const isDepartmentExist = await DEPARTMENT.findOne({
       departmentName: data.departmentName,
       isDeleted: false,
     });
 
     if (isDepartmentExist) throw new AppError("Departmant already exists", 409);
 
-    const department = new Department(data);
+    const department = new DEPARTMENT(data);
     await department.save();
 
     return successResponse(res, 200, "Department Add sucessfully", {
@@ -33,7 +33,7 @@ exports.updateDepartment = async (req, res, next) => {
     const { id } = req.params;
     const { departmentName } = req.body;
 
-    const department = await Department.findOne({
+    const department = await DEPARTMENT.findOne({
       _id: id,
       isDeleted: false,
     });
@@ -43,7 +43,7 @@ exports.updateDepartment = async (req, res, next) => {
     }
 
     if (departmentName) {
-      const exists = await Department.findOne({
+      const exists = await DEPARTMENT.findOne({
         departmentName,
         _id: { $ne: id },
         isDeleted: false,
@@ -72,7 +72,7 @@ exports.deleteDepartment = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const department = await Department.findOne({
+    const department = await DEPARTMENT.findOne({
       _id: id,
       isDeleted: false,
     });
@@ -110,7 +110,7 @@ exports.getAllDepartments = async (req, res, next) => {
     }
 
     const { data, pagination } = await paginate({
-      model: Department,
+      model: DEPARTMENT,
       query: _whereCondition,
       page: Number(page),
       limit: Number(limit),

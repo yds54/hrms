@@ -41,4 +41,4 @@ const holidaySchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Holiday", holidaySchema);
+module.exports = mongoose.model("holiday", holidaySchema);
