@@ -7,9 +7,7 @@
   },
   "host": "192.168.0.42:5000",
   "basePath": "/",
-  "schemes": [
-    "http"
-  ],
+  "schemes": ["http"],
   "securityDefinitions": {
     "BearerAuth": {
       "type": "apiKey",
@@ -20,209 +18,217 @@
   },
   "paths": {
     "/api/auth/register": {
-  "post": {"tags":["Auth"],
-    "description": "Register user",
-    "parameters": [
-      {
-        "name": "body",
-        "in": "body",
-        "required": true,
-        "schema": {
-          "type": "object",
-          "properties": {
-            "profilePicture": {
-              "type": "string",
-              "example": "https://example.com/profile.jpg"
-            },
-            "name": {
+      "post": {
+        "tags": ["Auth"],
+        "description": "Register user",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
               "type": "object",
               "properties": {
-                "firstName": { "type": "string", "example": "Rahul" },
-                "middleName": { "type": "string", "example": "Kumar" },
-                "lastName": { "type": "string", "example": "Sharma" }
-              }
-            },
-            "email": {
-              "type": "string",
-              "example": "rahul.sharma@example.com"
-            },
-            "password": {
-              "type": "string",
-              "example": "Password@123"
-            },
-            "confirmPassword": {
-              "type": "string",
-              "example": "Password@123"
-            },
-            
-            "nameAsPerAadhaar": {
-              "type": "string",
-              "example": "Rahul Kumar Sharma"
-            },
-            "aadhaarNumber": {
-              "type": "string",
-              "example": "123412341234"
-            },
-            "birthDate": {
-              "type": "string",
-              "example": "1998-05-15"
-            },
-            "gender": {
-              "type": "string",
-              "example": "male"
-            },
-            "contactNumber": {
-              "type": "string",
-              "example": "9876543210"
-            },
-            "emergencyContactNumber": {
-              "type": "string",
-              "example": "9123456780"
-            },
-            "correspondenceAddress": {
-              "type": "string",
-              "example": "Surat, Gujarat"
-            },
-            "permanentAddress": {
-              "type": "string",
-              "example": "Surat, Gujarat"
-            },
-            "maritalStatus": {
-              "type": "string",
-              "example": "married"
-            },
-            "designation": {
-              "type": "string",
-              "example": "Software Developer"
-            },
-            "position": {
-              "type": "string",
-              "example": "Junior Developer"
-            },
-            "departmentName": {
-              "type": "string",
-              "example": "Backend Development"
-            },
-            "vehicleNumber": {
-              "type": "string",
-              "example": "GJ05AB1234"
-            },
-            "education": {
-              "type": "object",
-              "properties": {
-                "degree": { "type": "string", "example": "B.Tech" },
-                "collegeName": { "type": "string", "example": "SVNIT Surat" },
-                "yearOfPassing": { "type": "number", "example": 2020 }
-              }
-            },
-            "bankDetails": {
-              "type": "object",
-              "properties": {
-                "bankName": { "type": "string", "example": "SBI" },
-                "accountNumber": { "type": "string", "example": "123456789012" },
-                "ifscCode": { "type": "string", "example": "SBIN0001234" },
-                "accountHolderName": { "type": "string", "example": "Rahul Kumar Sharma" }
-              }
-            },
-            "officeTiming": {
-              "type": "object",
-              "properties": {
-                "entryTime": { "type": "string", "example": "09:00" },
-                "exitTime": { "type": "string", "example": "18:00" },
-                "totalMinutes": { "type": "number", "example": 540 },
-                "lateEntryAfterMinutes": { "type": "number", "example": 15 },
-                "overtimeAfterMinutes": { "type": "number", "example": 60 }
-              }
-            },
-            "attendanceType": {
-              "type": "string",
-              "example": "Card"
-            },
-            "considerOvertime": {
-              "type": "boolean",
-              "example": true
-            },
-            "organizationType": {
-              "type": "string",
-              "example": "BIG SCALE"
-            },
-  
-            "drsRequired": {
-              "type": "boolean",
-              "example": true
-            },
-            "sendSalarySlipEmail": {
-              "type": "boolean",
-              "example": true
-            },
-            "rentalAllowance": {
-              "type": "boolean",
-              "example": true
-            },
-            "rentalAllowanceAmount": {
-              "type": "number",
-              "example": 5000
-            },
-            "leavecreaditType": {
-              "type": "string",
-              "example": "MONTHLY"
-            },
-           
+                "profilePicture": {
+                  "type": "string",
+                  "example": "https://example.com/profile.jpg"
+                },
+                "name": {
+                  "type": "object",
+                  "properties": {
+                    "firstName": { "type": "string", "example": "Rahul" },
+                    "middleName": { "type": "string", "example": "Kumar" },
+                    "lastName": { "type": "string", "example": "Sharma" }
+                  }
+                },
+                "email": {
+                  "type": "string",
+                  "example": "rahul.sharma@example.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "Password@123"
+                },
+                "confirmPassword": {
+                  "type": "string",
+                  "example": "Password@123"
+                },
 
-            "joiningInfo": {
-              "type": "object",
-              "properties": {
-                "trainingStartDate": {
+                "nameAsPerAadhaar": {
                   "type": "string",
-                  "example": "2023-01-01"
+                  "example": "Rahul Kumar Sharma"
                 },
-                "trainingDurationMonths": {
+                "aadhaarNumber": {
+                  "type": "string",
+                  "example": "123412341234"
+                },
+                "birthDate": {
+                  "type": "string",
+                  "example": "1998-05-15"
+                },
+                "gender": {
+                  "type": "string",
+                  "example": "male"
+                },
+                "contactNumber": {
+                  "type": "string",
+                  "example": "9876543210"
+                },
+                "emergencyContactNumber": {
+                  "type": "string",
+                  "example": "9123456780"
+                },
+                "correspondenceAddress": {
+                  "type": "string",
+                  "example": "Surat, Gujarat"
+                },
+                "permanentAddress": {
+                  "type": "string",
+                  "example": "Surat, Gujarat"
+                },
+                "maritalStatus": {
+                  "type": "string",
+                  "example": "married"
+                },
+                "designation": {
+                  "type": "string",
+                  "example": "Software Developer"
+                },
+                "position": {
+                  "type": "string",
+                  "example": "Junior Developer"
+                },
+                "departmentName": {
+                  "type": "string",
+                  "example": "Backend Development"
+                },
+                "vehicleNumber": {
+                  "type": "string",
+                  "example": "GJ05AB1234"
+                },
+                "education": {
+                  "type": "object",
+                  "properties": {
+                    "degree": { "type": "string", "example": "B.Tech" },
+                    "collegeName": {
+                      "type": "string",
+                      "example": "SVNIT Surat"
+                    },
+                    "yearOfPassing": { "type": "number", "example": 2020 }
+                  }
+                },
+                "bankDetails": {
+                  "type": "object",
+                  "properties": {
+                    "bankName": { "type": "string", "example": "SBI" },
+                    "accountNumber": {
+                      "type": "string",
+                      "example": "123456789012"
+                    },
+                    "ifscCode": { "type": "string", "example": "SBIN0001234" },
+                    "accountHolderName": {
+                      "type": "string",
+                      "example": "Rahul Kumar Sharma"
+                    }
+                  }
+                },
+                "officeTiming": {
+                  "type": "object",
+                  "properties": {
+                    "entryTime": { "type": "string", "example": "09:00" },
+                    "exitTime": { "type": "string", "example": "18:00" },
+                    "totalMinutes": { "type": "number", "example": 540 },
+                    "lateEntryAfterMinutes": {
+                      "type": "number",
+                      "example": 15
+                    },
+                    "overtimeAfterMinutes": { "type": "number", "example": 60 }
+                  }
+                },
+                "attendanceType": {
+                  "type": "string",
+                  "example": "Card"
+                },
+                "considerOvertime": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "organizationType": {
+                  "type": "string",
+                  "example": "BIG SCALE"
+                },
+
+                "drsRequired": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "sendSalarySlipEmail": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "rentalAllowance": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "rentalAllowanceAmount": {
                   "type": "number",
-                  "example": 3
+                  "example": 5000
                 },
-                "trainingEndDate": {
+                "leavecreaditType": {
                   "type": "string",
-                  "example": "2023-04-01"
+                  "example": "MONTHLY"
                 },
-                "joiningDate": {
+
+                "joiningInfo": {
+                  "type": "object",
+                  "properties": {
+                    "trainingStartDate": {
+                      "type": "string",
+                      "example": "2023-01-01"
+                    },
+                    "trainingDurationMonths": {
+                      "type": "number",
+                      "example": 3
+                    },
+                    "trainingEndDate": {
+                      "type": "string",
+                      "example": "2023-04-01"
+                    },
+                    "joiningDate": {
+                      "type": "string",
+                      "example": "2023-04-02"
+                    },
+                    "bondDurationMonths": {
+                      "type": "number",
+                      "example": 12
+                    },
+                    "bondCompletedDate": {
+                      "type": "string",
+                      "example": "2024-04-02"
+                    }
+                  }
+                },
+
+                "marriageDate": {
                   "type": "string",
-                  "example": "2023-04-02"
-                },
-                "bondDurationMonths": {
-                  "type": "number",
-                  "example": 12
-                },
-                "bondCompletedDate": {
-                  "type": "string",
-                  "example": "2024-04-02"
+                  "example": "2025-01-01"
                 }
-              }
-            },
-           
-            
-            
-            
-            "marriageDate": {
-              "type": "string",
-              "example": "2025-01-01"
+              },
+              "required": ["email", "password", "employeeCode"]
             }
-           
-            
-          },
-          "required": ["email", "password", "employeeCode"]
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "User registered successfully"
+          }
         }
       }
-    ],
-    "responses": {
-      "default": {
-        "description": "User registered successfully"
-      }
-    }
-  }
-},
+    },
     "/api/auth/login": {
-      "post": {"tags":["Auth"],
-        "description": "",
+      "post": {
+        "tags": ["Auth"],
+        "description": "LOGIN USER",
         "parameters": [
           {
             "name": "body",
@@ -231,10 +237,10 @@
               "type": "object",
               "properties": {
                 "email": {
-                  "example": "admin@gmail.com"
+                  "example": "abc@gmail.com"
                 },
                 "password": {
-                  "example": "admin@1234"
+                  "example": ""
                 }
               }
             }
@@ -247,8 +253,289 @@
         }
       }
     },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "description": "LOGOUT USER",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/profile/": {
+      "get": {
+        "tags": ["Profile"],
+        "description": "PROFILE/JOINNING INFORMATION",
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/drs/": {
+      "post": {
+        "tags": ["Drs"],
+        "description": "FILL DRS",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "example": "2026-03-01"
+                },
+                "billableHours": { "type": "number", "example": 6 },
+                "nonBillableHours": { "type": "number", "example": 2 },
+                "projectsWorkedOn": { "type": "number", "example": 1 },
+                "estimationsGiven": { "type": "number", "example": 2 },
+                "interviewsGiven": { "type": "number", "example": 1 },
+                "interviewsCracked": { "type": "number", "example": 0 },
+                "bugSolvingHours": { "type": "number", "example": 2 },
+                "meetingsAttended": { "type": "number", "example": 3 },
+                "onLeave": {
+                  "example": "false"
+                },
+                "notes": {
+                  "type": "string",
+                  "example": "any"
+                },
+                "done": {
+                  "type": "string",
+                  "example": "Worked on API integration"
+                },
+                "inProgress": {
+                  "type": "string",
+                  "example": "any"
+                },
+                "nextPlan": {
+                  "type": "string",
+                  "example": "Start reporting module"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/drs/show": {
+      "get": {
+        "tags": ["Drs"],
+        "description": "SHOW DRS",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/drs/{id}": {
+      "put": {
+        "tags": ["Drs"],
+        "description": "EDIT DRS",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "billableHours": { "type": "number", "example": 6 },
+                "nonBillableHours": { "type": "number", "example": 2 },
+                "projectsWorkedOn": { "type": "number", "example": 1 },
+                "estimationsGiven": { "type": "number", "example": 2 },
+                "interviewsGiven": { "type": "number", "example": 1 },
+                "interviewsCracked": { "type": "number", "example": 0 },
+                "bugSolvingHours": { "type": "number", "example": 2 },
+                "meetingsAttended": { "type": "number", "example": 3 },
+                "notes": {
+                  "type": "string",
+                  "example": "Worked on API integration"
+                },
+                "done": {
+                  "type": "string",
+                  "example": "Completed login module"
+                },
+                "inProgress": {
+                  "type": "string",
+                  "example": "User profile module"
+                },
+                "nextPlan": {
+                  "type": "string",
+                  "example": "Start reporting module"
+                },
+                "onLeave": { "type": "boolean", "example": false }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/dashboard/holidays": {
+      "get": {
+        "tags": ["Holiday"],
+        "description": "DISPLAY HOLIDAYS",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/leaveRequest/": {
+      "post": {
+        "tags": ["Leave Request"],
+        "description": "SEND LEAVE REQUEST",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "example": "Due to"
+                },
+                "numberOfDays": {
+                  "example": "Single Day/Multiple Day"
+                },
+                "date": {
+                  "example": "2026-03-01"
+                },
+                "fullHalfDay": {
+                  "example": "Half Day/Full Day"
+                },
+                "fromTime": {
+                  "example": "09:15"
+                },
+                "toTime": {
+                  "example": "16:15"
+                },
+                "fromDateTime": {
+                  "example": "2026-03-01T09:15:00.000Z"
+                },
+                "toDateTime": {
+                  "example": "2026-03-03T18:15:00.000Z"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/leaveRequest/history": {
+      "get": {
+        "tags": ["Leave Request"],
+        "description": "LEAVE REQUEST HISTORY",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "number",
+            "example": 2026
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "type": "string",
+            "example": "Single Day / Multiple Day / Half Day / March"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leave history fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
     "/api/users/": {
-      "get": {"tags":["User"],
+      "get": {
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -300,7 +587,8 @@
       }
     },
     "/api/users/{id}": {
-      "put": {"tags":["User"],
+      "put": {
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -309,7 +597,7 @@
             "required": true,
             "type": "string"
           },
-           {
+          {
             "name": "body",
             "in": "body",
             "schema": {
@@ -328,7 +616,8 @@
           }
         }
       },
-      "delete": {"tags":["User"],
+      "delete": {
+        "tags": ["User"],
         "description": "",
         "parameters": [
           {
@@ -346,7 +635,8 @@
       }
     },
     "/api/holidays/": {
-      "post": {"tags":["Holiday"],
+      "post": {
+        "tags": ["Holiday"],
         "description": "",
         "parameters": [
           {
@@ -371,7 +661,8 @@
           }
         }
       },
-      "get": {"tags":["Holiday"],
+      "get": {
+        "tags": ["Holiday"],
         "description": "",
         "parameters": [
           {
@@ -403,7 +694,8 @@
       }
     },
     "/api/holidays/{id}": {
-      "delete": {"tags":["Holiday"],
+      "delete": {
+        "tags": ["Holiday"],
         "description": "",
         "parameters": [
           {
@@ -419,7 +711,8 @@
           }
         }
       },
-      "put": {"tags":["Holiday"],
+      "put": {
+        "tags": ["Holiday"],
         "description": "",
         "parameters": [
           {
@@ -428,7 +721,7 @@
             "required": true,
             "type": "string"
           },
-           {
+          {
             "name": "body",
             "in": "body",
             "schema": {
@@ -452,7 +745,8 @@
       }
     },
     "/api/departementes/": {
-      "post": {"tags":["departemente"],
+      "post": {
+        "tags": ["departemente"],
         "description": "",
         "parameters": [
           {
@@ -464,7 +758,6 @@
                 "departmentName": {
                   "example": "Backend Development"
                 }
-               
               }
             }
           }
@@ -475,7 +768,8 @@
           }
         }
       },
-      "get": {"tags":["departemente"],
+      "get": {
+        "tags": ["departemente"],
         "description": "",
         "parameters": [
           {
@@ -502,7 +796,8 @@
       }
     },
     "/api/departementes/{id}": {
-      "put": {"tags":["departemente"],
+      "put": {
+        "tags": ["departemente"],
         "description": "",
         "parameters": [
           {
@@ -530,7 +825,8 @@
           }
         }
       },
-      "delete": {"tags":["departemente"],
+      "delete": {
+        "tags": ["departemente"],
         "description": "",
         "parameters": [
           {
@@ -548,9 +844,9 @@
       }
     },
 
-
     "/api/designations/": {
-      "post": {"tags":["designation"],
+      "post": {
+        "tags": ["designation"],
         "description": "",
         "parameters": [
           {
@@ -562,10 +858,9 @@
                 "departmentName": {
                   "example": "depatment_id"
                 },
-                "designationName":{
-                  "example":"testing"
+                "designationName": {
+                  "example": "testing"
                 }
-               
               }
             }
           }
@@ -576,7 +871,8 @@
           }
         }
       },
-      "get": {"tags":["designation"],
+      "get": {
+        "tags": ["designation"],
         "description": "",
         "parameters": [
           {
@@ -604,7 +900,8 @@
     },
 
     "/api/designations/{id}": {
-      "put": {"tags":["designation"],
+      "put": {
+        "tags": ["designation"],
         "description": "",
         "parameters": [
           {
@@ -622,8 +919,8 @@
                 "departmentName": {
                   "example": "department_id"
                 },
-                "designationName":{
-                  "example":"abc"
+                "designationName": {
+                  "example": "abc"
                 }
               }
             }
@@ -635,7 +932,8 @@
           }
         }
       },
-      "delete": {"tags":["designation"],
+      "delete": {
+        "tags": ["designation"],
         "description": "",
         "parameters": [
           {
@@ -652,9 +950,10 @@
         }
       }
     },
-    
-  "/api/banks/": {
-      "post": {"tags":["bank"],
+
+    "/api/banks/": {
+      "post": {
+        "tags": ["bank"],
         "description": "",
         "parameters": [
           {
@@ -666,7 +965,6 @@
                 "bankName": {
                   "example": "Bank of baroda"
                 }
-               
               }
             }
           }
@@ -677,7 +975,8 @@
           }
         }
       },
-      "get": {"tags":["bank"],
+      "get": {
+        "tags": ["bank"],
         "description": "",
         "parameters": [
           {
@@ -703,8 +1002,9 @@
         }
       }
     },
-     "/api/banks/{id}": {
-      "put": {"tags":["bank"],
+    "/api/banks/{id}": {
+      "put": {
+        "tags": ["bank"],
         "description": "",
         "parameters": [
           {
@@ -732,7 +1032,8 @@
           }
         }
       },
-      "delete": {"tags":["bank"],
+      "delete": {
+        "tags": ["bank"],
         "description": "",
         "parameters": [
           {
@@ -750,7 +1051,8 @@
       }
     },
     "/api/criterias/": {
-      "post": {"tags":["criterias"],
+      "post": {
+        "tags": ["criterias"],
         "description": "",
         "parameters": [
           {
@@ -762,7 +1064,6 @@
                 "criteria": {
                   "example": "take access of microsoft teams"
                 }
-               
               }
             }
           }
@@ -773,7 +1074,8 @@
           }
         }
       },
-      "get": {"tags":["criterias"],
+      "get": {
+        "tags": ["criterias"],
         "description": "",
         "parameters": [
           {
@@ -799,8 +1101,9 @@
         }
       }
     },
-     "/api/criterias/{id}": {
-      "put": {"tags":["criterias"],
+    "/api/criterias/{id}": {
+      "put": {
+        "tags": ["criterias"],
         "description": "",
         "parameters": [
           {
@@ -828,7 +1131,8 @@
           }
         }
       },
-      "delete": {"tags":["criterias"],
+      "delete": {
+        "tags": ["criterias"],
         "description": "",
         "parameters": [
           {
@@ -845,13 +1149,6 @@
         }
       }
     }
-    
-  
-   
-   
-    
-   
-   
   },
   "security": [
     {

@@ -150,4 +150,11 @@ const userSchema = new mongoose.Schema(
   },
 );
 
+
+userSchema.virtual("fullName").get(function () {
+  return [this.name?.firstName, this.name?.middleName, this.name?.lastName]
+    .filter(Boolean)
+    .join(" ");
+});
+
 module.exports = mongoose.model("user", userSchema);

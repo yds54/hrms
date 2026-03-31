@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   loginUser,
   registerUser,
+  viewUser,
   viewallUser,
   updateUser,
   deleteUser
@@ -30,5 +31,17 @@ router.get("/", authenticateJWT, authorizeRoles(ROLES.ADMIN), validate(getuserVa
 router.put("/:id", authenticateJWT,authorizeRoles(ROLES.ADMIN), validate(updateUserValidation),updateUser);
 
 router.delete("/:id", authenticateJWT,authorizeRoles(ROLES.ADMIN), validate(userdeleteValidation),deleteUser);
+
+
+//============== DISPLAY LOGIN USER INFO ===============
+
+router.get(
+  "/profile",
+  authenticateJWT,
+  authorizeRoles(ROLES.USER),
+  validate(getuserValidation),
+  viewUser
+);
+
 
 module.exports = router;

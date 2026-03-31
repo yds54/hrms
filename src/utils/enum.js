@@ -23,3 +23,19 @@ exports.USER_STATUS = Object.freeze({
     ACTIVE: 'active',
     INACTIVE: 'inactive',
 });
+
+exports.LEAVE_DAY_TYPE = Object.freeze({
+  SINGLE: "Single Day",
+  MULTIPLE: "Multiple Day",
+});
+
+exports.LEAVE_DURATION = Object.freeze({
+  FULL: "Full Day",
+  HALF: "Half Day",
+});
+
+exports.LEAVE_STATUS = Object.freeze({
+  PENDING: "Pending",
+  APPROVED: "Approved",
+  DECLINED: "Declined",
+});
