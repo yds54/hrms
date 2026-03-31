@@ -14,7 +14,7 @@ const {
   getDesignationValidation,
   updateDesignationValidation,
   deleteDesignationValidation,
-} = require("../validation/designationValidation");
+} = require("../validation/designation.Validation");
 const { validate } = require("express-validation");
 
 router.post(

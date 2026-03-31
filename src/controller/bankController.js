@@ -64,7 +64,7 @@ exports.getAllBanks = async (req, res, next) => {
 exports.updateBank = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { departmentName } = req.body;
+    const { bankName } = req.body;
 
     const bank = await BANK.findOne({
       _id: id,
@@ -77,7 +77,7 @@ exports.updateBank = async (req, res, next) => {
 
     if (bank) {
       const exists = await BANK.findOne({
-        departmentName,
+        bankName,
         _id: { $ne: id },
         isDeleted: false,
       });
@@ -86,15 +86,15 @@ exports.updateBank = async (req, res, next) => {
         throw new AppError("bank already exists", 409);
       }
 
-      department.departmentName = departmentName;
+      bank.bankName = bankName;
     }
 
-    department.updatedBy = req.user?.id || null;
+    bank.updatedBy = req.user?.id || null;
 
-    await department.save();
+    await bank.save();
 
     return successResponse(res, 200, "Bank updated successfully", {
-      data: department,
+      data: bank,
     });
   } catch (error) {
     next(error);

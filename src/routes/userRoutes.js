@@ -19,7 +19,7 @@ const {
   getuserValidation,
   updateUserValidation,
   userdeleteValidation
-} = require("../validation/userValidation");
+} = require("../validation/user.Validation");
 
 const { validate } = require("express-validation");
 

@@ -14,7 +14,7 @@ const {
   getdepartmentValidation,
   updateDepartmentValidation,
   deleteDepartmentValidation,
-} = require("../validation/departmentValidation");
+} = require("../validation/department.Validation");
 const { validate } = require("express-validation");
 
 router.post(
