@@ -4,3 +4,6 @@ exports.DEPARTMENT=require('./department')
 exports.DESIGNATION=require('./designation')
 exports.BANK=require('./bank')
 exports.OFFBORADINGCRITERIA= require('./Offboardingcriteria')
+exports.DRS = require('./drs');
+exports.AUTH = require('./auth');
+exports.LEAVE = require('./leaveRequest');

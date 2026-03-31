@@ -1,14 +1,11 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
 require("dotenv").config();
-const { paginate } = require("../utils/pagination");
+
 const { successResponse } = require("../utils/sucess");
-const { Roles } = require("../utils/enum");
-const { USER } = require("../model/modelIndex");
+const { USER , AUTH} = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { USER_STATUS } = require("../utils/enum");
-
 
 exports.registerUser = async (req, res, next) => {
   try {
@@ -62,6 +59,7 @@ exports.registerUser = async (req, res, next) => {
 };
 
 
+//================= LOGIN ======================================
 exports.loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -91,7 +89,40 @@ exports.loginUser = async (req, res, next) => {
       { expiresIn: "1h" },
     );
 
-    return successResponse(res, 200, "Login successful",  { token });
+    await AUTH.create({
+      user: user._id,
+      token
+    });
+
+    setTimeout(async ()=>{
+      await AUTH.updateOne(
+      { token, isDeleted: false },
+      {
+        isDeleted: true,
+      },
+    );
+    },3600000)
+
+    return successResponse(res, 200, "Login successful", {token});
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+//================ LOGOUT ====================
+exports.logoutUser = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    await AUTH.updateOne(
+      { token, isDeleted: false },
+      {
+        isDeleted: true,
+      },
+    );
+
+    return successResponse(res, 200, "Logout successful");
   } catch (error) {
     next(error);
   }
