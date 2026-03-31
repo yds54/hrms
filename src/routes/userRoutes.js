@@ -23,14 +23,7 @@ const {
 
 const { validate } = require("express-validation");
 
-router.post(
-  "/register",
-  upload.single("profilePicture"),
-  validate(UserValidation),
-  registerUser,
-);
 
-router.post("/login", validate(loginValidation), loginUser);
 
 router.get("/", authenticateJWT, authorizeRoles(ROLES.ADMIN), validate(getuserValidation),viewallUser);
 

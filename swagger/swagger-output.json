@@ -19,8 +19,8 @@
     }
   },
   "paths": {
-    "/api/users/register": {
-  "post": {"tags":["User"],
+    "/api/auth/register": {
+  "post": {"tags":["Auth"],
     "description": "Register user",
     "parameters": [
       {
@@ -220,8 +220,8 @@
     }
   }
 },
-    "/api/users/login": {
-      "post": {"tags":["User"],
+    "/api/auth/login": {
+      "post": {"tags":["Auth"],
         "description": "",
         "parameters": [
           {
