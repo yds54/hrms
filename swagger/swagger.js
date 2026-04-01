@@ -5,7 +5,7 @@ const doc = {
     title: "HRMS API",
     description: "API documentation for your project",
   },
-  host: "192.168.0.42:5000",
+  host: "192.168.0.158:5000",
   schemes: ["http"],
 
   securityDefinitions: {

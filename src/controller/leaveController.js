@@ -79,47 +79,75 @@ exports.createLeaveRequest = async (req, res, next) => {
 exports.getLeaveHistory = async (req, res, next) => {
   try {
     const { _id: user } = req.user;
-
     let { page = 1, limit = 10, year, filter } = req.query;
-
     const _where = { user, isDeleted: false };
+    const conditions = [];
 
-    // --- year search ---
+    // -- year filter
     if (year) {
       const start = new Date(`${year}-01-01T00:00:00.000Z`);
       const end = new Date(`${year}-12-31T23:59:59.999Z`);
 
-      _where.$or = [
-        { date: { $gte: start, $lte: end } },
-        { fromDateTime: { $gte: start, $lte: end } },
-      ];
+      conditions.push({
+        $or: [
+          { date: { $gte: start, $lte: end } }, // single and half day have a date
+          {
+            fromDateTime: { $lte: end },
+            toDateTime: { $gte: start }, // multiple day have fromdatetime and todatetime
+          },
+        ],
+      });
     }
 
-    // ----- other search ----
+    // --- day and month filter
+    // Single Day , Half Day  , Multiple Day , January ... December
+
     if (filter) {
-      // filter Single day and  Multiple day
-      if (Object.values(LEAVE_DAY_TYPE).includes(filter)) {
-        _where.numberOfDays = filter;
+      //---- Full Day (Single Day)
+      if (filter === LEAVE_DAY_TYPE.SINGLE) {
+        conditions.push({
+          numberOfDays: LEAVE_DAY_TYPE.SINGLE,
+          fullHalfDay: LEAVE_DURATION.FULL, // show full day
+        });
       }
 
-      // filter Half Day
-      if (filter === LEAVE_DURATION.HALF) {
-        _where.fullHalfDay = LEAVE_DURATION.HALF;
+      //----- Half Day ---
+      else if (filter === LEAVE_DURATION.HALF) {
+        conditions.push({
+          numberOfDays: LEAVE_DAY_TYPE.SINGLE,
+          fullHalfDay: LEAVE_DURATION.HALF,
+        });
       }
 
-      // filter Month
-      const monthIndex = moment().month(filter).month(); // "March" -> 2
+      // ---- Multiple Day ---
+      else if (filter === LEAVE_DAY_TYPE.MULTIPLE) {
+        conditions.push({
+          numberOfDays: LEAVE_DAY_TYPE.MULTIPLE,
+        });
+      }
+
+      // --- filter by month ---
+      const monthIndex = moment(filter, "MMMM", true).month();
+
       if (!isNaN(monthIndex)) {
-        _where.$expr = {
-          $eq: [{ $month: "$date" }, monthIndex + 1],
-        };
+        conditions.push({
+          $or: [
+            { $expr: { $eq: [{ $month: "$date" }, monthIndex + 1] } },
+            { $expr: { $eq: [{ $month: "$fromDateTime" }, monthIndex + 1] } },
+          ],
+        });
       }
     }
+
+    if (conditions.length) {
+      _where.$and = conditions;
+    }
+
     const projection = getProjection().replace("-createdAt", "");
 
     const { data, pagination } = await paginate({
       model: LEAVE,
-      _where,
+      query: _where,
       page,
       limit,
       sort: { createdAt: -1 },
