@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.158:5000",
+  "host": "192.168.0.42:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -92,7 +92,7 @@
                 },
                 "designation": {
                   "type": "string",
-                  "example": "Software Developer"
+                  "example": "69ca544451e27dd860867e71(designation_id)"
                 },
                 "position": {
                   "type": "string",
@@ -100,7 +100,7 @@
                 },
                 "departmentName": {
                   "type": "string",
-                  "example": "Backend Development"
+                  "example": "69ca21fadb1d7afaac5378af(department_id)"
                 },
                 "vehicleNumber": {
                   "type": "string",
@@ -120,7 +120,7 @@
                 "bankDetails": {
                   "type": "object",
                   "properties": {
-                    "bankName": { "type": "string", "example": "SBI" },
+                    "bankName": { "type": "string", "example": "69ca72900ce2f3165dd8c199(bank_id)" },
                     "accountNumber": {
                       "type": "string",
                       "example": "123456789012"
@@ -155,7 +155,7 @@
                 },
                 "organizationType": {
                   "type": "string",
-                  "example": "BIG SCALE"
+                  "example": "69ccc24cf2041b075ef23882(organization_id)"
                 },
 
                 "drsRequired": {
@@ -421,34 +421,7 @@
         }
       }
     },
-    "/api/dashboard/holidays": {
-      "get": {
-        "tags": ["Holiday"],
-        "description": "DISPLAY HOLIDAYS",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
+    
     "/api/leaveRequest/": {
       "post": {
         "tags": ["Leave Request"],
@@ -676,12 +649,7 @@
             "type": "string"
           },
           {
-            "name": "month",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "year",
+            "name": "search",
             "in": "query",
             "type": "string"
           }
@@ -1148,7 +1116,176 @@
           }
         }
       }
+    },
+    "/api/organizations/": {
+  "post": {
+    "tags": ["organization"],
+    "description": "Add Organization",
+    "parameters": [
+      {
+        "name": "body",
+        "in": "body",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "organizationName": {
+              "example": "ABC Pvt Ltd"
+            },
+            "headHR": {
+              "example": "64f1c2a5b5d2c12a34567890"
+            },
+            "organizationAddress": {
+              "example": "New York, USA"
+            },
+            "logo": {
+              "example": "uploads/logo.png"
+            },
+            "organizationAccountNumber": {
+              "example": "1234567890"
+            },
+            "irregularEmployeeCriteria": {
+              "type": "object",
+              "properties": {
+                "days": {
+                  "example": 10
+                },
+                "beforePercentage": {
+                  "example": 3
+                },
+                "afterPercentage": {
+                  "example": 5
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "responses": {
+      "403": {
+        "description": "Forbidden"
+      }
     }
+  },
+  "get": {
+    "tags": ["organization"],
+    "description": "Get All Organizations",
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "type": "string"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "type": "string"
+      },
+      {
+        "name": "organizationName",
+        "in": "query",
+        "type": "string"
+      }
+    ],
+    "responses": {
+      "403": {
+        "description": "Forbidden"
+      }
+    }
+  }
+},
+
+"/api/organizations/{id}": {
+  "get": {
+    "tags": ["organization"],
+    "description": "Get Organization By ID",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "type": "string"
+      }
+    ],
+    "responses": {
+      "403": {
+        "description": "Forbidden"
+      }
+    }
+  },
+  "put": {
+    "tags": ["organization"],
+    "description": "Update Organization",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "name": "body",
+        "in": "body",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "organizationName": {
+              "example": "ABC Pvt Ltd"
+            },
+            "headHR": {
+              "example": "64f1c2a5b5d2c12a34567890"
+            },
+            "organizationAddress": {
+              "example": "New York, USA"
+            },
+            "logo": {
+              "example": "uploads/logo.png"
+            },
+            "organizationAccountNumber": {
+              "example": "1234567890"
+            },
+            "irregularEmployeeCriteria": {
+              "type": "object",
+              "properties": {
+                "days": {
+                  "example": 10
+                },
+                "beforePercentage": {
+                  "example": 3
+                },
+                "afterPercentage": {
+                  "example": 5
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "responses": {
+      "403": {
+        "description": "Forbidden"
+      }
+    }
+  },
+  "delete": {
+    "tags": ["organization"],
+    "description": "Delete Organization",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "type": "string"
+      }
+    ],
+    "responses": {
+      "403": {
+        "description": "Forbidden"
+      }
+    }
+  }
+}
   },
   "security": [
     {

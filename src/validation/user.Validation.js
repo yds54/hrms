@@ -61,11 +61,11 @@ exports.UserValidation = {
       .valid(...Object.values(MARITAL_STATUS))
       .default(MARITAL_STATUS.SINGLE),
 
-    designation: Joi.string().max(50).allow("", null),
+    designation: Joi.string().hex().length(24).required(),
 
     position: Joi.string().max(50).required(),
 
-    departmentName: Joi.string().max(50).required(),
+    departmentName: Joi.string().hex().length(24).required(),
 
     vehicleNumber: Joi.string()
       .pattern(/^[A-Z0-9-]{6,15}$/i)
@@ -81,7 +81,7 @@ exports.UserValidation = {
     }),
 
     bankDetails: Joi.object({
-      bankName: Joi.string().max(100).allow("", null),
+      bankName: Joi.string().hex().length(24),
 
       accountNumber: Joi.string()
         .pattern(/^[0-9]{9,18}$/)
@@ -106,7 +106,7 @@ exports.UserValidation = {
 
     considerOvertime: Joi.boolean().default(false),
 
-    organizationType: Joi.string().max(50).required(),
+    organizationType: Joi.string().hex().length(24),
 
     role: Joi.string()
       .valid(...Object.values(ROLES))

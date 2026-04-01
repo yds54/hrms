@@ -15,8 +15,7 @@ const { authorizeRoles, ROLES } = require("../middleware/roleAuthorization");
 const upload = require("../middleware/upload");
 
 const {
-  UserValidation,
-  loginValidation,
+  
   getuserValidation,
   updateUserValidation,
   userdeleteValidation
