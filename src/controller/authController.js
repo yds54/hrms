@@ -94,15 +94,6 @@ exports.loginUser = async (req, res, next) => {
       token
     });
 
-    setTimeout(async ()=>{
-      await AUTH.updateOne(
-      { token, isDeleted: false },
-      {
-        isDeleted: true,
-      },
-    );
-    },3600000)
-
     return successResponse(res, 200, "Login successful", {token});
   } catch (error) {
     next(error);

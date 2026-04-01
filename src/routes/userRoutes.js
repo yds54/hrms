@@ -33,15 +33,15 @@ router.put("/:id", authenticateJWT,authorizeRoles(ROLES.ADMIN), validate(updateU
 router.delete("/:id", authenticateJWT,authorizeRoles(ROLES.ADMIN), validate(userdeleteValidation),deleteUser);
 
 
-//============== DISPLAY LOGIN USER INFO ===============
+// //============== DISPLAY LOGIN USER INFO ===============
 
-router.get(
-  "/profile",
-  authenticateJWT,
-  authorizeRoles(ROLES.USER),
-  validate(getuserValidation),
-  viewUser
-);
+// router.get(
+//   "/profile",
+//   authenticateJWT,
+//   authorizeRoles(ROLES.USER),
+//   validate(getuserValidation),
+//   viewUser
+// );
 
 
 module.exports = router;
