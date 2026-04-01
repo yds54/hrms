@@ -17,7 +17,7 @@ router.post('/',authenticateJWT,authorizeRoles(ROLES.USER),validate(drsValidatio
 
 //==================== SHOW DRS ===============================
 
-router.get("/show",authenticateJWT,authorizeRoles(ROLES.USER),validate(getDrsValidation),getDrs);
+router.get("/show",authenticateJWT,authorizeRoles(ROLES.USER,ROLES.ADMIN),validate(getDrsValidation),getDrs);
 
 //======================== EDIT DRS =============================
 router.put(

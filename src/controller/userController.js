@@ -29,6 +29,7 @@ exports.viewallUser = async (req, res, next) => {
     const { data, pagination } = await paginate({
       model: USER,
       query: _whereCondition,
+      populate: [{ path: "designation", select: "designationName" }, { path: "departmentName", select: "departmentName" }, { path: "bankDetails.bankName", select: "bankName" }, { path: "organizationType", select: "organizationName" }],
       page: Number(page),
       limit: Number(limit),
     });
