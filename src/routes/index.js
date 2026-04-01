@@ -3,7 +3,12 @@ const router = express.Router();
 
 const authRoutes = require("./authRoutes");
 const userRoutes = require("./userRoutes");
-const holidayRoutes = require("./holidayRoutes")
+const drsRoutes = require("./drsRoutes");
+const dashboardRoutes = require('./dashboardRoutes');
+const leaveRoutes = require('./leaveRoutes');
+const holidayRoutes = require("./holidayRoutes");
+const profileRoutes = require('./profileRoutes');
+
 const departmentRoutes = require("./departmentRoutes")
 const designationRoutes = require("./designationRoutes")
 const bankRoutes = require("./bankRoutes")
@@ -16,4 +21,10 @@ router.use("/departementes",departmentRoutes)
 router.use("/designations",designationRoutes)
 router.use("/banks",bankRoutes)
 router.use("/criterias",offboardingcriteriaRoutes)
+router.use("/drs", drsRoutes);
+router.use("/profile", profileRoutes);
+router.use("/dashboard",dashboardRoutes);
+router.use("/leaveRequest",leaveRoutes);
+
+
 module.exports = router;

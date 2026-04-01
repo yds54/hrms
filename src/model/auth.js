@@ -21,6 +21,8 @@ const authSchema = new mongoose.Schema(
   },
 );
 
-authSchema.index({ createdAt: 1 }, { expireAfterSeconds: 3600 });
+authSchema.index({ token: 1 });
+
+
 
 module.exports = mongoose.model("auth", authSchema);
