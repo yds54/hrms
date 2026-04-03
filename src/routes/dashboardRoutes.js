@@ -16,7 +16,7 @@ const {getHolidayValidation} = require('../validation/dashboard.validation');
 router.get(
   "/holidays",
   authenticateJWT,
-  authorizeRoles(ROLES.USER),
+  authorizeRoles(ROLES.USER,ROLES.ADMIN),
   validate(getHolidayValidation),
   getHolidays
 );

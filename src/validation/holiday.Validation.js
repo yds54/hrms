@@ -10,8 +10,12 @@ exports.getholidayValidation = {
   query: Joi.object({
     page: Joi.number().integer(),
     limit: Joi.number().integer(),
-    month: Joi.number(),
-    year: Joi.number(),
+     search: Joi.string()
+      .pattern(/^\d{4}-(0[1-9]|1[0-2])$/) // YYYY-MM fomat
+      .messages({
+        "string.pattern.base": "Search must be in YYYY-MM format",
+      })
+      .optional(),
     id:Joi.string().hex()
   }),
 };

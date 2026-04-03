@@ -8,7 +8,7 @@ const {holidaydeleteValidation,getholidayValidation,addholidayValidation,updateh
 const {validate} = require('express-validation')
 
 router.post("/", authenticateJWT, authorizeRoles(ROLES.ADMIN),validate(addholidayValidation),addHoliday);
-router.get("/",authenticateJWT,authorizeRoles(ROLES.ADMIN),validate(getholidayValidation),viewAllHolidays)
+router.get("/",authenticateJWT,authorizeRoles(ROLES.ADMIN,ROLES.USER),validate(getholidayValidation),viewAllHolidays)
 router.delete("/:id",authenticateJWT,authorizeRoles(ROLES.ADMIN),validate(holidaydeleteValidation),deleteHoliday)
 router.put("/:id",authenticateJWT,authorizeRoles(ROLES.ADMIN),validate(updateholidayValidation),updateHoliday)
 module.exports = router;

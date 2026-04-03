@@ -48,9 +48,9 @@ const userSchema = new mongoose.Schema(
       default: MARITAL_STATUS.SINGLE,
     },
 
-    designation: String,
+    designation: {type: mongoose.Schema.Types.ObjectId, ref: "Designation", required: true},
     position: String,
-    departmentName: String,
+    departmentName: {type: mongoose.Schema.Types.ObjectId, ref: "department", required: true},
 
     vehicleNumber: String,
 
@@ -61,7 +61,7 @@ const userSchema = new mongoose.Schema(
     },
 
     bankDetails: {
-      bankName: String,
+      bankName: {type: mongoose.Schema.Types.ObjectId, ref: "bank", required: true},
       accountNumber: String,
       ifscCode: String,
       accountHolderName: String,
@@ -82,7 +82,7 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    organizationType: String,
+    organizationType: {type: mongoose.Schema.Types.ObjectId, ref: "organization", required: true},
 
     role: {
       type: String,
