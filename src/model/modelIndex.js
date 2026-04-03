@@ -8,3 +8,6 @@ exports.DRS = require('./drs');
 exports.AUTH = require('./auth');
 exports.LEAVE = require('./leaveRequest');
 exports.ORGANIZATION = require('./organization')
+exports.ASSET = require('./asset')
+exports.ASSETCATEGORY = require('./assetCategory')
+exports.ASSETMANAGEMENT = require('./assetmanagement')
