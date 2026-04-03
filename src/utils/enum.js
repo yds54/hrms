@@ -1,27 +1,31 @@
-
-exports. ROLES = Object.freeze({
-  ADMIN: 'admin',
-  USER: 'user',
+exports.ROLES = Object.freeze({
+  ADMIN: "admin",
+  USER: "user",
+  HR: "hr",
+  HR_RECRUITER: "hr_recruiter",
+  PROJECT_MANAGER: "project_manager",
+  TEAM_LEAD: "team_lead",
 });
+
 exports.GENDER = Object.freeze({
-    MALE: 'male',
-    FEMALE: 'female',
-    OTHER: 'other'
+  MALE: "male",
+  FEMALE: "female",
+  OTHER: "other",
 });
 
 exports.MARITAL_STATUS = Object.freeze({
-    SINGLE: 'single',
-    MARRIED: 'married'
+  SINGLE: "single",
+  MARRIED: "married",
 });
 
 exports.TEAM_ROLES = Object.freeze({
-    PM: 'pm',
-    TL: 'tl',
-    DEV: 'dev'
+  PM: "pm",
+  TL: "tl",
+  DEV: "dev",
 });
 exports.USER_STATUS = Object.freeze({
-    ACTIVE: 'active',
-    INACTIVE: 'inactive',
+  ACTIVE: "active",
+  INACTIVE: "inactive",
 });
 
 exports.LEAVE_DAY_TYPE = Object.freeze({
@@ -39,3 +43,34 @@ exports.LEAVE_STATUS = Object.freeze({
   APPROVED: "Approved",
   DECLINED: "Declined",
 });
+
+exports.PRIORITY_STATUS = Object.freeze({
+  LOW : "Low",
+  NORMAL : "Normal",
+  HIGH : "High"
+});
+
+exports.TICKET_STATUS = Object.freeze({
+  TODO : "To Do",
+  INPROGRESS : "In Progress",
+  ONHOLD : "On Hold",
+  COMPLETED : "Completed",
+});
+
+
+exports.LEAVE_REASON_TYPE = Object.freeze({
+  SICK: "Sick Leave",
+  CASUAL: "Casual Leave",
+  EARNED: "Earned Leave",
+  PAID: "Paid Leave",
+  UNPAID: "Unpaid Leave",
+  OTHER: "Other",
+});
+
+exports.TICKET_FILTER = Object.freeze({
+  ALL: "All",
+  MY_TICKETS: "My Tickets",
+  ASSIGNED_TO_ME: "Assigned to me"
+});
+
+

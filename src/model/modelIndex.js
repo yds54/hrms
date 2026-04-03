@@ -7,3 +7,4 @@ exports.OFFBORADINGCRITERIA= require('./Offboardingcriteria')
 exports.DRS = require('./drs');
 exports.AUTH = require('./auth');
 exports.LEAVE = require('./leaveRequest');
+exports.TICKET = require("./ticket");

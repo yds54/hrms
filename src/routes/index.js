@@ -13,6 +13,8 @@ const departmentRoutes = require("./departmentRoutes")
 const designationRoutes = require("./designationRoutes")
 const bankRoutes = require("./bankRoutes")
 const offboardingcriteriaRoutes = require("./offboardingcriteriaRoutes") 
+const ticketRoutes = require("./ticketRoutes");
+
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -25,6 +27,8 @@ router.use("/drs", drsRoutes);
 router.use("/profile", profileRoutes);
 router.use("/dashboard",dashboardRoutes);
 router.use("/leaveRequest",leaveRoutes);
+router.use("/ticket", ticketRoutes);
+
 
 
 module.exports = router;
