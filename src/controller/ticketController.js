@@ -52,7 +52,7 @@ exports.getTickets = async (req, res, next) => {
   try {
     const { _id: userId } = req.user;
     let { startDate, endDate, isArchived, filter = "All" } = req.query;
-    const _where = { isDeleted: false, isArchived: isArchived === "true" };
+    const _where = { isDeleted: false, isArchived: isArchived};
 
     if (filter === TICKET_FILTER.MY_TICKETS) {
       _where.createdBy = userId;
@@ -100,7 +100,7 @@ exports.updateTicket = async (req, res, next) => {
       throw new AppError("Ticket not found", 404);
     }
 
-    if (req.files && req.files.length > 0) {
+    if (req.files?.length) {
       const files = req.files.map(
         (file) => `/uploads/tickets/${file.filename}`,
       );
@@ -129,7 +129,7 @@ exports.deleteTicket = async (req, res, next) => {
       throw new AppError("Ticket not found", 404);
     }
 
-    await TICKET.updateOne({ _id: id }, { $set: { isDeleted: true } });
+    await TICKET.updateOne({ _id: id }, { $set: { isDeleted: true , deletedAt: new Date(), } });
 
     return successResponse(res, 200, "Ticket deleted successfully");
   } catch (err) {

@@ -1,21 +1,32 @@
-const moment = require("moment");
+// const moment = require("moment");
 const { LEAVE } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 const { paginate } = require("../utils/pagination");
 const { getProjection } = require("../utils/projection");
-const { LEAVE_DAY_TYPE, LEAVE_DURATION } = require("../utils/enum");
+const { LEAVE_DAY_TYPE, LEAVE_DURATION, TIMEZONES } = require("../utils/enum");
+const moment = require("moment-timezone");
 
 //======================= SEND LEAVE REQUEST =================================
 exports.createLeaveRequest = async (req, res, next) => {
   try {
     const { _id: user } = req.user;
-    const { reasonType, reason, numberOfDays, date, isFullDay, fromTime, toTime, fromDate, toDate, } = req.body;
+    const {
+      reasonType,
+      reason,
+      numberOfDays,
+      date,
+      isFullDay,
+      fromTime,
+      toTime,
+      fromDate,
+      toDate,
+    } = req.body;
     const payload = { user, reason, reasonType, numberOfDays };
 
     if (numberOfDays === LEAVE_DAY_TYPE.SINGLE) {
       if (!date) throw new AppError("Date is required", 400);
-      payload.date = new Date(date);
+      payload.date = moment(date, "YYYY-MM-DD").startOf("day").toDate();
       payload.isFullDay = isFullDay === true;
 
       if (!payload.isFullDay) {
@@ -32,12 +43,20 @@ exports.createLeaveRequest = async (req, res, next) => {
       if (!fromDate || !toDate || !fromTime || !toTime) {
         throw new AppError("From and To date required", 400);
       }
-      if (toDate < fromDate) {
+
+      const startdate = moment
+        .tz(fromDate, "YYYY-MM-DD", TIMEZONES.INDIA)
+        .startOf("day");
+      const enddate = moment
+        .tz(toDate, "YYYY-MM-DD", TIMEZONES.INDIA)
+        .endOf("day");
+
+      if (enddate.isBefore(startdate)) {
         throw new AppError("Invalid Date range", 400);
       }
 
-      payload.fromDate = new Date(fromDate);
-      payload.toDate = new Date(toDate);
+      payload.fromDate = startdate.toDate();
+      payload.toDate = enddate.toDate();
       payload.fromTime = moment(fromTime, "HH:mm").format("hh:mm A");
       payload.toTime = moment(toTime, "HH:mm").format("hh:mm A");
     }
@@ -72,29 +91,25 @@ exports.getLeaveHistory = async (req, res, next) => {
     }
 
     if (filter) {
-      if (filter === LEAVE_DAY_TYPE.SINGLE) {
-        conditions.push({
-          numberOfDays: LEAVE_DAY_TYPE.SINGLE,
-          isFullDay: true,
-        });
-      } else if (filter === LEAVE_DURATION.HALF) {
-        conditions.push({
-          numberOfDays: LEAVE_DAY_TYPE.SINGLE,
-          isFullDay: false,
-        });
-      } else if (filter === LEAVE_DAY_TYPE.MULTIPLE) {
-        conditions.push({
-          numberOfDays: LEAVE_DAY_TYPE.MULTIPLE,
-        });
-      }
-
       const monthIndex = moment(filter, "MMMM", true).month();
+
       if (!isNaN(monthIndex)) {
         conditions.push({
           $or: [
             { $expr: { $eq: [{ $month: "$date" }, monthIndex + 1] } },
             { $expr: { $eq: [{ $month: "$fromDate" }, monthIndex + 1] } },
           ],
+        });
+      } else if (
+        [LEAVE_DURATION.HALF, LEAVE_DAY_TYPE.SINGLE].includes(filter)
+      ) {
+        conditions.push({
+          numberOfDays: LEAVE_DAY_TYPE.SINGLE,
+          isFullDay: filter === LEAVE_DURATION.HALF ? false : true,
+        });
+      } else {
+        conditions.push({
+          numberOfDays: LEAVE_DAY_TYPE.MULTIPLE,
         });
       }
     }

@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.42:5000",
+  "host": "192.168.0.158:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -1319,6 +1319,287 @@
         "responses": {
           "403": {
             "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/ticket/": {
+      "post": {
+        "tags": ["Ticket Board"],
+        "description": "CREATE TICKET",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "title",
+            "in": "formData",
+            "type": "string",
+            "example": "update attendance"
+          },
+          {
+            "name": "assignedTo",
+            "in": "formData",
+            "type": "string",
+            "example": "69c60ceb1271716ecbac38a3"
+          },
+          {
+            "name": "dueDate",
+            "in": "formData",
+            "type": "string",
+            "example": "2026-05-15"
+          },
+          {
+            "name": "priority",
+            "in": "formData",
+            "type": "string",
+            "example": "Low"
+          },
+          {
+            "name": "content",
+            "in": "formData",
+            "type": "string",
+            "example": "entry time issue"
+          },
+          {
+            "name": "attachFile",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "attachFile",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket created successfully"
+          }
+        }
+      }
+    },
+    "/api/ticket": {
+      "get": {
+        "tags": ["Ticket Board"],
+        "description": "DISPLAY TICKET BOARD",
+        "parameters": [
+          {
+            "name": "isArchived",
+            "in": "query",
+            "type": "boolean",
+            "example": false
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "type": "string",
+            "example": "2026-04-01"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "type": "string",
+            "example": "2026-04-15"
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "type": "string",
+            "example": "All",
+            "description": "All | My Tickets | Assigned to me"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tickets fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/ticket/{id}": {
+      "put": {
+        "tags": ["Ticket Board"],
+        "description": "EDIT TICKET",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "69c60ceb1271716ecbac38a3"
+          },
+          {
+            "name": "title",
+            "in": "formData",
+            "type": "string",
+            "example": "update attendance"
+          },
+          {
+            "name": "dueDate",
+            "in": "formData",
+            "type": "string",
+            "example": "2026-05-20"
+          },
+          {
+            "name": "priority",
+            "in": "formData",
+            "type": "string",
+            "example": "High"
+          },
+          {
+            "name": "content",
+            "in": "formData",
+            "type": "string",
+            "example": "updated issue details"
+          },
+          {
+            "name": "attachFile",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "attachFile",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket updated successfully"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Ticket Board"],
+        "description": "DELETE TICKET",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/attendance/": {
+      "post": {
+        "tags": ["Attendance"],
+        "description": "CREATE ATTENDANCE",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "formData",
+            "type": "string",
+            "example": "661234abcd1234abcd123456"
+          },
+          {
+            "name": "date",
+            "in": "formData",
+            "type": "string",
+            "example": "2026-04-06"
+          },
+          {
+            "name": "inTime",
+            "in": "formData",
+            "type": "string",
+            "example": "09:30"
+          },
+          {
+            "name": "outTime",
+            "in": "formData",
+            "type": "string",
+            "example": "18:30"
+          },
+          {
+            "name": "totalMinutes",
+            "in": "formData",
+            "type": "number",
+            "example": 540
+          },
+          {
+            "name": "mode",
+            "in": "formData",
+            "type": "string",
+            "example": "Office"
+          },
+          {
+            "name": "officeEntryTime",
+            "in": "formData",
+            "type": "string",
+            "example": "09:00"
+          },
+          {
+            "name": "officeExitTime",
+            "in": "formData",
+            "type": "string",
+            "example": "18:00"
+          },
+          {
+            "name": "lateReason",
+            "in": "formData",
+            "type": "string",
+            "example": "Traffic"
+          },
+          {
+            "name": "leaveReason",
+            "in": "formData",
+            "type": "string",
+            "example": "Personal work"
+          },
+          {
+            "name": "overTimeReason",
+            "in": "formData",
+            "type": "string",
+            "example": "Project deadline"
+          },
+          {
+            "name": "updateReason",
+            "in": "formData",
+            "type": "string",
+            "example": "Correction"
+          },
+          {
+            "name": "permittedMinutes",
+            "in": "formData",
+            "type": "number",
+            "example": 60
+          },
+          {
+            "name": "isFullDay",
+            "in": "formData",
+            "type": "boolean",
+            "example": true
+          },
+          {
+            "name": "entry",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "exit",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance created successfully"
+          },
+          "400": {
+            "description": "Validation error / Already exists"
+          },
+          "404": {
+            "description": "User not found"
           }
         }
       }

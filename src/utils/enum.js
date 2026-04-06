@@ -74,3 +74,6 @@ exports.TICKET_FILTER = Object.freeze({
 });
 
 
+exports.TIMEZONES = Object.freeze({
+  INDIA: "Asia/Kolkata",
+});
