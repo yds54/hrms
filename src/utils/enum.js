@@ -2,6 +2,10 @@
 exports. ROLES = Object.freeze({
   ADMIN: 'admin',
   USER: 'user',
+  HR: 'hr',
+  HR_RECRUITER: 'hr_recruiter',
+  PROJECT_MANAGER: 'project_manager',
+  TEAM_LEAD: 'team_lead',
 });
 exports.GENDER = Object.freeze({
     MALE: 'male',

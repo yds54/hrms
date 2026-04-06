@@ -61,11 +61,11 @@ exports.UserValidation = {
       .valid(...Object.values(MARITAL_STATUS))
       .default(MARITAL_STATUS.SINGLE),
 
-    designation: Joi.string().hex().length(24).required(),
+    designationId: Joi.string().hex().length(24).required(),
 
     position: Joi.string().max(50).required(),
 
-    departmentName: Joi.string().hex().length(24).required(),
+    departmentId: Joi.string().hex().length(24).required(),
 
     vehicleNumber: Joi.string()
       .pattern(/^[A-Z0-9-]{6,15}$/i)
@@ -81,7 +81,7 @@ exports.UserValidation = {
     }),
 
     bankDetails: Joi.object({
-      bankName: Joi.string().hex().length(24),
+      bankId: Joi.string().hex().length(24),
 
       accountNumber: Joi.string()
         .pattern(/^[0-9]{9,18}$/)
@@ -106,7 +106,7 @@ exports.UserValidation = {
 
     considerOvertime: Joi.boolean().default(false),
 
-    organizationType: Joi.string().hex().length(24),
+    organizationId: Joi.string().hex().length(24),
 
     role: Joi.string()
       .valid(...Object.values(ROLES))
@@ -162,16 +162,13 @@ exports.getuserValidation = {
 exports.updateUserValidation = {
   body: Joi.object({
     profilePicture: Joi.string(),
-
     name: Joi.object({
       firstName: Joi.string().trim(),
       middleName: Joi.string().trim().allow("", null),
       lastName: Joi.string().trim(),
     }),
-
     email: Joi.string().email(),
 
-    password: Joi.string().min(6),
 
     nameAsPerAadhaar: Joi.string(),
     aadhaarNumber: Joi.string().length(12),
@@ -195,9 +192,9 @@ exports.updateUserValidation = {
 
     leavecreaditType: Joi.string(),
     
-    designation: Joi.string(),
+    designationId: Joi.string(),
     position: Joi.string(),
-    departmentName: Joi.string(),
+    departmentId: Joi.string(),
 
     vehicleNumber: Joi.string(),
 
@@ -208,7 +205,7 @@ exports.updateUserValidation = {
     }),
 
     bankDetails: Joi.object({
-      bankName: Joi.string(),
+      bankId: Joi.string(),
       accountNumber: Joi.string(),
       ifscCode: Joi.string().pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/),
       accountHolderName: Joi.string(),
@@ -232,7 +229,7 @@ exports.updateUserValidation = {
 
     considerOvertime: Joi.boolean(),
 
-    organizationType: Joi.string(),
+    organizationId: Joi.string(),
 
     role: Joi.string().valid(...Object.values(ROLES)),
 
@@ -256,8 +253,6 @@ exports.updateUserValidation = {
     isDeleted: Joi.boolean(),
     isUpdated: Joi.boolean(),
 
-    deletedBy: Joi.string(),
-    updatedBy: Joi.string(),
   }).unknown(false),
 };
 

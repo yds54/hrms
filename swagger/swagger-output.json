@@ -90,7 +90,7 @@
                   "type": "string",
                   "example": "married"
                 },
-                "designation": {
+                "designationId": {
                   "type": "string",
                   "example": "69ca544451e27dd860867e71(designation_id)"
                 },
@@ -98,7 +98,7 @@
                   "type": "string",
                   "example": "Junior Developer"
                 },
-                "departmentName": {
+                "departmentId": {
                   "type": "string",
                   "example": "69ca21fadb1d7afaac5378af(department_id)"
                 },
@@ -120,7 +120,7 @@
                 "bankDetails": {
                   "type": "object",
                   "properties": {
-                    "bankName": { "type": "string", "example": "69ca72900ce2f3165dd8c199(bank_id)" },
+                    "bankId": { "type": "string", "example": "69ca72900ce2f3165dd8c199(bank_id)" },
                     "accountNumber": {
                       "type": "string",
                       "example": "123456789012"
@@ -153,7 +153,7 @@
                   "type": "boolean",
                   "example": true
                 },
-                "organizationType": {
+                "organizationId": {
                   "type": "string",
                   "example": "69ccc24cf2041b075ef23882(organization_id)"
                 },
@@ -549,7 +549,7 @@
           {
             "name": "Left",
             "in": "query",
-            "type": "string"
+            "type": "boolean"
           }
         ],
         "responses": {
@@ -823,7 +823,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "departmentName": {
+                "departmentId": {
                   "example": "depatment_id"
                 },
                 "designationName": {
@@ -854,7 +854,7 @@
             "type": "string"
           },
           {
-            "name": "departmentName",
+            "name": "departmentId",
             "in": "query",
             "type": "string"
           }
@@ -884,7 +884,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "departmentName": {
+                "departmentId": {
                   "example": "department_id"
                 },
                 "designationName": {
@@ -1196,23 +1196,7 @@
 },
 
 "/api/organizations/{id}": {
-  "get": {
-    "tags": ["organization"],
-    "description": "Get Organization By ID",
-    "parameters": [
-      {
-        "name": "id",
-        "in": "path",
-        "required": true,
-        "type": "string"
-      }
-    ],
-    "responses": {
-      "403": {
-        "description": "Forbidden"
-      }
-    }
-  },
+  
   "put": {
     "tags": ["organization"],
     "description": "Update Organization",
@@ -1271,6 +1255,106 @@
   "delete": {
     "tags": ["organization"],
     "description": "Delete Organization",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "type": "string"
+      }
+    ],
+    "responses": {
+      "403": {
+        "description": "Forbidden"
+      }
+    }
+  }
+},
+   "/api/assetcategories/": {
+  "post": {
+    "tags": ["asset category"],
+    "description": "Add Asset Category",
+    "parameters": [
+      {
+        "name": "body",
+        "in": "body",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "assetcategoryName": {
+              "example": "Electronics"
+            }  
+          }
+        }
+      }
+    ],
+    "responses": {
+      "403": {
+        "description": "Forbidden"
+      }
+    }
+  },
+  "get": {
+    "tags": ["asset category"],
+    "description": "Get All Asset Categories",
+    "parameters": [
+      {
+        "name": "page",
+        "in": "query",
+        "type": "string"
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "type": "string"
+      },
+      {
+        "name": "assetcategoryName",
+        "in": "query",
+        "type": "string"
+      }
+    ],
+    "responses": {
+      "403": {
+        "description": "Forbidden"
+      }
+    }
+  }
+},
+
+"/api/assetcategories/{id}": {
+  "put": {
+    "tags": ["asset category"],
+    "description": "Update Asset Category",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "name": "body",
+        "in": "body",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "assetcategoryName": {
+              "example": "mobile"
+            }
+          }
+        }
+      }
+    ],
+    "responses": {
+      "403": {
+        "description": "Forbidden"
+      }
+    }
+  },
+  "delete": {
+    "tags": ["asset category"],
+    "description": "Delete asset category",
     "parameters": [
       {
         "name": "id",
