@@ -1,10 +1,7 @@
 const COMMON_FIELDS = [
-  "_id",
   "__v",
   "isDeleted",
-  "createdAt",
   "updatedAt",
-  "updatedBy",
 ];
 
 

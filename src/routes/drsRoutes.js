@@ -9,7 +9,7 @@ const { ROLES } = require("../utils/enum");
 
 const {addDrs , getDrs , updateDrs} = require('../controller/drsController');
 
-const {drsValidation , getDrsValidation , updateDrsValidation,  } = require('../validation/drs.validation');
+const {drsValidation , getDrsValidation , updateDrsValidation,  } = require('../validation/drsValidation');
 
 //==================== ADD DRS ===============================
 

@@ -3,8 +3,10 @@ const router = express.Router();
 
 const {addBank,getAllBanks,updateBank,deleteBank}= require("../controller/bankController");
 const { authenticateJWT } = require("../middleware/authentication");
-const { authorizeRoles, ROLES } = require("../middleware/roleAuthorization");
-const {addBankValidation,getBankValidation,updateBankValidation,deleteBankValidation} = require("../validation/bank.Validation");
+const { authorizeRoles } = require("../middleware/roleAuthorization");
+const {ROLES}= require("../utils/enum")
+
+const {addBankValidation,getBankValidation,updateBankValidation,deleteBankValidation} = require("../validation/bankValidation");
 const { validate } = require("express-validation");
 
 

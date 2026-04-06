@@ -14,7 +14,7 @@ const {
   UserValidation,
   loginValidation,
   getuserValidation,
-} = require("../validation/user.Validation");
+} = require("../validation/userValidation");
 
 const { validate } = require("express-validation");
 

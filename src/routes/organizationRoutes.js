@@ -10,7 +10,9 @@ const {
 } = require("../controller/organizationController");
 
 const { authenticateJWT } = require("../middleware/authentication");
-const { authorizeRoles, ROLES } = require("../middleware/roleAuthorization");
+const { authorizeRoles } = require("../middleware/roleAuthorization");
+const {ROLES}= require("../utils/enum")
+
 
 const {
   addOrganizationValidation,
@@ -18,7 +20,7 @@ const {
   updateOrganizationValidation,
   deleteOrganizationValidation,
   getOrganizationByIdValidation,
-} = require("../validation/organization.validation");
+} = require("../validation/organizationValidation");
 
 const { validate } = require("express-validation");
 
@@ -40,14 +42,6 @@ router.get(
   getAllOrganizations
 );
 
-
-router.get(
-  "/:id",
-  authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
-  validate(getOrganizationByIdValidation),
-  getOrganizationById
-);
 
 
 router.put(

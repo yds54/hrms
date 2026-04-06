@@ -78,10 +78,17 @@ exports.createLeaveRequest = async (req, res, next) => {
 //===================== LEAVE REQUEST HISTORY ============================
 exports.getLeaveHistory = async (req, res, next) => {
   try {
-    const { _id: user } = req.user;
-    let { page = 1, limit = 10, year, filter } = req.query;
-    const _where = { user, isDeleted: false };
+    const { _id, role } = req.user;
+    let { page = 1, limit = 10, year, filter, userId } = req.query;
+    const _where = { isDeleted: false };
     const conditions = [];
+
+    //role base access
+    if (role !== "admin") {
+      _where.user = _id;
+    } else if (userId) {
+      _where.user = userId;
+    }
 
     // -- year filter
     if (year) {
