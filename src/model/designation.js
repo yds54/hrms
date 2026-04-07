@@ -11,10 +11,7 @@ const designationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "department",
       required: true,
-    },  
-
-
-
+    },
     isDeleted: {
       type: Boolean,
       default: false,
@@ -25,7 +22,7 @@ const designationSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-module.exports=mongoose.model("Designation",designationSchema)
+module.exports = mongoose.model("designation", designationSchema);

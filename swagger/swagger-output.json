@@ -1603,6 +1603,318 @@
           }
         }
       }
+    },
+
+    "/api/assets/": {
+      "post": {
+        "tags": ["asset"],
+        "description": "Add Asset Category",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "assetName": {
+                  "example": "Electronics"
+                },
+                "assetcategoryId": {
+                  "example": "69ca544451e27dd860867e71(assetcategory_id)"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "tags": ["asset"],
+        "description": "Get All Asset",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "assetcategoryId",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/assets/{id}": {
+      "get": {
+        "tags": ["asset"],
+        "description": "Get Asset  by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Asset  retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "assetcategoryName": {
+                  "type": "string",
+                  "example": "mobile"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Asset category not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "put": {
+        "tags": ["asset"],
+        "description": "Update Asset",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "assetName": {
+                  "example": "mobile"
+                },
+                "assetcategoryId": {
+                  "example": "69ca544451e27dd860867e71(assetcategory_id)"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["asset"],
+        "description": "Delete asset",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/assetmanagement/": {
+      "post": {
+        "tags": ["asset-management"],
+        "description": "Assign Asset to User",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "assetcategoryId": {
+                  "example": "69ca544451e27dd860867e71(assetcategory_id)"
+                },
+                "assetId": {
+                  "example": "69ca544451e27dd860867e72(asset_id)"
+                },
+                "relatedTo": {
+                  "example": "69ca544451e27dd860867e73(user_id)"
+                },
+                "issueDate": {
+                  "example": "2026-04-03"
+                },
+                "remark": {
+                  "example": "Issued for office work"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "get": {
+        "tags": ["asset-management"],
+        "description": "Get All Asset Assignments",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "assetId",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "assetcategoryId",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "relatedTo",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/assetmanagement/{id}": {
+      "get": {
+        "tags": ["asset-management"],
+        "description": "Get Asset  by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Asset  retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "assetcategoryName": {
+                  "type": "string",
+                  "example": "mobile"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Asset category not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "put": {
+        "tags": ["asset-management"],
+        "description": "Update Asset Assignment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "assetcategoryId": {
+                  "example": "69ca544451e27dd860867e71(assetcategory_id)"
+                },
+                "assetId": {
+                  "example": "69ca544451e27dd860867e72(asset_id)"
+                },
+                "relatedTo": {
+                  "example": "69ca544451e27dd860867e73(user_id)"
+                },
+                "issueDate": {
+                  "example": "2026-04-03"
+                },
+                "remark": {
+                  "example": "Updated remark"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "delete": {
+        "tags": ["asset-management"],
+        "description": "Delete Asset Assignment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
     }
   },
   "security": [
