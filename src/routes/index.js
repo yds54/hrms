@@ -24,6 +24,7 @@ router.use("/banks", bankRoutes);
 router.use("/criterias", offboardingcriteriaRoutes);
 router.use("/drs", drsRoutes);
 router.use("/leaveRequest", leaveRoutes);
+router.use("/ticket", ticketRoutes);
 router.use("/organizations", organizationRoutes);
 router.use("/assetcategories", assetcategoryRoutes);
 router.use("/assets", assetRoutes);
