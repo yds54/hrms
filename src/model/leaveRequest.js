@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const {
   LEAVE_DAY_TYPE,
-  LEAVE_DURATION,
   LEAVE_STATUS,
+  LEAVE_REASON_TYPE,
 } = require("../utils/enum");
 
 const leaveRequestSchema = new mongoose.Schema(
@@ -12,67 +12,57 @@ const leaveRequestSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-
+    reasonType: {
+      type: String,
+      enum: Object.values(LEAVE_REASON_TYPE),
+      required: true,
+    },
     reason: {
       type: String,
       required: true,
       trim: true,
     },
-
     numberOfDays: {
       type: String,
       enum: Object.values(LEAVE_DAY_TYPE),
       required: true,
     },
-
     date: {
-      type: Date, // for single day
+      type: Date,
     },
-
-    fullHalfDay: {
-      type: String,
-      enum: Object.values(LEAVE_DURATION),
+    isFullDay: {
+      type: Boolean,
     },
-
     fromTime: {
       type: String,
     },
-
     toTime: {
       type: String,
     },
-
-    fromDateTime: {
-      type: Date, // for multiple day
-    },
-
-    toDateTime: {
+    fromDate: {
       type: Date,
     },
-
+    toDate: {
+      type: Date,
+    },
     isPMApproved: {
       type: String,
       enum: Object.values(LEAVE_STATUS),
       default: LEAVE_STATUS.PENDING,
     },
-
     isHRApproved: {
       type: String,
       enum: Object.values(LEAVE_STATUS),
       default: LEAVE_STATUS.PENDING,
     },
-
     declineReason: {
       type: String,
       default: "",
     },
-
     totalDays: {
-      //type: Number,
-      type: mongoose.Schema.Types.Mixed,
-      default: null,
+      type: Number,
+      default: 0,
     },
-
     isDeleted: {
       type: Boolean,
       default: false,
@@ -85,32 +75,24 @@ const leaveRequestSchema = new mongoose.Schema(
 
 // calculate total days
 leaveRequestSchema.pre("save", function () {
+  if ( this.numberOfDays === LEAVE_DAY_TYPE.MULTIPLE && this.fromDate && this.toDate) {
+    const fromDate = new Date(this.fromDate);
+    const toDate = new Date(this.toDate);
+
+    fromDate.setHours(0, 0, 0, 0);
+    toDate.setHours(0, 0, 0, 0);
+
+    const diff = toDate - fromDate;
+    this.totalDays = diff / (1000 * 60 * 60 * 24) + 1;
+  }
   if (this.numberOfDays === LEAVE_DAY_TYPE.SINGLE) {
-    if (this.fullHalfDay === LEAVE_DURATION.HALF) {
-      this.totalDays = "-"; 
-    } else {
-      this.totalDays = 1;
-    }
-  } else if (
-    this.numberOfDays === LEAVE_DAY_TYPE.MULTIPLE &&
-    this.fromDateTime &&
-    this.toDateTime
-  ) {
-    const from = new Date(this.fromDateTime);
-    const to = new Date(this.toDateTime);
-
-    from.setHours(0, 0, 0, 0);
-    to.setHours(0, 0, 0, 0);
-
-    const timeDiff = to - from;
-
-    this.totalDays = timeDiff / (1000 * 3600 * 24) + 1; 
+    this.totalDays = this.isFullDay ? 1 : 0;
   }
 });
 
 leaveRequestSchema.index(
   { user: 1, date: 1 },
-  { unique: true, partialFilterExpression: { numberOfDays: "Single Day" } }
+  { unique: true, partialFilterExpression: { numberOfDays: "Single Day" } },
 );
 
 module.exports = mongoose.model("leaveRequest", leaveRequestSchema);

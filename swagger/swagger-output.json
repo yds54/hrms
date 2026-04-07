@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.42:5000",
+  "host": "192.168.0.158:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -120,7 +120,10 @@
                 "bankDetails": {
                   "type": "object",
                   "properties": {
-                    "bankId": { "type": "string", "example": "69ca72900ce2f3165dd8c199(bank_id)" },
+                    "bankId": {
+                      "type": "string",
+                      "example": "69ca72900ce2f3165dd8c199(bank_id)"
+                    },
                     "accountNumber": {
                       "type": "string",
                       "example": "123456789012"
@@ -352,12 +355,14 @@
           {
             "name": "month",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "example": "03"
           },
           {
             "name": "year",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "example": "2026"
           }
         ],
         "responses": {
@@ -421,7 +426,35 @@
         }
       }
     },
-    
+    "/api/dashboard/holidays": {
+      "get": {
+        "tags": ["Holiday"],
+        "description": "DISPLAY HOLIDAYS",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
     "/api/leaveRequest/": {
       "post": {
         "tags": ["Leave Request"],
@@ -433,6 +466,9 @@
             "schema": {
               "type": "object",
               "properties": {
+                "reasonType": {
+                  "example": "Sick Leave"
+                },
                 "reason": {
                   "example": "Due to"
                 },
@@ -442,20 +478,20 @@
                 "date": {
                   "example": "2026-03-01"
                 },
-                "fullHalfDay": {
-                  "example": "Half Day/Full Day"
+                "isFullDay": {
+                  "example": true
+                },
+                "fromDate": {
+                  "example": "2026-04-01"
+                },
+                "toDate": {
+                  "example": "2026-04-05"
                 },
                 "fromTime": {
                   "example": "09:15"
                 },
                 "toTime": {
                   "example": "16:15"
-                },
-                "fromDateTime": {
-                  "example": "2026-03-01T09:15:00.000Z"
-                },
-                "toDateTime": {
-                  "example": "2026-03-03T18:15:00.000Z"
                 }
               }
             }
@@ -651,7 +687,8 @@
           {
             "name": "search",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "example": "2026-03"
           }
         ],
         "responses": {
@@ -1118,258 +1155,455 @@
       }
     },
     "/api/organizations/": {
-  "post": {
-    "tags": ["organization"],
-    "description": "Add Organization",
-    "parameters": [
-      {
-        "name": "body",
-        "in": "body",
-        "schema": {
-          "type": "object",
-          "properties": {
-            "organizationName": {
-              "example": "ABC Pvt Ltd"
-            },
-            "headHR": {
-              "example": "64f1c2a5b5d2c12a34567890"
-            },
-            "organizationAddress": {
-              "example": "New York, USA"
-            },
-            "logo": {
-              "example": "uploads/logo.png"
-            },
-            "organizationAccountNumber": {
-              "example": "1234567890"
-            },
-            "irregularEmployeeCriteria": {
+      "post": {
+        "tags": ["organization"],
+        "description": "Add Organization",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
               "type": "object",
               "properties": {
-                "days": {
-                  "example": 10
+                "organizationName": {
+                  "example": "ABC Pvt Ltd"
                 },
-                "beforePercentage": {
-                  "example": 3
+                "headHR": {
+                  "example": "64f1c2a5b5d2c12a34567890"
                 },
-                "afterPercentage": {
-                  "example": 5
+                "organizationAddress": {
+                  "example": "New York, USA"
+                },
+                "logo": {
+                  "example": "uploads/logo.png"
+                },
+                "organizationAccountNumber": {
+                  "example": "1234567890"
+                },
+                "irregularEmployeeCriteria": {
+                  "type": "object",
+                  "properties": {
+                    "days": {
+                      "example": 10
+                    },
+                    "beforePercentage": {
+                      "example": 3
+                    },
+                    "afterPercentage": {
+                      "example": 5
+                    }
+                  }
                 }
               }
             }
           }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "tags": ["organization"],
+        "description": "Get All Organizations",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "organizationName",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
         }
       }
-    ],
-    "responses": {
-      "403": {
-        "description": "Forbidden"
-      }
-    }
-  },
-  "get": {
-    "tags": ["organization"],
-    "description": "Get All Organizations",
-    "parameters": [
-      {
-        "name": "page",
-        "in": "query",
-        "type": "string"
-      },
-      {
-        "name": "limit",
-        "in": "query",
-        "type": "string"
-      },
-      {
-        "name": "organizationName",
-        "in": "query",
-        "type": "string"
-      }
-    ],
-    "responses": {
-      "403": {
-        "description": "Forbidden"
-      }
-    }
-  }
-},
+    },
 
-"/api/organizations/{id}": {
-  
-  "put": {
-    "tags": ["organization"],
-    "description": "Update Organization",
-    "parameters": [
-      {
-        "name": "id",
-        "in": "path",
-        "required": true,
-        "type": "string"
+    "/api/organizations/{id}": {
+      "get": {
+        "tags": ["organization"],
+        "description": "Get Organization By ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
       },
-      {
-        "name": "body",
-        "in": "body",
-        "schema": {
-          "type": "object",
-          "properties": {
-            "organizationName": {
-              "example": "ABC Pvt Ltd"
-            },
-            "headHR": {
-              "example": "64f1c2a5b5d2c12a34567890"
-            },
-            "organizationAddress": {
-              "example": "New York, USA"
-            },
-            "logo": {
-              "example": "uploads/logo.png"
-            },
-            "organizationAccountNumber": {
-              "example": "1234567890"
-            },
-            "irregularEmployeeCriteria": {
+      "put": {
+        "tags": ["organization"],
+        "description": "Update Organization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
               "type": "object",
               "properties": {
-                "days": {
-                  "example": 10
+                "organizationName": {
+                  "example": "ABC Pvt Ltd"
                 },
-                "beforePercentage": {
-                  "example": 3
+                "headHR": {
+                  "example": "64f1c2a5b5d2c12a34567890"
                 },
-                "afterPercentage": {
-                  "example": 5
+                "organizationAddress": {
+                  "example": "New York, USA"
+                },
+                "logo": {
+                  "example": "uploads/logo.png"
+                },
+                "organizationAccountNumber": {
+                  "example": "1234567890"
+                },
+                "irregularEmployeeCriteria": {
+                  "type": "object",
+                  "properties": {
+                    "days": {
+                      "example": 10
+                    },
+                    "beforePercentage": {
+                      "example": 3
+                    },
+                    "afterPercentage": {
+                      "example": 5
+                    }
+                  }
                 }
               }
             }
           }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
         }
-      }
-    ],
-    "responses": {
-      "403": {
-        "description": "Forbidden"
-      }
-    }
-  },
-  "delete": {
-    "tags": ["organization"],
-    "description": "Delete Organization",
-    "parameters": [
-      {
-        "name": "id",
-        "in": "path",
-        "required": true,
-        "type": "string"
-      }
-    ],
-    "responses": {
-      "403": {
-        "description": "Forbidden"
-      }
-    }
-  }
-},
-   "/api/assetcategories/": {
-  "post": {
-    "tags": ["asset category"],
-    "description": "Add Asset Category",
-    "parameters": [
-      {
-        "name": "body",
-        "in": "body",
-        "schema": {
-          "type": "object",
-          "properties": {
-            "assetcategoryName": {
-              "example": "Electronics"
-            }  
+      },
+      "delete": {
+        "tags": ["organization"],
+        "description": "Delete Organization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
           }
         }
       }
-    ],
-    "responses": {
-      "403": {
-        "description": "Forbidden"
-      }
-    }
-  },
-  "get": {
-    "tags": ["asset category"],
-    "description": "Get All Asset Categories",
-    "parameters": [
-      {
-        "name": "page",
-        "in": "query",
-        "type": "string"
-      },
-      {
-        "name": "limit",
-        "in": "query",
-        "type": "string"
-      },
-      {
-        "name": "assetcategoryName",
-        "in": "query",
-        "type": "string"
-      }
-    ],
-    "responses": {
-      "403": {
-        "description": "Forbidden"
-      }
-    }
-  }
-},
-
-"/api/assetcategories/{id}": {
-  "put": {
-    "tags": ["asset category"],
-    "description": "Update Asset Category",
-    "parameters": [
-      {
-        "name": "id",
-        "in": "path",
-        "required": true,
-        "type": "string"
-      },
-      {
-        "name": "body",
-        "in": "body",
-        "schema": {
-          "type": "object",
-          "properties": {
-            "assetcategoryName": {
-              "example": "mobile"
-            }
+    },
+    "/api/ticket/": {
+      "post": {
+        "tags": ["Ticket Board"],
+        "description": "CREATE TICKET",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "title",
+            "in": "formData",
+            "type": "string",
+            "example": "update attendance"
+          },
+          {
+            "name": "assignedTo",
+            "in": "formData",
+            "type": "string",
+            "example": "69c60ceb1271716ecbac38a3"
+          },
+          {
+            "name": "dueDate",
+            "in": "formData",
+            "type": "string",
+            "example": "2026-05-15"
+          },
+          {
+            "name": "priority",
+            "in": "formData",
+            "type": "string",
+            "example": "Low"
+          },
+          {
+            "name": "content",
+            "in": "formData",
+            "type": "string",
+            "example": "entry time issue"
+          },
+          {
+            "name": "attachFile",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "attachFile",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket created successfully"
           }
         }
       }
-    ],
-    "responses": {
-      "403": {
-        "description": "Forbidden"
+    },
+    "/api/ticket": {
+      "get": {
+        "tags": ["Ticket Board"],
+        "description": "DISPLAY TICKET BOARD",
+        "parameters": [
+          {
+            "name": "isArchived",
+            "in": "query",
+            "type": "boolean",
+            "example": false
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "type": "string",
+            "example": "2026-04-01"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "type": "string",
+            "example": "2026-04-15"
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "type": "string",
+            "example": "All",
+            "description": "All | My Tickets | Assigned to me"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tickets fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/ticket/{id}": {
+      "put": {
+        "tags": ["Ticket Board"],
+        "description": "EDIT TICKET",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "69c60ceb1271716ecbac38a3"
+          },
+          {
+            "name": "title",
+            "in": "formData",
+            "type": "string",
+            "example": "update attendance"
+          },
+          {
+            "name": "dueDate",
+            "in": "formData",
+            "type": "string",
+            "example": "2026-05-20"
+          },
+          {
+            "name": "priority",
+            "in": "formData",
+            "type": "string",
+            "example": "High"
+          },
+          {
+            "name": "content",
+            "in": "formData",
+            "type": "string",
+            "example": "updated issue details"
+          },
+          {
+            "name": "attachFile",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "attachFile",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket updated successfully"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Ticket Board"],
+        "description": "DELETE TICKET",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/attendance/": {
+      "post": {
+        "tags": ["Attendance"],
+        "description": "CREATE ATTENDANCE",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "user",
+            "in": "formData",
+            "type": "string",
+            "example": "661234abcd1234abcd123456"
+          },
+          {
+            "name": "date",
+            "in": "formData",
+            "type": "string",
+            "example": "2026-04-06"
+          },
+          {
+            "name": "inTime",
+            "in": "formData",
+            "type": "string",
+            "example": "09:30"
+          },
+          {
+            "name": "outTime",
+            "in": "formData",
+            "type": "string",
+            "example": "18:30"
+          },
+          {
+            "name": "totalMinutes",
+            "in": "formData",
+            "type": "number",
+            "example": 540
+          },
+          {
+            "name": "mode",
+            "in": "formData",
+            "type": "string",
+            "example": "Office"
+          },
+          {
+            "name": "officeEntryTime",
+            "in": "formData",
+            "type": "string",
+            "example": "09:00"
+          },
+          {
+            "name": "officeExitTime",
+            "in": "formData",
+            "type": "string",
+            "example": "18:00"
+          },
+          {
+            "name": "lateReason",
+            "in": "formData",
+            "type": "string",
+            "example": "Traffic"
+          },
+          {
+            "name": "leaveReason",
+            "in": "formData",
+            "type": "string",
+            "example": "Personal work"
+          },
+          {
+            "name": "overTimeReason",
+            "in": "formData",
+            "type": "string",
+            "example": "Project deadline"
+          },
+          {
+            "name": "updateReason",
+            "in": "formData",
+            "type": "string",
+            "example": "Correction"
+          },
+          {
+            "name": "permittedMinutes",
+            "in": "formData",
+            "type": "number",
+            "example": 60
+          },
+          {
+            "name": "isFullDay",
+            "in": "formData",
+            "type": "boolean",
+            "example": true
+          },
+          {
+            "name": "entry",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "exit",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance created successfully"
+          },
+          "400": {
+            "description": "Validation error / Already exists"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
       }
     }
-  },
-  "delete": {
-    "tags": ["asset category"],
-    "description": "Delete asset category",
-    "parameters": [
-      {
-        "name": "id",
-        "in": "path",
-        "required": true,
-        "type": "string"
-      }
-    ],
-    "responses": {
-      "403": {
-        "description": "Forbidden"
-      }
-    }
-  }
-}
   },
   "security": [
     {

@@ -1,9 +1,17 @@
 const { Joi } = require("express-validation");
-const { LEAVE_DAY_TYPE, LEAVE_DURATION } = require("../utils/enum");
+const {
+  LEAVE_DAY_TYPE,
+  LEAVE_DURATION,
+  LEAVE_REASON_TYPE,
+} = require("../utils/enum");
 
 //======================= SEND LEAVE REQUEST VALIDATION =================================
 exports.createLeaveValidation = {
   body: Joi.object({
+    reasonType: Joi.string()
+      .valid(...Object.values(LEAVE_REASON_TYPE))
+      .required(),
+
     reason: Joi.string().trim().required(),
 
     numberOfDays: Joi.string()
@@ -12,15 +20,13 @@ exports.createLeaveValidation = {
 
     date: Joi.date().optional(),
 
-    fullHalfDay: Joi.string()
-      .valid(...Object.values(LEAVE_DURATION))
-      .optional(),
+    isFullDay: Joi.boolean().optional(),
 
     fromTime: Joi.string().optional(),
     toTime: Joi.string().optional(),
 
-    fromDateTime: Joi.date().optional(),
-    toDateTime: Joi.date().optional(),
+    fromDate: Joi.date().optional(),
+    toDate: Joi.date().optional(),
 
     totalDays: Joi.number().optional(),
 
@@ -28,40 +34,33 @@ exports.createLeaveValidation = {
   }).custom((value, helpers) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    //  single day validation required
+
     if (value.numberOfDays === LEAVE_DAY_TYPE.SINGLE) {
       if (!value.date) {
         return helpers.message("Date is required for Single Day leave");
       }
-
       const inputDate = new Date(value.date);
       inputDate.setHours(0, 0, 0, 0);
-
       if (inputDate < today) {
         return helpers.message("Past date is not allowed");
       }
     }
 
-    // multiple day validation - required
     if (value.numberOfDays === LEAVE_DAY_TYPE.MULTIPLE) {
-      if (!value.fromDateTime || !value.toDateTime) {
+      if (!value.fromDate || !value.toDate || !value.fromTime || !value.toTime) {
         return helpers.message(
-          "fromDateTime and toDateTime required for Multiple Day leave",
+          "fromDate and toDate and Time required for Multiple Day leave",
         );
       }
-
-      const from = new Date(value.fromDateTime);
-      const to = new Date(value.toDateTime);
-
-      if (from < today) {
+      const fromdate = new Date(value.fromDate);
+      const todate = new Date(value.toDate);
+      if (fromdate < today) {
         return helpers.message("Past date is not allowed");
       }
-
-      if (to < from) {
+      if (todate < fromdate) {
         return helpers.message("Invalid date range");
       }
     }
-
     return value;
   }),
 };
@@ -70,7 +69,6 @@ exports.createLeaveValidation = {
 exports.getLeaveHistoryValidation = {
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1),
-
     limit: Joi.number().integer().min(1).max(100).default(10),
 
     year: Joi.number()
@@ -82,8 +80,8 @@ exports.getLeaveHistoryValidation = {
     filter: Joi.string()
       .valid(
         "All",
-        ...Object.values(LEAVE_DAY_TYPE), // Single Day, Multiple Day
-        LEAVE_DURATION.HALF, // Half Day
+        ...Object.values(LEAVE_DAY_TYPE),
+        LEAVE_DURATION.HALF,
         "January",
         "February",
         "March",

@@ -11,6 +11,7 @@ const departmentRoutes = require("./departmentRoutes")
 const designationRoutes = require("./designationRoutes")
 const bankRoutes = require("./bankRoutes")
 const offboardingcriteriaRoutes = require("./offboardingcriteriaRoutes") 
+const ticketRoutes = require("./ticketRoutes");
 const organizationRoutes = require("./organizationRoutes")
 const assetcategoryRoutes = require("./assetcategoryRoutes")
 const assetRoutes = require("./assetRoutes")
@@ -27,6 +28,7 @@ router.use("/criterias",offboardingcriteriaRoutes)
 router.use("/drs", drsRoutes);
 router.use("/profile", profileRoutes);
 router.use("/leaveRequest",leaveRoutes);
+router.use("/ticket", ticketRoutes);
 router.use("/organizations", organizationRoutes);
 router.use("/assetcategories", assetcategoryRoutes);
 router.use("/assets", assetRoutes);
