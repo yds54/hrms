@@ -11,35 +11,32 @@ const assetSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      required: true,
     },
-
     relatedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
     },
-
-    issueDate: Date,
-
-    remark: String,
-
+    issueDate: {
+      ttype: Date,
+    },
+    remark: {
+      type: String,
+    },
     isDeleted: {
       type: Boolean,
       default: false,
     },
-    deletedAt: Date,
-
+    deletedAt: { type: Date },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
     },
-
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-module.exports=mongoose.model("asset",assetSchema)
+module.exports = mongoose.model("asset", assetSchema);

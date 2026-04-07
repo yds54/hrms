@@ -1,4 +1,6 @@
 const express = require("express");
+const { validate } = require("express-validation");
+
 const router = express.Router();
 
 const {
@@ -6,6 +8,7 @@ const {
   getAllAssetCategorie,
   updateAssetCategory,
   deleteAssetCategory,
+  getassetcategorybyId,
 } = require("../controller/assetcategoryController");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
@@ -15,8 +18,8 @@ const {
   getAssetCategoriesValidation,
   updateAssetCategoryValidation,
   deleteAssetCategoryValidation,
+  getAssetCategoryByIdValidation,
 } = require("../validation/assetcategoryValidation");
-const { validate } = require("express-validation");
 
 router.post(
   "/",
@@ -31,6 +34,13 @@ router.get(
   authorizeRoles(ROLES.ADMIN),
   validate(getAssetCategoriesValidation),
   getAllAssetCategorie,
+);
+router.get(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN),
+  validate(getAssetCategoryByIdValidation),
+  getassetcategorybyId,
 );
 router.put(
   "/:id",

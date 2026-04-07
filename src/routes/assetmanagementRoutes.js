@@ -1,4 +1,5 @@
 const express = require("express");
+const { validate } = require("express-validation");
 const router = express.Router();
 
 const {
@@ -6,6 +7,7 @@ const {
   getAllAssetManagement,
   updateAssetManagement,
   deleteAssetManagement,
+  getassetmanagementbyId,
 } = require("../controller/assetmanagementController");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
@@ -16,8 +18,8 @@ const {
   getAssetManagementValidation,
   updateAssetManagementValidation,
   deleteAssetManagementValidation,
+  getAssetManagementByIdValidation,
 } = require("../validation/assetmanagementValidation");
-const { validate } = require("express-validation");
 
 router.post(
   "/",
@@ -32,6 +34,13 @@ router.get(
   authorizeRoles(ROLES.ADMIN, ROLES.USER),
   validate(getAssetManagementValidation),
   getAllAssetManagement,
+);
+router.get(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.USER),
+  validate(getAssetManagementByIdValidation),
+  getassetmanagementbyId,
 );
 router.put(
   "/:id",

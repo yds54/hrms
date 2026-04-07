@@ -17,23 +17,19 @@ const assetSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-
-    issueDate: Date,
-
-    remark: String,
-
+    issueDate: { type: Date },
+    remark: { type: String },
     isDeleted: {
       type: Boolean,
       default: false,
     },
-    deletedAt: Date,
-
+    deletedAt: { type: Date },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
     },
-    deletedAt: Date,
+    deletedAt: { type: Date },
   },
   {
     timestamps: true,

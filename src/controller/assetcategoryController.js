@@ -10,18 +10,22 @@ const { AppError } = require("../utils/error");
 
 exports.addAssetCategory = async (req, res, next) => {
   try {
+    const { body, user } = req;
+
     const isAssetCategoryExist = await ASSETCATEGORY.findOne({
-      assetcategoryName: req.body.assetcategoryName,
+      assetcategoryName: body.assetcategoryName,
       isDeleted: false,
     });
 
     if (isAssetCategoryExist) {
       throw new AppError("Asset category already exists", 409);
     }
-    req.body.createdBy = req.user._id;
-    await ASSETCATEGORY.create(req.body);
+    body.createdBy = user._id;
+    await ASSETCATEGORY.create(body);
 
-    return successResponse(res, 200, "Asset category added successfully", {result: req.body});
+    return successResponse(res, 200, "Asset category added successfully", {
+      result: body,
+    });
   } catch (error) {
     next(error);
   }
@@ -31,9 +35,7 @@ exports.getAllAssetCategorie = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, assetcategoryName } = req.query;
 
-    const _whereCondition = {
-      isDeleted: false,
-    };
+    const _whereCondition = { isDeleted: false };
 
     if (assetcategoryName) {
       _whereCondition.assetcategoryName = {
@@ -63,13 +65,12 @@ exports.updateAssetCategory = async (req, res, next) => {
     const { params, body: payload } = req;
     const { id } = params;
 
-    const category = await ASSETCATEGORY.findOne({
+    const isassetcategoryExists = await ASSETCATEGORY.findOne({
       _id: id,
       isDeleted: false,
     });
 
-
-    if (!category) {
+    if (!isassetcategoryExists) {
       throw new AppError("Asset category not found", 404);
     }
 
@@ -85,7 +86,10 @@ exports.updateAssetCategory = async (req, res, next) => {
       }
     }
 
-    await ASSETCATEGORY.updateOne({ _id: id }, { $set: { ...payload } });
+    await ASSETCATEGORY.updateOne(
+      { _id: id, isDeleted: false },
+      { $set: { ...payload } },
+    );
 
     return successResponse(res, 200, "Asset category updated successfully", {
       data: payload.assetcategoryName,
@@ -99,20 +103,41 @@ exports.deleteAssetCategory = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const category = await ASSETCATEGORY.findOne({
+    const isassetcategoryExists = await ASSETCATEGORY.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!category) {
+    if (!isassetcategoryExists) {
       throw new AppError("Asset category not found", 404);
     }
 
-    category.isDeleted = true;
-    category.deletedAt = moment().toDate();
-    await category.save();
+    isassetcategoryExists.isDeleted = true;
+    isassetcategoryExists.deletedAt = moment().toDate();
+    await isassetcategoryExists.save();
 
     return successResponse(res, 200, "Asset category deleted successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getassetcategorybyId = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const isassetcategoryExist = await ASSETCATEGORY.findOne({
+      _id: id,
+      isDeleted: false,
+    });
+
+    if (!isassetcategoryExist) {
+      throw new AppError("Asset category not found", 404);
+    }
+
+    return successResponse(res, 200, "Asset category fetched successfully", {
+      data: isassetcategoryExist,
+    });
   } catch (error) {
     next(error);
   }

@@ -10,20 +10,22 @@ const { AppError } = require("../utils/error");
 
 exports.addAsset = async (req, res, next) => {
   try {
+    const { body, user } = req;
+
     const isAssetExist = await ASSET.findOne({
-      assetName: req.body.assetName,
-      assetcategoryId: req.body.assetcategoryId,
+      assetName: body.assetName,
+      assetcategoryId: body.assetcategoryId,
       isDeleted: false,
     });
 
     if (isAssetExist) {
       throw new AppError("Asset already exist in this AssetCategory", 409);
     }
-    req.body.createdBy = req.user._id;
-    await ASSET.create(req.body);
+    body.createdBy = user._id;
+    await ASSET.create(body);
 
     return successResponse(res, 200, "Asset added successfully", {
-      assetName: req.body.assetName,
+      assetName: body.assetName,
     });
   } catch (error) {
     next(error);
@@ -40,9 +42,7 @@ exports.getAllAssets = async (req, res, next) => {
       relatedTo,
     } = req.query;
 
-    const _whereCondition = {
-      isDeleted: false,
-    };
+    const _whereCondition = { isDeleted: false };
 
     if (assetName) {
       _whereCondition.assetName = {
@@ -50,14 +50,8 @@ exports.getAllAssets = async (req, res, next) => {
         $options: "i",
       };
     }
-
-    if (assetcategoryId) {
-      _whereCondition.assetcategoryId = assetcategoryId;
-    }
-
-    if (relatedTo) {
-      _whereCondition.relatedTo = relatedTo;
-    }
+    if (assetcategoryId) _whereCondition.assetcategoryId = assetcategoryId;
+    if (relatedTo) _whereCondition.relatedTo = relatedTo;
 
     const { data, pagination } = await paginate({
       model: ASSET,
@@ -81,34 +75,38 @@ exports.getAllAssets = async (req, res, next) => {
 
 exports.updateAsset = async (req, res, next) => {
   try {
-        const { params, body: payload } = req;
+    const { params, body: payload } = req;
     const { id } = params;
 
-    let asset = await ASSET.findOne({
+    let isAssetExists = await ASSET.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!asset) {
+    if (!isAssetExists) {
       throw new AppError("Asset not found", 404);
     }
 
-    if(payload.assetName || payload.assetcategoryId) {
+    if (payload.assetName && payload.assetcategoryId) {
       const isAssetExist = await ASSET.findOne({
         assetName: payload.assetName,
         assetcategoryId: payload.assetcategoryId,
+        _id: { $ne: id },
         isDeleted: false,
       });
 
-      if (isAssetExist && isAssetExist._id.toString() !== id) {
+      if (isAssetExist) {
         throw new AppError("Asset already exist in this AssetCategory", 409);
       }
     }
 
-    await ASSET.updateOne({_id: id}, { $set: { ...payload } });
+    await ASSET.updateOne(
+      { _id: id, isDeleted: false },
+      { $set: { ...payload } },
+    );
 
     return successResponse(res, 200, "Asset updated successfully", {
-      data: asset,
+      data: body.assetName,
     });
   } catch (error) {
     next(error);
@@ -119,21 +117,42 @@ exports.deleteAsset = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const asset = await ASSET.findOne({
+    const isAssetExists = await ASSET.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!asset) {
+    if (!isAssetExists) {
       throw new AppError("Asset not found", 404);
     }
 
-    asset.isDeleted = true;
-    asset.deletedAt = moment().toDate();
+    isAssetExists.isDeleted = true;
+    isAssetExists.deletedAt = moment().toDate();
 
-    await asset.save();
+    await isAssetExists.save();
 
     return successResponse(res, 200, "Asset deleted successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getassetbyId = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const isassetExist = await ASSET.findOne({
+      _id: id,
+      isDeleted: false,
+    });
+
+    if (!isassetExist) {
+      throw new AppError("Asset not found", 404);
+    }
+
+    return successResponse(res, 200, "Asset fetched successfully", {
+      data: isassetExist,
+    });
   } catch (error) {
     next(error);
   }

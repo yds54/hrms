@@ -1,18 +1,18 @@
-const { Joi } = require('express-validation');
+const { Joi } = require("express-validation");
 
 exports.addAssetsValidation = {
-    body: Joi.object({
-        assetName:Joi.string().required(),
-        assetcategoryId:Joi.string().hex().length(24).required(),
-    })
-}
+  body: Joi.object({
+    assetName: Joi.string().required(),
+    assetcategoryId: Joi.string().hex().length(24).required(),
+  }),
+};
 
 exports.getAssetsValidation = {
   query: Joi.object({
     page: Joi.number().integer(),
     limit: Joi.number().integer(),
-    assetName:Joi.string(),
-    assetcategoryId:Joi.string().hex().length(24),
+    assetName: Joi.string(),
+    assetcategoryId: Joi.string().hex().length(24),
   }),
 };
 
@@ -27,6 +27,11 @@ exports.updateAssetsValidation = {
 };
 
 exports.deleteAssetsValidation = {
+  params: Joi.object({
+    id: Joi.string().hex().length(24).required(),
+  }),
+};
+exports.getAssetByIdValidation = {
   params: Joi.object({
     id: Joi.string().hex().length(24).required(),
   }),

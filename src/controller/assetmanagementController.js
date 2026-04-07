@@ -8,13 +8,13 @@ exports.addAssetManagement = async (req, res, next) => {
   try {
     const { body, user } = req;
 
-    const isExist = await ASSETMANAGEMENT.findOne({
+    const isAssetExist = await ASSETMANAGEMENT.findOne({
       assetId: body.assetId,
       relatedTo: body.relatedTo,
       isDeleted: false,
     });
 
-    if (isExist) {
+    if (isAssetExist) {
       throw new AppError("Asset already assigned to this user", 409);
     }
 
@@ -32,24 +32,17 @@ exports.addAssetManagement = async (req, res, next) => {
 
 exports.getAllAssetManagement = async (req, res, next) => {
   try {
-    const {
-      page = 1,
-      limit = 10,
+    const { page = 1, limit = 10, relatedTo } = req.query;
 
-      relatedTo,
-    } = req.query;
-
-    const _whereCondition = {
-      isDeleted: false,
-    };
+    const _whereCondition = { isDeleted: false };
 
     if (relatedTo) _whereCondition.relatedTo = relatedTo;
 
     const { data, pagination } = await paginate({
       model: ASSETMANAGEMENT,
       query: _whereCondition,
-      page: Number(page),
-      limit: Number(limit),
+      page: +page,
+      limit: +limit,
       populate: [
         { path: "assetId", select: "assetName" },
         { path: "assetcategoryId", select: "assetcategoryName" },
@@ -71,28 +64,32 @@ exports.updateAssetManagement = async (req, res, next) => {
     const { params, body: payload } = req;
     const { id } = params;
 
-    const asset = await ASSETMANAGEMENT.findOne({
+    const isassetExist = await ASSETMANAGEMENT.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!asset) {
+    if (!isassetExist) {
       throw new AppError("Asset assignment not found", 404);
     }
 
     if (payload.assetId && payload.relatedTo) {
-      const isExist = await ASSETMANAGEMENT.findOne({
+      const isAssetassignmentExist = await ASSETMANAGEMENT.findOne({
         assetId: payload.assetId,
         relatedTo: payload.relatedTo,
+        _id: { $ne: id },
         isDeleted: false,
       });
 
-      if (isExist && isExist._id.toString() !== id) {
+      if (isAssetassignmentExist) {
         throw new AppError("Asset already assigned to this user", 409);
       }
     }
 
-    await ASSETMANAGEMENT.updateOne({ _id: id }, { $set: { ...payload } });
+    await ASSETMANAGEMENT.updateOne(
+      { _id: id, isDeleted: false },
+      { $set: { ...payload } },
+    );
 
     return successResponse(res, 200, "Asset assignment updated successfully", {
       data: asset,
@@ -106,21 +103,42 @@ exports.deleteAssetManagement = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const asset = await ASSETMANAGEMENT.findOne({
+    const isAssetExist = await ASSETMANAGEMENT.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!asset) {
+    if (!isAssetExist) {
       throw new AppError("Asset assignment not found", 404);
     }
 
-    asset.isDeleted = true;
-    asset.deletedAt = moment().toDate();
+    isAssetExist.isDeleted = true;
+    isAssetExist.deletedAt = moment().toDate();
 
-    await asset.save();
+    await isAssetExist.save();
 
     return successResponse(res, 200, "Asset assignment deleted successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getassetmanagementbyId = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const isassetmanagementExist = await ASSETMANAGEMENT.findOne({
+      _id: id,
+      isDeleted: false,
+    });
+
+    if (!isassetmanagementExist) {
+      throw new AppError("Asset assignment not found", 404);
+    }
+
+    return successResponse(res, 200, "Asset assignment fetched successfully", {
+      data: isassetmanagementExist,
+    });
   } catch (error) {
     next(error);
   }

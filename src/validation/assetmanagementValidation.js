@@ -36,3 +36,9 @@ exports.deleteAssetManagementValidation = {
     id: Joi.string().hex().length(24).required(),
   }),
 };
+
+exports.getAssetManagementByIdValidation = {
+  params: Joi.object({
+    id: Joi.string().hex().length(24).required(),
+  }),
+};
