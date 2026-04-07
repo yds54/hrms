@@ -30,7 +30,6 @@ const paginate = async ({
   return {
     data,
     pagination: {
-      page,
       totalpages,
       totalrecords,
     },

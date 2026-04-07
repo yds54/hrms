@@ -8,13 +8,15 @@ const {
   deleteDesignation,
 } = require("../controller/designationController");
 const { authenticateJWT } = require("../middleware/authentication");
-const { authorizeRoles, ROLES } = require("../middleware/roleAuthorization");
+const { authorizeRoles } = require("../middleware/roleAuthorization");
+const {ROLES}= require("../utils/enum")
+
 const {
   addDesignationValidation,
   getDesignationValidation,
   updateDesignationValidation,
   deleteDesignationValidation,
-} = require("../validation/designation.Validation");
+} = require("../validation/designationValidation");
 const { validate } = require("express-validation");
 
 router.post(

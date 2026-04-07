@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const {addCriteria,getAllCriteria,updateCriteria,deleteCriteria}= require("../controller/offboardingcriteria");
+const {addCriteria,getAllCriteria,updateCriteria,deleteCriteria}= require("../controller/offboardingcriteriaController");
 const { authenticateJWT } = require("../middleware/authentication");
-const { authorizeRoles, ROLES } = require("../middleware/roleAuthorization");
-const {addCriteriaValidation,getCriteriaValidation,deleteCriteriaValidation,updateCriteriaValidation} = require("../validation/offboarding.Validation");
+const { authorizeRoles } = require("../middleware/roleAuthorization");
+const {ROLES}= require("../utils/enum")
+
+const {addCriteriaValidation,getCriteriaValidation,deleteCriteriaValidation,updateCriteriaValidation} = require("../validation/offboardingValidation");
 const { validate } = require("express-validation");
 
 

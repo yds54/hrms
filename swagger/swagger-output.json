@@ -90,7 +90,7 @@
                   "type": "string",
                   "example": "married"
                 },
-                "designation": {
+                "designationId": {
                   "type": "string",
                   "example": "69ca544451e27dd860867e71(designation_id)"
                 },
@@ -98,7 +98,7 @@
                   "type": "string",
                   "example": "Junior Developer"
                 },
-                "departmentName": {
+                "departmentId": {
                   "type": "string",
                   "example": "69ca21fadb1d7afaac5378af(department_id)"
                 },
@@ -120,7 +120,7 @@
                 "bankDetails": {
                   "type": "object",
                   "properties": {
-                    "bankName": {
+                    "bankId": {
                       "type": "string",
                       "example": "69ca72900ce2f3165dd8c199(bank_id)"
                     },
@@ -156,7 +156,7 @@
                   "type": "boolean",
                   "example": true
                 },
-                "organizationType": {
+                "organizationId": {
                   "type": "string",
                   "example": "69ccc24cf2041b075ef23882(organization_id)"
                 },
@@ -585,7 +585,7 @@
           {
             "name": "Left",
             "in": "query",
-            "type": "string"
+            "type": "boolean"
           }
         ],
         "responses": {
@@ -860,7 +860,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "departmentName": {
+                "departmentId": {
                   "example": "depatment_id"
                 },
                 "designationName": {
@@ -891,7 +891,7 @@
             "type": "string"
           },
           {
-            "name": "departmentName",
+            "name": "departmentId",
             "in": "query",
             "type": "string"
           }
@@ -921,7 +921,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "departmentName": {
+                "departmentId": {
                   "example": "department_id"
                 },
                 "designationName": {

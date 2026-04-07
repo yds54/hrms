@@ -8,13 +8,15 @@ const {
   getAllDepartments,
 } = require("../controller/departmentController");
 const { authenticateJWT } = require("../middleware/authentication");
-const { authorizeRoles, ROLES } = require("../middleware/roleAuthorization");
+const { authorizeRoles } = require("../middleware/roleAuthorization");
+const {ROLES}= require("../utils/enum")
+
 const {
   adddepartmentValidation,
   getdepartmentValidation,
   updateDepartmentValidation,
   deleteDepartmentValidation,
-} = require("../validation/department.Validation");
+} = require("../validation/departmentValidation");
 const { validate } = require("express-validation");
 
 router.post(

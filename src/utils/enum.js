@@ -45,18 +45,17 @@ exports.LEAVE_STATUS = Object.freeze({
 });
 
 exports.PRIORITY_STATUS = Object.freeze({
-  LOW : "Low",
-  NORMAL : "Normal",
-  HIGH : "High"
+  LOW: "Low",
+  NORMAL: "Normal",
+  HIGH: "High",
 });
 
 exports.TICKET_STATUS = Object.freeze({
-  TODO : "To Do",
-  INPROGRESS : "In Progress",
-  ONHOLD : "On Hold",
-  COMPLETED : "Completed",
+  TODO: "To Do",
+  INPROGRESS: "In Progress",
+  ONHOLD: "On Hold",
+  COMPLETED: "Completed",
 });
-
 
 exports.LEAVE_REASON_TYPE = Object.freeze({
   SICK: "Sick Leave",
@@ -70,9 +69,8 @@ exports.LEAVE_REASON_TYPE = Object.freeze({
 exports.TICKET_FILTER = Object.freeze({
   ALL: "All",
   MY_TICKETS: "My Tickets",
-  ASSIGNED_TO_ME: "Assigned to me"
+  ASSIGNED_TO_ME: "Assigned to me",
 });
-
 
 exports.TIMEZONES = Object.freeze({
   INDIA: "Asia/Kolkata",

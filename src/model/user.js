@@ -48,9 +48,17 @@ const userSchema = new mongoose.Schema(
       default: MARITAL_STATUS.SINGLE,
     },
 
-    designation: {type: mongoose.Schema.Types.ObjectId, ref: "Designation", required: true},
+    designationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "designation",
+      required: true,
+    },
     position: String,
-    departmentName: {type: mongoose.Schema.Types.ObjectId, ref: "department", required: true},
+    departmentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "department",
+      required: true,
+    },
 
     vehicleNumber: String,
 
@@ -61,7 +69,11 @@ const userSchema = new mongoose.Schema(
     },
 
     bankDetails: {
-      bankName: {type: mongoose.Schema.Types.ObjectId, ref: "bank", required: true},
+      bankId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "bank",
+        required: true,
+      },
       accountNumber: String,
       ifscCode: String,
       accountHolderName: String,
@@ -82,7 +94,11 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    organizationType: {type: mongoose.Schema.Types.ObjectId, ref: "organization", required: true},
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "organization",
+      required: true,
+    },
 
     role: {
       type: String,
@@ -100,16 +116,16 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
 
-    rentalAllowance:Boolean,
+    rentalAllowance: Boolean,
 
-    rentalAllowanceAmount:Number,
+    rentalAllowanceAmount: Number,
 
-    leavecreaditType:String,
+    leavecreaditType: String,
 
-    resignationDetails :{
-      resignationDate:Date,
-      NoticePeriod:Number,
-      LastDate:Date
+    resignationDetails: {
+      resignationDate: Date,
+      NoticePeriod: Number,
+      LastDate: Date,
     },
 
     joiningInfo: {
@@ -130,26 +146,24 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-     
-    // isUpdated: {
-    //   type: Boolean,
-    //   default: false,
-    // },
 
-    isLeft:{type:Boolean,default:false},
+   
+    isLeft: { type: Boolean, default: false },
 
-    marriageDate:Date,
+    marriageDate: Date,
+        deletedAt: Date,
+    createdBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "user",
+         
+        },
 
-    deletedBy:String,
-
-    updatedBy:String
 
   },
   {
     timestamps: true,
   },
 );
-
 
 userSchema.virtual("fullName").get(function () {
   return [this.name?.firstName, this.name?.middleName, this.name?.lastName]

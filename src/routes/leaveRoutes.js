@@ -28,7 +28,7 @@ router.post(
 router.get(
   "/history",
   authenticateJWT,
-  authorizeRoles(ROLES.USER),
+  authorizeRoles(ROLES.USER,ROLES.ADMIN),
   validate(getLeaveHistoryValidation),
   getLeaveHistory,
 );

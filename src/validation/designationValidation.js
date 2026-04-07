@@ -2,7 +2,7 @@ const { Joi } = require('express-validation');
 
 exports.addDesignationValidation = {
     body: Joi.object({
-        departmentName:Joi.string().length(24).hex().required(),
+        departmentId:Joi.string().length(24).hex().required(),
         designationName:Joi.string().required()
     })
 }
@@ -11,13 +11,13 @@ exports.getDesignationValidation = {
   query: Joi.object({
     page: Joi.number().integer(),
     limit: Joi.number().integer(),
-    departmentName:Joi.string()
+    departmentId:Joi.string()
   }),
 };
 
 exports.updateDesignationValidation = {
   body: Joi.object({
-    departmentName: Joi.string(),
+    departmentId: Joi.string(),
     designationName:Joi.string()
   }),
   params: Joi.object({
