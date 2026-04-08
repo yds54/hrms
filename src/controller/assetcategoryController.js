@@ -65,23 +65,23 @@ exports.updateAssetCategory = async (req, res, next) => {
     const { params, body: payload } = req;
     const { id } = params;
 
-    const isassetcategoryExists = await ASSETCATEGORY.findOne({
+    const isAssetCategoryExist = await ASSETCATEGORY.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!isassetcategoryExists) {
+    if (!isAssetCategoryExist) {
       throw new AppError("Asset category not found", 404);
     }
 
     if (payload.assetcategoryName) {
-      const exists = await ASSETCATEGORY.findOne({
+      const assetCategoryExist = await ASSETCATEGORY.findOne({
         assetcategoryName: payload.assetcategoryName,
         _id: { $ne: id },
         isDeleted: false,
       });
 
-      if (exists) {
+      if (assetCategoryExist) {
         throw new AppError("Asset category already exists", 409);
       }
     }
@@ -103,18 +103,18 @@ exports.deleteAssetCategory = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const isassetcategoryExists = await ASSETCATEGORY.findOne({
+    const isAssetCategoryExist = await ASSETCATEGORY.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!isassetcategoryExists) {
+    if (!isAssetCategoryExist) {
       throw new AppError("Asset category not found", 404);
     }
 
-    isassetcategoryExists.isDeleted = true;
-    isassetcategoryExists.deletedAt = moment().toDate();
-    await isassetcategoryExists.save();
+    isAssetCategoryExist.isDeleted = true;
+    isAssetCategoryExist.deletedAt = moment().toDate();
+    await isAssetCategoryExist.save();
 
     return successResponse(res, 200, "Asset category deleted successfully");
   } catch (error) {
@@ -122,21 +122,21 @@ exports.deleteAssetCategory = async (req, res, next) => {
   }
 };
 
-exports.getassetcategorybyId = async (req, res, next) => {
+exports.getAssetCategoryById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const isassetcategoryExist = await ASSETCATEGORY.findOne({
+    const isAssetCategoryExist = await ASSETCATEGORY.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!isassetcategoryExist) {
+    if (!isAssetCategoryExist) {
       throw new AppError("Asset category not found", 404);
     }
 
     return successResponse(res, 200, "Asset category fetched successfully", {
-      data: isassetcategoryExist,
+      data: isAssetCategoryExist,
     });
   } catch (error) {
     next(error);

@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const moment = require("moment");
+
 require("dotenv").config();
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
@@ -7,61 +9,55 @@ const { AppError } = require("../utils/error");
 
 exports.addDepartment = async (req, res, next) => {
   try {
-    const data = { ...req.body };
-
+    const { body } = req;
     const isDepartmentExist = await DEPARTMENT.findOne({
-      departmentName: data.departmentName,
+      departmentName: body.departmentName,
       isDeleted: false,
     });
 
     if (isDepartmentExist) throw new AppError("Departmant already exists", 409);
+    body.createdBy = req.user._id;
+    await DEPARTMENT.create(body);
 
-    const department = new DEPARTMENT(data);
-    await department.save();
-
-    return successResponse(res, 200, "Department Add sucessfully", {
-      departmentName: department.departmentName,
-    });
+    return successResponse(res, 200, "Department Add sucessfully", {});
   } catch (error) {
-    console.log(error);
     next(error);
   }
 };
 
 exports.updateDepartment = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { departmentName } = req.body;
+    const { params, body: payload } = req;
+    const { id } = params;
 
-    const department = await DEPARTMENT.findOne({
+    const isDepartmentExist = await DEPARTMENT.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!department) {
+    if (!isDepartmentExist) {
       throw new AppError("Department not found", 404);
     }
 
-    if (departmentName) {
-      const exists = await DEPARTMENT.findOne({
-        departmentName,
+    if (payload.departmentName) {
+      const departmentExist = await DEPARTMENT.findOne({
+        departmentName: payload.departmentName,
         _id: { $ne: id },
         isDeleted: false,
       });
 
-      if (exists) {
+      if (departmentExist) {
         throw new AppError("Department already exists", 409);
       }
-
-      department.departmentName = departmentName;
     }
 
-    department.updatedBy = req.user?.id || null;
-
-    await department.save();
+    await DEPARTMENT.updateOne(
+      { _id: id, isDeleted: false },
+      { $set: { ...payload } },
+    );
 
     return successResponse(res, 200, "Department updated successfully", {
-      data: department,
+      data: payload.departmentName,
     });
   } catch (error) {
     next(error);
@@ -72,26 +68,25 @@ exports.deleteDepartment = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const department = await DEPARTMENT.findOne({
+    const isDepartmentExist = await DEPARTMENT.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!department) {
+    if (!isDepartmentExist) {
       throw new AppError("Department not found", 404);
     }
 
-    department.isDeleted = true;
-    department.deletedBy = req.user?.id || null;
+    isDepartmentExist.isDeleted = true;
+    isDepartmentExist.deletedAt = moment().toDate();
 
-    await department.save();
+    await isDepartmentExist.save();
 
     return successResponse(res, 200, "Department deleted successfully");
   } catch (error) {
     next(error);
   }
 };
-
 
 exports.getAllDepartments = async (req, res, next) => {
   try {
@@ -112,13 +107,35 @@ exports.getAllDepartments = async (req, res, next) => {
     const { data, pagination } = await paginate({
       model: DEPARTMENT,
       query: _whereCondition,
-      page: Number(page),
-      limit: Number(limit),
+      page: +page,
+      limit: +limit,
+      sort: { createdAt: -1 },
     });
 
     return successResponse(res, 200, "Departments fetched successfully", {
       data,
       pagination,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getDepartmentById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const isDepartmentExist = await DEPARTMENT.findOne({
+      _id: id,
+      isDeleted: false,
+    });
+
+    if (!isDepartmentExist) {
+      throw new AppError("Department not found", 404);
+    }
+
+    return successResponse(res, 200, "Department fetched successfully", {
+      data: isDepartmentExist,
     });
   } catch (error) {
     next(error);

@@ -6,32 +6,42 @@ const {
   updateDepartment,
   deleteDepartment,
   getAllDepartments,
+  getDepartmentById,
 } = require("../controller/departmentController");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
-const {ROLES}= require("../utils/enum")
+const { ROLES } = require("../utils/enum");
 
 const {
-  adddepartmentValidation,
-  getdepartmentValidation,
+  addDepartmentValidation,
+  getDepartmentValidation,
   updateDepartmentValidation,
   deleteDepartmentValidation,
+  getDepartmentByIdValidation,
 } = require("../validation/departmentValidation");
+
 const { validate } = require("express-validation");
 
 router.post(
   "/",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(adddepartmentValidation),
+  validate(addDepartmentValidation),
   addDepartment,
 );
 router.get(
   "/",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(getdepartmentValidation),
+  validate(getDepartmentValidation),
   getAllDepartments,
+);
+router.get(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN),
+  validate(getDepartmentByIdValidation),
+  getDepartmentById,
 );
 router.put(
   "/:id",

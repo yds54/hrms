@@ -8,7 +8,7 @@ const {
   getAllAssetCategorie,
   updateAssetCategory,
   deleteAssetCategory,
-  getassetcategorybyId,
+  getAssetCategoryById,
 } = require("../controller/assetcategoryController");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
@@ -40,7 +40,7 @@ router.get(
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
   validate(getAssetCategoryByIdValidation),
-  getassetcategorybyId,
+  getAssetCategoryById,
 );
 router.put(
   "/:id",

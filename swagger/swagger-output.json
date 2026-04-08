@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.158:5000",
+  "host": "192.168.0.42:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -801,6 +801,32 @@
       }
     },
     "/api/departementes/{id}": {
+      "get": {
+        "tags": ["departemente"],
+        "description": "Get Department  by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Department retrieved successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "404": {
+            "description": "Department not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
       "put": {
         "tags": ["departemente"],
         "description": "",
@@ -905,6 +931,32 @@
     },
 
     "/api/designations/{id}": {
+      "get": {
+        "tags": ["designation"],
+        "description": "Get Designation by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Designation retrieved successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "404": {
+            "description": "Department not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
       "put": {
         "tags": ["designation"],
         "description": "",
@@ -1600,6 +1652,106 @@
           },
           "404": {
             "description": "User not found"
+          }
+        }
+      }
+    },
+    "/api/assetcategories/": {
+      "post": {
+        "tags": ["asset category"],
+        "description": "Add Asset Category",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "assetcategoryName": {
+                  "example": "Electronics"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "tags": ["asset category"],
+        "description": "Get All Asset Categories",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "assetcategoryName",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/assetcategories/{id}": {
+      "put": {
+        "tags": ["asset category"],
+        "description": "Update Asset Category",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "assetcategoryName": {
+                  "example": "mobile"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["asset category"],
+        "description": "Delete asset category",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
           }
         }
       }

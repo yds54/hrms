@@ -137,21 +137,21 @@ exports.deleteAsset = async (req, res, next) => {
   }
 };
 
-exports.getassetbyId = async (req, res, next) => {
+exports.getAssetById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const isassetExist = await ASSET.findOne({
+    const isAssetExist = await ASSET.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!isassetExist) {
+    if (!isAssetExist) {
       throw new AppError("Asset not found", 404);
     }
 
     return successResponse(res, 200, "Asset fetched successfully", {
-      data: isassetExist,
+      data: isAssetExist,
     });
   } catch (error) {
     next(error);

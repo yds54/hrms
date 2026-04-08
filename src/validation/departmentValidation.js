@@ -1,16 +1,16 @@
-const { Joi } = require('express-validation');
+const { Joi } = require("express-validation");
 
-exports.adddepartmentValidation = {
-    body: Joi.object({
-        departmentName:Joi.string().required()
-    })
-}
+exports.addDepartmentValidation = {
+  body: Joi.object({
+    departmentName: Joi.string().required(),
+  }),
+};
 
-exports.getdepartmentValidation = {
+exports.getDepartmentValidation = {
   query: Joi.object({
     page: Joi.number().integer(),
     limit: Joi.number().integer(),
-    departmentName:Joi.string()
+    departmentName: Joi.string(),
   }),
 };
 
@@ -24,6 +24,12 @@ exports.updateDepartmentValidation = {
 };
 
 exports.deleteDepartmentValidation = {
+  params: Joi.object({
+    id: Joi.string().hex().length(24).required(),
+  }),
+};
+
+exports.getDepartmentByIdValidation = {
   params: Joi.object({
     id: Joi.string().hex().length(24).required(),
   }),
