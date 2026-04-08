@@ -6,8 +6,7 @@ const designationSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
-    departmentName: {
+    departmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "department",
       required: true,
@@ -16,9 +15,12 @@ const designationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-
-    updatedBy: String,
-    deletedBy: String,
+    deletedAt: { type: Date },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
   },
   {
     timestamps: true,

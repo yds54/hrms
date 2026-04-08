@@ -14,6 +14,7 @@ const organizationRoutes = require("./organizationRoutes");
 const assetcategoryRoutes = require("./assetcategoryRoutes");
 const assetRoutes = require("./assetRoutes");
 const assetmanagementRoutes = require("./assetmanagementRoutes");
+const ticketRoutes = require("./ticketRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);

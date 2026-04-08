@@ -6,16 +6,18 @@ const {
   getAllDesignation,
   updateDesignation,
   deleteDesignation,
+  getDesignationById,
 } = require("../controller/designationController");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
-const {ROLES}= require("../utils/enum")
+const { ROLES } = require("../utils/enum");
 
 const {
   addDesignationValidation,
   getDesignationValidation,
   updateDesignationValidation,
   deleteDesignationValidation,
+  getDesignationByIdValidation,
 } = require("../validation/designationValidation");
 const { validate } = require("express-validation");
 
@@ -32,6 +34,13 @@ router.get(
   authorizeRoles(ROLES.ADMIN),
   validate(getDesignationValidation),
   getAllDesignation,
+);
+router.get(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN),
+  validate(getDesignationByIdValidation),
+  getDesignationById,
 );
 router.put(
   "/:id",

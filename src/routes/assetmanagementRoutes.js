@@ -7,7 +7,7 @@ const {
   getAllAssetManagement,
   updateAssetManagement,
   deleteAssetManagement,
-  getassetmanagementbyId,
+  getAssetManagementById,
 } = require("../controller/assetmanagementController");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
@@ -40,7 +40,7 @@ router.get(
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN, ROLES.USER),
   validate(getAssetManagementByIdValidation),
-  getassetmanagementbyId,
+  getAssetManagementById,
 );
 router.put(
   "/:id",
