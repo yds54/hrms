@@ -36,11 +36,14 @@ exports.getAllAssetManagement = async (req, res, next) => {
     const { _id: userId, role } = req.user;
     const { page = 1, limit = 10, relatedTo } = req.query;
 
-    const _whereCondition = { isDeleted: false };
-
-    if (role === ROLES.USER || relatedTo) {
-      _whereCondition.relatedTo = role === ROLES.USER ? userId : relatedTo;
-    }
+    const _whereCondition = {
+      isDeleted: false,
+      ...(role === ROLES.USER
+        ? { relatedTo: userId }
+        : relatedTo
+          ? { relatedTo }
+          : {}),
+    };
 
     const { data, pagination } = await paginate({
       model: ASSETMANAGEMENT,
