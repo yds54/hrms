@@ -3,6 +3,7 @@ const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { AppError } = require("../utils/error");
 const ASSETMANAGEMENT = require("../model/assetmanagement");
+const { ROLES } = require("../utils/enum");
 
 exports.addAssetManagement = async (req, res, next) => {
   try {
@@ -32,11 +33,14 @@ exports.addAssetManagement = async (req, res, next) => {
 
 exports.getAllAssetManagement = async (req, res, next) => {
   try {
+    const { _id: userId, role } = req.user;
     const { page = 1, limit = 10, relatedTo } = req.query;
 
     const _whereCondition = { isDeleted: false };
 
-    if (relatedTo) _whereCondition.relatedTo = relatedTo;
+    if (role === ROLES.USER || relatedTo) {
+      _whereCondition.relatedTo = role === ROLES.USER ? userId : relatedTo;
+    }
 
     const { data, pagination } = await paginate({
       model: ASSETMANAGEMENT,
