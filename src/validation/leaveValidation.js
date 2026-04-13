@@ -5,6 +5,8 @@ const {
   LEAVE_REASON_TYPE,
 } = require("../utils/enum");
 
+const timeRegex = /^(0?[1-9]|1[0-2]):([0-5]\d)\s(AM|PM)$/;
+
 //======================= SEND LEAVE REQUEST VALIDATION =================================
 exports.createLeaveValidation = {
   body: Joi.object({
@@ -22,8 +24,8 @@ exports.createLeaveValidation = {
 
     isFullDay: Joi.boolean().optional(),
 
-    fromTime: Joi.string().optional(),
-    toTime: Joi.string().optional(),
+    fromTime: Joi.string().pattern(timeRegex).required(),
+    toTime: Joi.string().pattern(timeRegex).required(),
 
     fromDate: Joi.date().optional(),
     toDate: Joi.date().optional(),
@@ -47,7 +49,12 @@ exports.createLeaveValidation = {
     }
 
     if (value.numberOfDays === LEAVE_DAY_TYPE.MULTIPLE) {
-      if (!value.fromDate || !value.toDate || !value.fromTime || !value.toTime) {
+      if (
+        !value.fromDate ||
+        !value.toDate ||
+        !value.fromTime ||
+        !value.toTime
+      ) {
         return helpers.message(
           "fromDate and toDate and Time required for Multiple Day leave",
         );

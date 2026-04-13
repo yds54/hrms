@@ -1,5 +1,5 @@
-const { USER, TICKET } = require("../model/modelIndex");
-const { ROLES , TICKET_FILTER} = require("../utils/enum");
+const { USER, TICKET, TICKETACTIVITY } = require("../model/modelIndex");
+const { ROLES, TICKET_FILTER, TICKET_STATUS } = require("../utils/enum");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 const { getProjection } = require("../utils/projection");
@@ -18,17 +18,17 @@ exports.createTicket = async (req, res, next) => {
     const { _id: createdBy } = req.user;
     const { assignedTo } = req.body;
 
-    const assignee = await USER.findOne(
+    const isAssigneeExists = await USER.findOne(
       { _id: assignedTo, isDeleted: false },
       { role: 1 },
     );
 
-    if (!assignee || !ALLOWED_ROLES.includes(assignee.role)) {
+    if (!isAssigneeExists || !ALLOWED_ROLES.includes(isAssigneeExists.role)) {
       throw new AppError(
-        !assignee
+        !isAssigneeExists
           ? "Assigned user not found"
           : "You cannot assign ticket to this role",
-        !assignee ? 404 : 400,
+        !isAssigneeExists ? 404 : 400,
       );
     }
 
@@ -39,6 +39,14 @@ exports.createTicket = async (req, res, next) => {
       ...req.body,
       attachFile: files,
       createdBy,
+    });
+
+    await TICKETACTIVITY.create({
+      ticketId: ticket._id,
+      field: "created",
+      oldValue: null,
+      newValue: "Ticket created",
+      changedBy: createdBy,
     });
 
     return successResponse(res, 201, "Ticket created", ticket);
@@ -52,7 +60,7 @@ exports.getTickets = async (req, res, next) => {
   try {
     const { _id: userId } = req.user;
     let { startDate, endDate, isArchived, filter = "All" } = req.query;
-    const _where = { isDeleted: false, isArchived: isArchived};
+    const _where = { isDeleted: false, isArchived: isArchived };
 
     if (filter === TICKET_FILTER.MY_TICKETS) {
       _where.createdBy = userId;
@@ -93,30 +101,93 @@ exports.updateTicket = async (req, res, next) => {
   try {
     const { _id: userId } = req.user;
     const { id } = req.params;
+    const payload = { ...req.body };
 
-    const ticket = await TICKET.findOne({
-      _id: id,
-      isDeleted: false,
-    });
+    const isTicketExists = await TICKET.findOne({ _id: id, isDeleted: false });
 
-    if (!ticket) {
-      throw new AppError("Ticket not found", 404);
+    if (!isTicketExists) {
+      throw new AppError("Ticket not found with given id", 404);
     }
 
-    if (ticket.createdBy.toString() !== userId.toString()) {
+    if (isTicketExists.createdBy.toString() !== userId.toString()) {
       throw new AppError("Unauthorized", 403);
     }
 
-    if (req.files?.length) {
-      const files = req.files.map(
-        (file) => `/uploads/tickets/${file.filename}`,
-      );
-      req.body.attachFile = files;
+    // status update
+    if (payload.status) {
+      if (
+        isTicketExists.status === TICKET_STATUS.COMPLETED &&
+        payload.status !== TICKET_STATUS.TODO
+      ) {
+        throw new AppError("You can only Reopen Ticket", 400);
+      }
+      if (
+        isTicketExists.status === TICKET_STATUS.TODO &&
+        payload.status !== TICKET_STATUS.TODO
+      ) {
+        throw new AppError("Cannot change To Do status", 400);
+      }
     }
 
-    await TICKET.updateOne({ _id: id }, { $set: req.body });
+    if (req.files?.length) {
+      payload.attachFile = req.files.map(
+        (file) => `/uploads/tickets/${file.filename}`,
+      );
+    }
+
+    //insert activity
+    const trackFields = [
+      "title",
+      "dueDate",
+      "priority",
+      "content",
+      "isArchived",
+      "status",
+    ];
+
+    const activities = trackFields.reduce((acc, field) => {
+      const newVal = payload[field];
+      if (newVal === undefined) return acc;
+      const oldVal = isTicketExists[field];
+
+      const format = (value) =>
+        field === "dueDate" && value ? new Date(value).toISOString() : value;
+
+      if (String(format(oldVal)) !== String(format(newVal))) {
+        acc.push({
+          ticketId: id,
+          field,
+          oldValue: format(oldVal),
+          newValue: format(newVal),
+          changedBy: userId,
+        });
+      }
+      return acc;
+    }, []);
+
+    if (activities.length) {
+      await TICKETACTIVITY.insertMany(activities);
+    }
+
+    await TICKET.updateOne({ _id: id }, { $set: payload });
 
     return successResponse(res, 200, "Ticket updated");
+  } catch (err) {
+    next(err);
+  }
+};
+
+//=========================== DISPLAY TICKET ACTIVITY ==========================
+exports.getTicketActivity = async (req, res, next) => {
+  try {
+    const { ticketId } = req.params;
+
+    const activity = await TICKETACTIVITY.find({ ticketId })
+      .sort({ createdAt: -1 })
+      .populate([{ path: "changedBy", select: "name profilePicture" }])
+      .lean();
+
+    return successResponse(res, 200, "Activity fetched", { activity });
   } catch (err) {
     next(err);
   }
@@ -127,16 +198,19 @@ exports.deleteTicket = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const ticket = await TICKET.findOne({
+    const isTicketExists = await TICKET.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!ticket) {
+    if (!isTicketExists) {
       throw new AppError("Ticket not found", 404);
     }
 
-    await TICKET.updateOne({ _id: id }, { $set: { isDeleted: true , deletedAt: new Date(), } });
+    await TICKET.updateOne(
+      { _id: id },
+      { $set: { isDeleted: true, deletedAt: new Date() } },
+    );
 
     return successResponse(res, 200, "Ticket deleted successfully");
   } catch (err) {

@@ -16,6 +16,7 @@ const assetRoutes = require("./assetRoutes");
 const assetmanagementRoutes = require("./assetmanagementRoutes");
 const ticketRoutes = require("./ticketRoutes");
 const attendanceRoutes = require("./attendanceRoutes");
+const ticketCommentRoutes = require("./ticketCommentRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -32,5 +33,6 @@ router.use("/assetcategories", assetcategoryRoutes);
 router.use("/assets", assetRoutes);
 router.use("/assetmanagement", assetmanagementRoutes);
 router.use("/attendance", attendanceRoutes);
+router.use("/ticket", ticketCommentRoutes);
 
 module.exports = router;
