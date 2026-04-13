@@ -83,7 +83,7 @@ const userSchema = new mongoose.Schema(
       entryTime: String,
       exitTime: String,
       totalMinutes: Number,
-      lateEntryAfterMinutes: Number,
+      lateEntryAfterMinutes: String,
       overtimeAfterMinutes: Number,
     },
 
@@ -147,18 +147,18 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-   
+
     isLeft: { type: Boolean, default: false },
 
     marriageDate: Date,
-        deletedAt: Date,
+    deletedAt: Date,
     createdBy: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "user",
-         
-        },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
 
+    },
 
+    
   },
   {
     timestamps: true,

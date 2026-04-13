@@ -274,17 +274,7 @@
         }
       }
     },
-    "/api/profile": {
-      "get": {
-        "tags": ["Profile"],
-        "description": "PROFILE/JOINNING INFORMATION",
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
+
     "/api/drs/": {
       "post": {
         "tags": ["Drs"],
@@ -426,34 +416,6 @@
         }
       }
     },
-    "/api/dashboard/holidays": {
-      "get": {
-        "tags": ["Holiday"],
-        "description": "DISPLAY HOLIDAYS",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
 
     "/api/leaveRequest/": {
       "post": {
@@ -542,6 +504,7 @@
         }
       }
     },
+
     "/api/users/": {
       "get": {
         "tags": ["User"],
@@ -643,6 +606,7 @@
         }
       }
     },
+
     "/api/holidays/": {
       "post": {
         "tags": ["Holiday"],
@@ -749,6 +713,7 @@
         }
       }
     },
+
     "/api/departementes/": {
       "post": {
         "tags": ["departemente"],
@@ -929,7 +894,6 @@
         }
       }
     },
-
     "/api/designations/{id}": {
       "get": {
         "tags": ["designation"],
@@ -1107,6 +1071,7 @@
         }
       }
     },
+
     "/api/criterias/": {
       "post": {
         "tags": ["criterias"],
@@ -1206,6 +1171,7 @@
         }
       }
     },
+
     "/api/organizations/": {
       "post": {
         "tags": ["organization"],
@@ -1283,7 +1249,6 @@
         }
       }
     },
-
     "/api/organizations/{id}": {
       "get": {
         "tags": ["organization"],
@@ -1375,6 +1340,7 @@
         }
       }
     },
+
     "/api/ticket/": {
       "post": {
         "tags": ["Ticket Board"],
@@ -1457,7 +1423,7 @@
             "in": "query",
             "type": "string",
             "example": "All",
-            "description": "All | My Tickets | Assigned to me"
+            "description": "all | myTickets | assignedToMe"
           }
         ],
         "responses": {
@@ -1542,116 +1508,131 @@
         }
       }
     },
+
     "/api/attendance/": {
       "post": {
         "tags": ["Attendance"],
-        "description": "CREATE ATTENDANCE",
+        "summary": "Create Attendance",
+        "description": "Create attendance entry for logged-in user",
         "consumes": ["multipart/form-data"],
         "parameters": [
-          {
-            "name": "user",
-            "in": "formData",
-            "type": "string",
-            "example": "661234abcd1234abcd123456"
-          },
           {
             "name": "date",
             "in": "formData",
             "type": "string",
+            "required": true,
             "example": "2026-04-06"
           },
           {
             "name": "inTime",
             "in": "formData",
             "type": "string",
-            "example": "09:30"
+            "required": true,
+            "example": "09:30 AM"
           },
           {
             "name": "outTime",
             "in": "formData",
             "type": "string",
-            "example": "18:30"
-          },
-          {
-            "name": "totalMinutes",
-            "in": "formData",
-            "type": "number",
-            "example": 540
-          },
-          {
-            "name": "mode",
-            "in": "formData",
-            "type": "string",
-            "example": "Office"
-          },
-          {
-            "name": "officeEntryTime",
-            "in": "formData",
-            "type": "string",
-            "example": "09:00"
-          },
-          {
-            "name": "officeExitTime",
-            "in": "formData",
-            "type": "string",
-            "example": "18:00"
+            "required": false,
+            "example": "06:30 PM"
           },
           {
             "name": "lateReason",
             "in": "formData",
             "type": "string",
+            "required": false,
             "example": "Traffic"
           },
           {
             "name": "leaveReason",
             "in": "formData",
             "type": "string",
+            "required": false,
             "example": "Personal work"
           },
           {
             "name": "overTimeReason",
             "in": "formData",
             "type": "string",
+            "required": false,
             "example": "Project deadline"
           },
           {
             "name": "updateReason",
             "in": "formData",
             "type": "string",
+            "required": false,
             "example": "Correction"
-          },
-          {
-            "name": "permittedMinutes",
-            "in": "formData",
-            "type": "number",
-            "example": 60
-          },
-          {
-            "name": "isFullDay",
-            "in": "formData",
-            "type": "boolean",
-            "example": true
           },
           {
             "name": "entry",
             "in": "formData",
-            "type": "file"
+            "type": "file",
+            "required": false,
+            "description": "Entry image"
           },
           {
             "name": "exit",
             "in": "formData",
-            "type": "file"
+            "type": "file",
+            "required": false,
+            "description": "Exit image"
           }
         ],
         "responses": {
           "200": {
-            "description": "Attendance created successfully"
+            "description": "Attendance Created successfully"
           },
-          "400": {
-            "description": "Validation error / Already exists"
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/attendance": {
+      "get": {
+        "tags": ["Attendance"],
+        "summary": "Get Attendance with Monthly Summary",
+        "description": "Fetch paginated attendance data along with monthly summary for logged-in user",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number",
+            "required": false,
+            "example": 1
           },
-          "404": {
-            "description": "User not found"
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number",
+            "required": false,
+            "example": 10
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "type": "number",
+            "required": false,
+            "example": 4,
+            "description": "Month (1-12), default = current month"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "number",
+            "required": false,
+            "example": 2026,
+            "description": "Year, default = current year"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       }
@@ -1811,7 +1792,6 @@
         }
       }
     },
-
     "/api/assets/{id}": {
       "get": {
         "tags": ["asset"],
@@ -1898,6 +1878,7 @@
         }
       }
     },
+
     "/api/assetmanagement/": {
       "post": {
         "tags": ["asset-management"],
@@ -1934,7 +1915,6 @@
           }
         }
       },
-
       "get": {
         "tags": ["asset-management"],
         "description": "Get All Asset Assignments",
@@ -2049,7 +2029,6 @@
           }
         }
       },
-
       "delete": {
         "tags": ["asset-management"],
         "description": "Delete Asset Assignment",

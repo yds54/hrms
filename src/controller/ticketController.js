@@ -58,6 +58,8 @@ exports.getTickets = async (req, res, next) => {
       _where.createdBy = userId;
     } else if (filter === TICKET_FILTER.ASSIGNED_TO_ME) {
       _where.assignedTo = userId;
+    } else {
+      _where.$or = [{ createdBy: userId }, { assignedTo: userId }];
     }
 
     if (startDate && endDate) {
@@ -80,7 +82,7 @@ exports.getTickets = async (req, res, next) => {
       ])
       .lean();
 
-    return successResponse(res, 200, "Tickets fetched", data);
+    return successResponse(res, 200, "Tickets fetched", { data });
   } catch (err) {
     next(err);
   }
@@ -89,6 +91,7 @@ exports.getTickets = async (req, res, next) => {
 //========================== EDIT TICKET ==========================
 exports.updateTicket = async (req, res, next) => {
   try {
+    const { _id: userId } = req.user;
     const { id } = req.params;
 
     const ticket = await TICKET.findOne({
@@ -98,6 +101,10 @@ exports.updateTicket = async (req, res, next) => {
 
     if (!ticket) {
       throw new AppError("Ticket not found", 404);
+    }
+
+    if (ticket.createdBy.toString() !== userId.toString()) {
+      throw new AppError("Unauthorized", 403);
     }
 
     if (req.files?.length) {
