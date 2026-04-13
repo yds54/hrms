@@ -1,22 +1,23 @@
-const { Joi } = require('express-validation');
+const { Joi } = require("express-validation");
 
 exports.addCriteriaValidation = {
-    body: Joi.object({
-        criteria:Joi.string().required().trim()
-    })
-}
+  body: Joi.object({
+    criteria: Joi.string().required().trim(),
+    isRequired: Joi.boolean().required(),
+  }),
+};
 
 exports.getCriteriaValidation = {
   query: Joi.object({
     page: Joi.number().integer(),
     limit: Joi.number().integer(),
-    criteria:Joi.string().trim()
+    criteria: Joi.string().trim(),
   }),
 };
 
 exports.updateCriteriaValidation = {
   body: Joi.object({
-    criteria: Joi.string().trim(),
+    isRequired: Joi.boolean(),
   }),
   params: Joi.object({
     id: Joi.string().hex().length(24).required(),

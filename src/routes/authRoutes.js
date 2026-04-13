@@ -4,28 +4,25 @@ const router = express.Router();
 const {
   loginUser,
   registerUser,
-   logoutUser,
+  logoutUser,
 } = require("../controller/authController");
 
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles, ROLES } = require("../middleware/roleAuthorization");
-const upload = require("../middleware/upload");
+const uploads = require("../middleware/uploads");
 const {
-  UserValidation,
+  userRegisterValidation,
   loginValidation,
-  getuserValidation,
-} = require("../validation/userValidation");
+} = require("../validation/authValidation");
 
 const { validate } = require("express-validation");
 
 router.post(
   "/register",
-  upload.single("profilePicture"),
-  validate(UserValidation),
+  uploads("profile").single("profilePicture"),
+  validate(userRegisterValidation),
   registerUser,
 );
-
-
 
 //================ login user =====================
 
@@ -33,7 +30,5 @@ router.post("/login", validate(loginValidation), loginUser);
 
 //============== LOGOUT =====================
 router.post("/logout", authenticateJWT, logoutUser);
-
-
 
 module.exports = router;

@@ -3,103 +3,101 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const { successResponse } = require("../utils/sucess");
-const { USER , AUTH} = require("../model/modelIndex");
+const { USER, AUTH } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { USER_STATUS } = require("../utils/enum");
 
 exports.registerUser = async (req, res, next) => {
   try {
-    const data = { ...req.body };
+    const { body, file } = req;
 
-    delete data.confirmPassword;
+    delete body.confirmPassword;
 
-    if (req.file) {
-      data.profilePicture = `/uploads/${req.file.filename}`;
+    if (file) {
+      body.profilePicture = `/uploads/profile/${file.filename}`;
     }
 
     const isUserExist = await USER.findOne({
-      email: data.email,
+      email: body.email,
+      contactNumber: body.contactNumber,
       isDeleted: false,
-    });
+    }).select("email isDeleted contactNumber");
 
     if (isUserExist) {
-      throw new AppError("User already exists with this email", 409);
+      throw new AppError(
+        "User already exists with this email or contact number",
+        409,
+      );
     }
 
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    data.password = hashedPassword;
+    const hashedPassword = await bcrypt.hash(body.password, 10);
+    body.password = hashedPassword;
 
-    if (!data.employeeCode) {
-      const lastUser = await USER.findOne({
-        employeeCode: { $exists: true },
-      }).sort({ createdAt: -1 });
+    const lastUser = await USER.findOne({
+      employeeCode: { $exists: true },
+    })
+      .sort({ employeeCode: -1 })
+      .select("employeeCode");
 
-      let nextNumber = 1;
+    let nextNumber = 1;
 
-      if (lastUser && lastUser.employeeCode) {
-        const num = parseInt(lastUser.employeeCode.replace("BS", ""));
-        nextNumber = num + 1;
-      }
-
-      data.employeeCode = `BS${String(nextNumber).padStart(3, "0")}`;
+    if (lastUser && lastUser.employeeCode) {
+      const num = parseInt(lastUser.employeeCode.replace("BS", ""));
+      nextNumber = num + 1;
     }
 
-    const user = new USER(data);
+    body.employeeCode = `BS${String(nextNumber).padStart(3, "0")}`;
 
-    await user.save();
+    await USER.create(body);
 
     return successResponse(res, 200, "User Registered Successfully", {
-      id: user._id,
-      employeeCode: user.employeeCode,
+      employeeCode: body.employeeCode,
     });
   } catch (error) {
-    console.log(error);
     next(error);
   }
 };
-
 
 //================= LOGIN ======================================
 exports.loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await USER.findOne({
+    const isUserExist = await USER.findOne({
       email,
       status: USER_STATUS.ACTIVE,
       isDeleted: false,
     }).select("+password");
 
-    if (!user) {
-      throw new AppError("Invalid credentials", 400);
+    if (!isUserExist) {
+      throw new AppError("Invalid credentials", 500);
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isPassMatch = await bcrypt.compare(password, isUserExist.password);
 
-    if (!isMatch) {
-      throw new AppError("Invalid credentials", 400);
+    if (!isPassMatch) {
+      throw new AppError("Invalid credentials", 500);
     }
 
     const token = jwt.sign(
       {
-        id: user._id,
-        role: user.role,
+        id: isUserExist._id,
+        role: isUserExist.role,
       },
       process.env.secrate_jwt,
       { expiresIn: "1h" },
     );
 
     await AUTH.create({
-      user: user._id,
-      token
+      user: isUserExist._id,
+      token,
     });
 
-    return successResponse(res, 200, "Login successful", {token});
+    return successResponse(res, 200, "Login successful", { token });
   } catch (error) {
     next(error);
   }
 };
-
 
 //================ LOGOUT ====================
 exports.logoutUser = async (req, res, next) => {

@@ -12,17 +12,6 @@ const assetSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    relatedTo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
-      required: true,
-    },
-    issueDate: {
-      ttype: Date,
-    },
-    remark: {
-      type: String,
-    },
     isDeleted: {
       type: Boolean,
       default: false,

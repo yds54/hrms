@@ -12,3 +12,5 @@ exports.ASSET = require("./asset");
 exports.ASSETCATEGORY = require("./assetCategory");
 exports.ASSETMANAGEMENT = require("./assetmanagement");
 exports.TICKET = require("./ticket");
+exports.USERPAYROLL = require("./payroll");
+exports.INCREMENT = require("./increment");
