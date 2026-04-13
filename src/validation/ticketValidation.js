@@ -34,6 +34,13 @@ exports.getTicketValidation = {
   }),
 };
 
+//========================== DISPLAY TICKET ACTIVITY VALIDATION ==========================
+exports.getTicketActivityValidation = {
+  params: Joi.object({
+    ticketId: Joi.string().hex().length(24).required(),
+  }),
+};
+
 //========================== EDIT TICKET VALIDATION ==========================
 exports.updateTicketValidation = {
   params: Joi.object({
@@ -47,6 +54,10 @@ exports.updateTicketValidation = {
       .valid(...Object.values(PRIORITY_STATUS))
       .optional(),
     content: Joi.string().trim().optional(),
+    isArchived: Joi.boolean().optional(),
+    status: Joi.string()
+      .valid(...Object.values(TICKET_STATUS))
+      .optional(),
     attachFile: Joi.array().items(Joi.string()).optional(),
   }),
 };

@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.42:5000",
+  "host": "192.168.0.158:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -450,10 +450,10 @@
                   "example": "2026-04-05"
                 },
                 "fromTime": {
-                  "example": "09:15"
+                  "example": "09:15 AM"
                 },
                 "toTime": {
-                  "example": "16:15"
+                  "example": "04:15 PM"
                 }
               }
             }
@@ -1474,6 +1474,12 @@
             "example": "updated issue details"
           },
           {
+            "name": "status",
+            "in": "formData",
+            "type": "string",
+            "example": "To Do"
+          },
+          {
             "name": "attachFile",
             "in": "formData",
             "type": "file"
@@ -1482,6 +1488,12 @@
             "name": "attachFile",
             "in": "formData",
             "type": "file"
+          },
+          {
+            "name": "isArchived",
+            "in": "formData",
+            "type": "boolean",
+            "example": false
           }
         ],
         "responses": {
@@ -1504,6 +1516,82 @@
         "responses": {
           "403": {
             "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/ticket/{ticketId}/activity": {
+      "get": {
+        "tags": ["Ticket Board"],
+        "description": "GET TICKET ACTIVITY LOG",
+        "parameters": [
+          {
+            "name": "ticketId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "69c60ceb1271716ecbac38a3"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/ticket/{ticketId}/comment": {
+      "post": {
+        "tags": ["Ticket Board"],
+        "description": "ADD COMMENT ON TICKET",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "ticketId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "69c60ceb1271716ecbac38a3"
+          },
+          {
+            "name": "comment",
+            "in": "formData",
+            "type": "string",
+            "example": "This is a comment"
+          },
+          {
+            "name": "attachFile",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "attachFile",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Comment added successfully"
+          }
+        }
+      }
+    },
+    "/api/ticket/{ticketId}/comments": {
+      "get": {
+        "tags": ["Ticket Board"],
+        "description": "GET ALL COMMENTS OF TICKET",
+        "parameters": [
+          {
+            "name": "ticketId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comments fetched successfully"
           }
         }
       }

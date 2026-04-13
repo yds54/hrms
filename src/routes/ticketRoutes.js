@@ -10,6 +10,7 @@ const {
   getTickets,
   updateTicket,
   deleteTicket,
+  getTicketActivity,
 } = require("../controller/ticketController");
 
 const {
@@ -17,6 +18,7 @@ const {
   getTicketValidation,
   updateTicketValidation,
   deleteTicketValidation,
+  getTicketActivityValidation,
 } = require("../validation/ticketValidation");
 
 //========================== CREATE TICKET ==========================
@@ -24,7 +26,6 @@ router.post(
   "/",
   authenticateJWT,
   authorizeRoles(ROLES.USER),
-  //upload.single("file"),
   upload("tickets").array("attachFile", 5),
   validate(createTicketValidation),
   createTicket,
@@ -37,6 +38,15 @@ router.get(
   authorizeRoles(ROLES.USER),
   validate(getTicketValidation),
   getTickets,
+);
+
+//========================== DISPLAY TICKET ACTIVITY ==========================
+router.get(
+  "/:ticketId/activity",
+  authenticateJWT,
+  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  validate(getTicketActivityValidation),
+  getTicketActivity,
 );
 
 //========================== EDIT TICKET ==========================

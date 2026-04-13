@@ -24,17 +24,35 @@ exports.createLeaveRequest = async (req, res, next) => {
     } = req.body;
     const payload = { user, reason, reasonType, numberOfDays };
 
+    const isExistingLeave =
+      (date || (fromDate && toDate)) &&
+      (await LEAVE.findOne({
+        user,
+        isDeleted: false,
+        $or: [
+          date && { date: new Date(date) },
+          fromDate &&
+            toDate && {
+              fromDate: { $lte: new Date(toDate) },
+              toDate: { $gte: new Date(fromDate) },
+            },
+        ].filter(Boolean),
+      }));
+    if (isExistingLeave) {
+      throw new AppError("Leave already exists for selected date", 400);
+    }
+
     if (numberOfDays === LEAVE_DAY_TYPE.SINGLE) {
       if (!date) throw new AppError("Date is required", 400);
-      payload.date = moment(date, "YYYY-MM-DD").startOf("day").toDate();
+      payload.date = moment(date).format("YYYY-MM-DD");
       payload.isFullDay = isFullDay === true;
 
       if (!payload.isFullDay) {
         if (!fromTime || !toTime) {
           throw new AppError("From Time and To Time required", 400);
         }
-        payload.fromTime = moment(fromTime, "HH:mm").format("hh:mm A");
-        payload.toTime = moment(toTime, "HH:mm").format("hh:mm A");
+        payload.fromTime = moment(fromTime, "HH:mm A").format("hh:mm A");
+        payload.toTime = moment(toTime, "HH:mm A").format("hh:mm A");
       }
     }
 
@@ -55,10 +73,10 @@ exports.createLeaveRequest = async (req, res, next) => {
         throw new AppError("Invalid Date range", 400);
       }
 
-      payload.fromDate = startdate.toDate();
-      payload.toDate = enddate.toDate();
-      payload.fromTime = moment(fromTime, "HH:mm").format("hh:mm A");
-      payload.toTime = moment(toTime, "HH:mm").format("hh:mm A");
+      payload.fromDate = startdate.format("YYYY-MM-DD");
+      payload.toDate = enddate.format("YYYY-MM-DD");
+      payload.fromTime = moment(fromTime, "HH:mm A").format("hh:mm A");
+      payload.toTime = moment(toTime, "HH:mm A").format("hh:mm A");
     }
     await LEAVE.create(payload);
     return successResponse(res, 201, "Leave request created");

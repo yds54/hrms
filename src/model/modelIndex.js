@@ -13,3 +13,5 @@ exports.ASSETCATEGORY = require("./assetCategory");
 exports.ASSETMANAGEMENT = require("./assetmanagement");
 exports.TICKET = require("./ticket");
 exports.ATTENDANCE = require("./attendance");
+exports.TICKETCOMMENT = require("./ticketComment");
+exports.TICKETACTIVITY = require("./ticketActivity");
