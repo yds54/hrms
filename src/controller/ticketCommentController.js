@@ -5,9 +5,12 @@ const { successResponse } = require("../utils/sucess");
 //================ CREATE COMMENT =================
 exports.createComment = async (req, res, next) => {
   try {
-    const { _id: userId } = req.user;
-    const { ticketId } = req.params;
-    const { comment } = req.body;
+    const {
+      user: { _id: userId },
+      params: { ticketId },
+      body: { comment },
+      files,
+    } = req;
 
     const isTicketExists = await TICKET.findOne({
       _id: ticketId,
@@ -18,13 +21,13 @@ exports.createComment = async (req, res, next) => {
       throw new AppError("Ticket not found with given id", 404);
     }
 
-    const files =
-      req.files?.map((file) => `/uploads/tickets/${file.filename}`) || [];
+    const attachFile =
+      files?.map((file) => `/uploads/tickets/${file.filename}`) || [];
 
     const comments = await TICKETCOMMENT.create({
       ticketId,
       comment,
-      attachFile: files,
+      attachFile,
       createdBy: userId,
     });
 

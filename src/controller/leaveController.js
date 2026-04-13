@@ -24,22 +24,32 @@ exports.createLeaveRequest = async (req, res, next) => {
     } = req.body;
     const payload = { user, reason, reasonType, numberOfDays };
 
+    const orConditions = [];
+    if (date) {
+      orConditions.push({
+        date: moment(date).startOf("day").toDate(),
+      });
+    }
+    if (fromDate && toDate) {
+      orConditions.push({
+        fromDate: {
+          $lte: moment(toDate).endOf("day").toDate(),
+        },
+        toDate: {
+          $gte: moment(fromDate).startOf("day").toDate(),
+        },
+      });
+    }
+
     const isExistingLeave =
-      (date || (fromDate && toDate)) &&
+      orConditions.length > 0 &&
       (await LEAVE.findOne({
         user,
         isDeleted: false,
-        $or: [
-          date && { date: new Date(date) },
-          fromDate &&
-            toDate && {
-              fromDate: { $lte: new Date(toDate) },
-              toDate: { $gte: new Date(fromDate) },
-            },
-        ].filter(Boolean),
+        $or: orConditions,
       }));
     if (isExistingLeave) {
-      throw new AppError("Leave already exists for selected date", 400);
+      throw new AppError("Leave already exists for selected date", 409);
     }
 
     if (numberOfDays === LEAVE_DAY_TYPE.SINGLE) {
@@ -81,6 +91,9 @@ exports.createLeaveRequest = async (req, res, next) => {
     await LEAVE.create(payload);
     return successResponse(res, 201, "Leave request created");
   } catch (error) {
+    if (error.code === 11000) {
+      return next(new AppError("Leave already exists for this date", 409));
+    }
     next(error);
   }
 };
