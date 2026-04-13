@@ -36,6 +36,7 @@ exports.LEAVE_DAY_TYPE = Object.freeze({
 exports.LEAVE_DURATION = Object.freeze({
   FULL: "Full Day",
   HALF: "Half Day",
+  NONE: "-",
 });
 
 exports.LEAVE_STATUS = Object.freeze({
@@ -67,9 +68,9 @@ exports.LEAVE_REASON_TYPE = Object.freeze({
 });
 
 exports.TICKET_FILTER = Object.freeze({
-  ALL: "All",
-  MY_TICKETS: "My Tickets",
-  ASSIGNED_TO_ME: "Assigned to me",
+  ALL: "all",
+  MY_TICKETS: "myTickets",
+  ASSIGNED_TO_ME: "assignedToMe",
 });
 
 exports.TIMEZONES = Object.freeze({

@@ -14,3 +14,4 @@ exports.ASSETMANAGEMENT = require("./assetmanagement");
 exports.TICKET = require("./ticket");
 exports.USERPAYROLL = require("./payroll");
 exports.INCREMENT = require("./increment");
+exports.ATTENDANCE = require("./attendance");
