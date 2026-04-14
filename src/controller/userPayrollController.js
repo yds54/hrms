@@ -13,7 +13,7 @@ exports.addUserPayroll = async (req, res, next) => {
     const isUserPayrollExist = await USERPAYROLL.findOne({
       userId: body.userId,
       isDeleted: false,
-    }).select("userId isDeleted");
+    }).select("_id");
 
     if (isUserPayrollExist) {
       throw new AppError("User payroll already exist", 409);
@@ -89,7 +89,10 @@ exports.getUserPayrollById = async (req, res, next) => {
       isDeleted: false,
     });
 
-    return successResponse(res, 200, "User fetched successfully", {
+    if (!isUserExist) {
+      throw new AppError("User payroll not found", 404);
+    }
+    return successResponse(res, 200, "User payroll fetched successfully", {
       data: isUserExist,
     });
   } catch (error) {

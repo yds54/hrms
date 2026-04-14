@@ -20,16 +20,6 @@ exports.addIncrement = async (req, res, next) => {
       throw new AppError("Payroll not found for this user", 404);
     }
 
-    // const previousSalary = payroll.salaryAmount;
-
-    // const incrementAmount =
-    //   body.incrementAmount ||
-    //   (body.incrementPercentage
-    //     ? (previousSalary * body.incrementPercentage) / 100
-    //     : 0);
-
-    // const totalSalary = previousSalary + incrementAmount;
-
     await USERPAYROLL.updateOne(
       { _id: payroll._id, isDeleted: false },
       {
@@ -81,10 +71,14 @@ exports.getIncrementById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const isIncrementExist = await INCREMENT.findById(id);
+    const isIncrementExist = await INCREMENT.findOne({
+      _id: id,
+      isDeleted: false,
+    });
     if (!isIncrementExist) {
       throw new AppError("Increment not found", 404);
     }
+
     return successResponse(res, 200, "Increment fetched successfully", {
       data: isIncrementExist,
     });

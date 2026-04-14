@@ -24,33 +24,22 @@ exports.updateUserValidation = {
       lastName: Joi.string().trim(),
     }),
     email: Joi.string().email(),
-
     nameAsPerAadhaar: Joi.string(),
     aadhaarNumber: Joi.string().length(12),
-
     birthDate: Joi.date(),
-
     gender: Joi.string().valid(...Object.values(GENDER)),
-
     contactNumber: Joi.string().pattern(/^[6-9]\d{9}$/),
     emergencyContactNumber: Joi.string().pattern(/^[6-9]\d{9}$/),
-
     correspondenceAddress: Joi.string(),
     permanentAddress: Joi.string(),
-
     maritalStatus: Joi.string().valid(...Object.values(MARITAL_STATUS)),
-
     marriageDate: Joi.date(),
-
     rentalAllowance: Joi.boolean(),
     rentalAllowanceAmount: Joi.number(),
-
     leavecreaditType: Joi.string(),
-
     designationId: Joi.string(),
     position: Joi.string(),
     departmentId: Joi.string(),
-
     vehicleNumber: Joi.string(),
 
     education: Joi.object({
@@ -85,21 +74,13 @@ exports.updateUserValidation = {
     }),
 
     attendanceType: Joi.string(),
-
     considerOvertime: Joi.boolean(),
-
     organizationId: Joi.string(),
-
     role: Joi.string().valid(...Object.values(ROLES)),
-
     drsRequired: Joi.boolean(),
-
     sendSalarySlipEmail: Joi.boolean(),
-
     status: Joi.string().valid(...Object.values(USER_STATUS)),
-
     isLeft: Joi.boolean(),
-
     isDeleted: Joi.boolean(),
     isUpdated: Joi.boolean(),
   }).unknown(false),
