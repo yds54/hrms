@@ -20,209 +20,274 @@
     "/api/auth/register": {
       "post": {
         "tags": ["Auth"],
-        "description": "Register user",
+        "description": "Register user with profile picture upload",
+        "consumes": ["multipart/form-data"],
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "profilePicture": {
-                  "type": "string",
-                  "example": "https://example.com/profile.jpg"
-                },
-                "name": {
-                  "type": "object",
-                  "properties": {
-                    "firstName": { "type": "string", "example": "Rahul" },
-                    "middleName": { "type": "string", "example": "Kumar" },
-                    "lastName": { "type": "string", "example": "Sharma" }
-                  }
-                },
-                "email": {
-                  "type": "string",
-                  "example": "rahul.sharma@example.com"
-                },
-                "password": {
-                  "type": "string",
-                  "example": "Password@123"
-                },
-                "confirmPassword": {
-                  "type": "string",
-                  "example": "Password@123"
-                },
+            "name": "profilePicture",
+            "in": "formData",
+            "type": "file",
+            "required": false
+          },
 
-                "nameAsPerAadhaar": {
-                  "type": "string",
-                  "example": "Rahul Kumar Sharma"
-                },
-                "aadhaarNumber": {
-                  "type": "string",
-                  "example": "123412341234"
-                },
-                "birthDate": {
-                  "type": "string",
-                  "example": "1998-05-15"
-                },
-                "gender": {
-                  "type": "string",
-                  "example": "male"
-                },
-                "contactNumber": {
-                  "type": "string",
-                  "example": "9876543210"
-                },
-                "emergencyContactNumber": {
-                  "type": "string",
-                  "example": "9123456780"
-                },
-                "correspondenceAddress": {
-                  "type": "string",
-                  "example": "Surat, Gujarat"
-                },
-                "permanentAddress": {
-                  "type": "string",
-                  "example": "Surat, Gujarat"
-                },
-                "maritalStatus": {
-                  "type": "string",
-                  "example": "married"
-                },
-                "designationId": {
-                  "type": "string",
-                  "example": "69ca544451e27dd860867e71(designation_id)"
-                },
-                "position": {
-                  "type": "string",
-                  "example": "Junior Developer"
-                },
-                "departmentId": {
-                  "type": "string",
-                  "example": "69ca21fadb1d7afaac5378af(department_id)"
-                },
-                "vehicleNumber": {
-                  "type": "string",
-                  "example": "GJ05AB1234"
-                },
-                "education": {
-                  "type": "object",
-                  "properties": {
-                    "degree": { "type": "string", "example": "B.Tech" },
-                    "collegeName": {
-                      "type": "string",
-                      "example": "SVNIT Surat"
-                    },
-                    "yearOfPassing": { "type": "number", "example": 2020 }
-                  }
-                },
-                "bankDetails": {
-                  "type": "object",
-                  "properties": {
-                    "bankId": {
-                      "type": "string",
-                      "example": "69ca72900ce2f3165dd8c199(bank_id)"
-                    },
-                    "accountNumber": {
-                      "type": "string",
-                      "example": "123456789012"
-                    },
-                    "ifscCode": { "type": "string", "example": "SBIN0001234" },
-                    "accountHolderName": {
-                      "type": "string",
-                      "example": "Rahul Kumar Sharma"
-                    }
-                  }
-                },
-                "officeTiming": {
-                  "type": "object",
-                  "properties": {
-                    "entryTime": { "type": "string", "example": "09:00" },
-                    "exitTime": { "type": "string", "example": "18:00" },
-                    "totalMinutes": { "type": "number", "example": 540 },
-                    "lateEntryAfterMinutes": {
-                      "type": "number",
-                      "example": 15
-                    },
-                    "overtimeAfterMinutes": { "type": "number", "example": 60 }
-                  }
-                },
-                "attendanceType": {
-                  "type": "string",
-                  "example": "Card"
-                },
-                "considerOvertime": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "organizationId": {
-                  "type": "string",
-                  "example": "69ccc24cf2041b075ef23882(organization_id)"
-                },
+          {
+            "name": "name[firstName]",
+            "in": "formData",
+            "type": "string",
+            "example": "Rahul"
+          },
+          {
+            "name": "name[middleName]",
+            "in": "formData",
+            "type": "string",
+            "example": "Kumar"
+          },
+          {
+            "name": "name[lastName]",
+            "in": "formData",
+            "type": "string",
+            "example": "Sharma"
+          },
 
-                "drsRequired": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "sendSalarySlipEmail": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "rentalAllowance": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "rentalAllowanceAmount": {
-                  "type": "number",
-                  "example": 5000
-                },
-                "leavecreaditType": {
-                  "type": "string",
-                  "example": "MONTHLY"
-                },
+          {
+            "name": "email",
+            "in": "formData",
+            "type": "string",
+            "example": "rahul.sharma@example.com"
+          },
+          {
+            "name": "password",
+            "in": "formData",
+            "type": "string",
+            "example": "Password@123"
+          },
+          {
+            "name": "confirmPassword",
+            "in": "formData",
+            "type": "string",
+            "example": "Password@123"
+          },
 
-                "joiningInfo": {
-                  "type": "object",
-                  "properties": {
-                    "trainingStartDate": {
-                      "type": "string",
-                      "example": "2023-01-01"
-                    },
-                    "trainingDurationMonths": {
-                      "type": "number",
-                      "example": 3
-                    },
-                    "trainingEndDate": {
-                      "type": "string",
-                      "example": "2023-04-01"
-                    },
-                    "joiningDate": {
-                      "type": "string",
-                      "example": "2023-04-02"
-                    },
-                    "bondDurationMonths": {
-                      "type": "number",
-                      "example": 12
-                    },
-                    "bondCompletedDate": {
-                      "type": "string",
-                      "example": "2024-04-02"
-                    }
-                  }
-                },
+          {
+            "name": "nameAsPerAadhaar",
+            "in": "formData",
+            "type": "string",
+            "example": "Rahul Kumar Sharma"
+          },
+          {
+            "name": "aadhaarNumber",
+            "in": "formData",
+            "type": "string",
+            "example": "123412341234"
+          },
+          {
+            "name": "birthDate",
+            "in": "formData",
+            "type": "string",
+            "example": "1998-05-15"
+          },
+          {
+            "name": "gender",
+            "in": "formData",
+            "type": "string",
+            "example": "male"
+          },
 
-                "marriageDate": {
-                  "type": "string",
-                  "example": "2025-01-01"
-                }
-              },
-              "required": ["email", "password", "employeeCode"]
-            }
+          {
+            "name": "contactNumber",
+            "in": "formData",
+            "type": "string",
+            "example": "9876543210"
+          },
+          {
+            "name": "emergencyContactNumber",
+            "in": "formData",
+            "type": "string",
+            "example": "9123456780"
+          },
+
+          {
+            "name": "correspondenceAddress",
+            "in": "formData",
+            "type": "string",
+            "example": "Surat, Gujarat"
+          },
+          {
+            "name": "permanentAddress",
+            "in": "formData",
+            "type": "string",
+            "example": "Surat, Gujarat"
+          },
+
+          {
+            "name": "maritalStatus",
+            "in": "formData",
+            "type": "string",
+            "example": "married"
+          },
+
+          {
+            "name": "designationId",
+            "in": "formData",
+            "type": "string",
+            "example": "69ca544451e27dd860867e71"
+          },
+          {
+            "name": "position",
+            "in": "formData",
+            "type": "string",
+            "example": "Junior Developer"
+          },
+          {
+            "name": "departmentId",
+            "in": "formData",
+            "type": "string",
+            "example": "69ca21fadb1d7afaac5378af"
+          },
+
+          {
+            "name": "vehicleNumber",
+            "in": "formData",
+            "type": "string",
+            "example": "GJ05AB1234"
+          },
+
+          {
+            "name": "education[degree]",
+            "in": "formData",
+            "type": "string",
+            "example": "B.Tech"
+          },
+          {
+            "name": "education[collegeName]",
+            "in": "formData",
+            "type": "string",
+            "example": "SVNIT Surat"
+          },
+          {
+            "name": "education[yearOfPassing]",
+            "in": "formData",
+            "type": "number",
+            "example": 2020
+          },
+
+          {
+            "name": "bankDetails[bankId]",
+            "in": "formData",
+            "type": "string",
+            "example": "69ca72900ce2f3165dd8c199"
+          },
+          {
+            "name": "bankDetails[accountNumber]",
+            "in": "formData",
+            "type": "string",
+            "example": "123456789012"
+          },
+          {
+            "name": "bankDetails[ifscCode]",
+            "in": "formData",
+            "type": "string",
+            "example": "SBIN0001234"
+          },
+          {
+            "name": "bankDetails[accountHolderName]",
+            "in": "formData",
+            "type": "string",
+            "example": "Rahul Kumar Sharma"
+          },
+
+          {
+            "name": "officeTiming[entryTime]",
+            "in": "formData",
+            "type": "string",
+            "example": "09:00"
+          },
+          {
+            "name": "officeTiming[exitTime]",
+            "in": "formData",
+            "type": "string",
+            "example": "18:00"
+          },
+          {
+            "name": "officeTiming[totalMinutes]",
+            "in": "formData",
+            "type": "number",
+            "example": 540
+          },
+          {
+            "name": "officeTiming[lateEntryAfterMinutes]",
+            "in": "formData",
+            "type": "string",
+            "example": 15
+          },
+          {
+            "name": "officeTiming[overtimeAfterMinutes]",
+            "in": "formData",
+            "type": "number",
+            "example": 60
+          },
+
+          {
+            "name": "attendanceType",
+            "in": "formData",
+            "type": "string",
+            "example": "Card"
+          },
+          {
+            "name": "considerOvertime",
+            "in": "formData",
+            "type": "boolean",
+            "example": true
+          },
+
+          {
+            "name": "organizationId",
+            "in": "formData",
+            "type": "string",
+            "example": "69ccc24cf2041b075ef23882"
+          },
+
+          {
+            "name": "drsRequired",
+            "in": "formData",
+            "type": "boolean",
+            "example": true
+          },
+          {
+            "name": "sendSalarySlipEmail",
+            "in": "formData",
+            "type": "boolean",
+            "example": true
+          },
+
+          {
+            "name": "rentalAllowance",
+            "in": "formData",
+            "type": "boolean",
+            "example": true
+          },
+          {
+            "name": "rentalAllowanceAmount",
+            "in": "formData",
+            "type": "number",
+            "example": 5000
+          },
+
+          {
+            "name": "leavecreaditType",
+            "in": "formData",
+            "type": "string",
+            "example": "MONTHLY"
+          },
+          {
+            "name": "marriageDate",
+            "in": "formData",
+            "type": "string",
+            "example": "2025-01-01"
           }
         ],
         "responses": {
-          "default": {
+          "200": {
             "description": "User registered successfully"
           }
         }
@@ -559,6 +624,32 @@
       }
     },
     "/api/users/{id}": {
+      "get": {
+        "tags": ["User"],
+        "description": "Get User  by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User retrieved successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
       "put": {
         "tags": ["User"],
         "description": "",
@@ -1085,6 +1176,9 @@
               "properties": {
                 "criteria": {
                   "example": "take access of microsoft teams"
+                },
+                "isRequired": {
+                  "example": true
                 }
               }
             }
@@ -1140,8 +1234,8 @@
             "schema": {
               "type": "object",
               "properties": {
-                "criteria": {
-                  "example": "take access of microsoft teams"
+                "isRequired": {
+                  "example": true
                 }
               }
             }
@@ -2134,8 +2228,383 @@
           }
         }
       }
+    },
+    "/api/userpayroll": {
+      "post": {
+        "tags": ["user-payroll"],
+        "description": "Add User Payroll",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "64f1a2b3c4d5e6f7890a1234(user_id)"
+                },
+                "stipendAmount": {
+                  "example": 15000
+                },
+                "salaryAmount": {
+                  "example": 40000
+                },
+                "incrementType": {
+                  "example": "yearly"
+                },
+                "trainingStartDate": {
+                  "example": "2026-01-01"
+                },
+                "trainingDurationInMonths": {
+                  "example": 3
+                },
+                "trainingEndDate": {
+                  "example": "2026-04-01"
+                },
+                "joiningDate": {
+                  "example": "2026-04-05"
+                },
+                "isBond": {
+                  "example": true
+                },
+                "bondDurationInMonths": {
+                  "example": 12
+                },
+                "bondCompletedDate": {
+                  "example": "2027-04-05"
+                },
+                "nda": {
+                  "example": true
+                },
+                "ctcTemplate": {
+                  "example": "64f1a2b3c4d5e6f7890a9999(ctc_template_id)"
+                },
+                "remark": {
+                  "example": "Joined as trainee with bond agreement"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User payroll add sucessfully"
+          },
+          "409": {
+            "description": "User payroll already exist"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "get": {
+        "tags": ["user-payroll"],
+        "description": "Get All User Payrolls",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User payroll fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/userpayroll/{id}": {
+      "get": {
+        "tags": ["user-payroll"],
+        "description": "Get User Payroll by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User payroll retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string"
+                },
+                "userId": {
+                  "type": "string"
+                },
+                "salaryAmount": {
+                  "type": "number"
+                },
+                "incrementType": {
+                  "type": "string"
+                },
+                "effectiveFrom": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User's Payroll not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "put": {
+        "tags": ["user-payroll"],
+        "description": "Update User Payroll",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "salaryAmount": {
+                  "example": 35000
+                },
+                "incrementType": {
+                  "example": "monthly"
+                },
+                "effectiveFrom": {
+                  "example": "2026-05-01"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User updated successfully"
+          },
+          "404": {
+            "description": "User's Payroll not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["user-payroll"],
+        "description": "Delete User Payroll",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User payroll deleted successfully"
+          },
+          "404": {
+            "description": "User's Payroll not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/increments": {
+      "post": {
+        "tags": ["increment"],
+        "description": "Add Increment",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "64f1a2b3c4d5e6f7890a1234(user_id)"
+                },
+                "previousSalary": {
+                  "example": 40000
+                },
+                "incrementPercentage": {
+                  "example": 10
+                },
+                "incrementAmount": {
+                  "example": 4000
+                },
+                "totalSalary": {
+                  "example": 44000
+                },
+                "incrementMethod": {
+                  "example": "yearly"
+                },
+                "effectiveFrom": {
+                  "example": "2026-05-01"
+                }
+              },
+              "required": [
+                "user",
+                "previousSalary",
+                "totalSalary",
+                "effectiveFrom"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Increment added successfully"
+          },
+          "404": {
+            "description": "Payroll not found for this user"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "get": {
+        "tags": ["increment"],
+        "description": "Get All Increments",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "example": "1"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "example": "10"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Increments fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/increments/{id}": {
+      "get": {
+        "tags": ["increment"],
+        "description": "Get Increment By ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Increment fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string"
+                },
+                "user": {
+                  "type": "string"
+                },
+                "previousSalary": {
+                  "type": "number"
+                },
+                "incrementPercentage": {
+                  "type": "number"
+                },
+                "incrementAmount": {
+                  "type": "number"
+                },
+                "totalSalary": {
+                  "type": "number"
+                },
+                "incrementMethod": {
+                  "type": "string",
+                  "enum": ["monthly", "yearly"]
+                },
+                "effectiveFrom": {
+                  "type": "string"
+                },
+                "createdBy": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Increment not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "delete": {
+        "tags": ["increment"],
+        "description": "Delete Increment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User Increment deleted successfully"
+          },
+          "404": {
+            "description": "User Increment not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
     }
   },
+
   "security": [
     {
       "BearerAuth": []

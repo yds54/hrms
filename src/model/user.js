@@ -3,162 +3,122 @@ const { GENDER, MARITAL_STATUS, ROLES, USER_STATUS } = require("../utils/enum");
 
 const userSchema = new mongoose.Schema(
   {
-    profilePicture: String,
+    profilePicture: { type: String },
 
     name: {
-      firstName: String,
-      middleName: String,
-      lastName: String,
+      firstName: { type: String },
+      middleName: { type: String },
+      lastName: { type: String },
     },
-
     email: {
       type: String,
       unique: true,
     },
-
     password: {
       type: String,
       select: false,
     },
-
     employeeCode: {
       type: String,
       unique: true,
     },
-
-    nameAsPerAadhaar: String,
-    aadhaarNumber: String,
-
-    birthDate: Date,
-
+    nameAsPerAadhaar: { type: String },
+    aadhaarNumber: { type: String },
+    birthDate: { type: Date },
     gender: {
       type: String,
       enum: Object.values(GENDER),
     },
-
-    contactNumber: String,
-    emergencyContactNumber: String,
-
-    correspondenceAddress: String,
-    permanentAddress: String,
-
+    contactNumber: { type: String },
+    emergencyContactNumber: { type: String },
+    correspondenceAddress: { type: String },
+    permanentAddress: { type: String },
     maritalStatus: {
       type: String,
       enum: Object.values(MARITAL_STATUS),
       default: MARITAL_STATUS.SINGLE,
     },
-
     designationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "designation",
       required: true,
     },
-    position: String,
+    position: { type: String },
     departmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "department",
       required: true,
     },
-
-    vehicleNumber: String,
-
+    vehicleNumber: { type: String },
     education: {
-      degree: String,
-      collegeName: String,
-      yearOfPassing: Number,
+      degree: { type: String },
+      collegeName: { type: String },
+      yearOfPassing: { type: Number },
     },
-
     bankDetails: {
       bankId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "bank",
         required: true,
       },
-      accountNumber: String,
-      ifscCode: String,
-      accountHolderName: String,
+      accountNumber: { type: String },
+      ifscCode: { type: String },
+      accountHolderName: { type: String },
     },
-
     officeTiming: {
-      entryTime: String,
-      exitTime: String,
-      totalMinutes: Number,
-      lateEntryAfterMinutes: String,
-      overtimeAfterMinutes: Number,
+      entryTime: { type: String },
+      exitTime: { type: String },
+      totalMinutes: { type: Number },
+      lateEntryAfterMinutes: { type: String },
+      overtimeAfterMinutes: { type: Number },
     },
-
-    attendanceType: String,
-
+    attendanceType: { type: String },
     considerOvertime: {
       type: Boolean,
       default: false,
     },
-
     organizationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "organization",
       required: true,
     },
-
     role: {
       type: String,
       enum: Object.values(ROLES),
       default: ROLES.USER,
     },
-
     drsRequired: {
       type: Boolean,
       default: true,
     },
-
     sendSalarySlipEmail: {
       type: Boolean,
       default: true,
     },
-
-    rentalAllowance: Boolean,
-
-    rentalAllowanceAmount: Number,
-
-    leavecreaditType: String,
-
+    rentalAllowance: { type: Boolean },
+    rentalAllowanceAmount: { type: Number },
+    leavecreaditType: { type: String },
     resignationDetails: {
-      resignationDate: Date,
-      NoticePeriod: Number,
-      LastDate: Date,
-    },
-
-    joiningInfo: {
-      trainingStartDate: Date,
-      trainingDurationMonths: Number,
-      trainingEndDate: Date,
-      joiningDate: Date,
-      bondDurationMonths: Number,
-      bondCompletedDate: Date,
+      resignationDate: { type: Date },
+      NoticePeriod: { type: Number },
+      LastDate: { type: Date },
     },
     status: {
       type: String,
       enum: Object.values(USER_STATUS),
       default: USER_STATUS.ACTIVE,
     },
-
     isDeleted: {
       type: Boolean,
       default: false,
     },
-
-
     isLeft: { type: Boolean, default: false },
-
-    marriageDate: Date,
-    deletedAt: Date,
+    marriageDate: { type: Date },
+    deletedAt: { type: Date },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-
     },
-
-    
   },
   {
     timestamps: true,

@@ -5,6 +5,7 @@ const {
   viewallUser,
   updateUser,
   deleteUser,
+  getUserById,
 } = require("../controller/userController");
 
 const { authenticateJWT } = require("../middleware/authentication");
@@ -15,6 +16,7 @@ const {
   getuserValidation,
   updateUserValidation,
   userdeleteValidation,
+  getUserByIdValidation,
 } = require("../validation/userValidation");
 
 const { validate } = require("express-validation");
@@ -27,10 +29,18 @@ router.get(
   validate(getuserValidation),
   viewallUser,
 );
+router.get(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN),
+  validate(getUserByIdValidation),
+  getUserById,
+);
 
 router.put(
   "/:id",
   authenticateJWT,
+  upload.single("profilePicture"),
   authorizeRoles(ROLES.ADMIN),
   validate(updateUserValidation),
   updateUser,

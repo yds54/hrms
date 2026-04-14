@@ -58,10 +58,8 @@ exports.getAllAssets = async (req, res, next) => {
       query: _whereCondition,
       page: Number(page),
       limit: Number(limit),
-      populate: [
-        { path: "assetcategoryId", select: "assetcategoryName" },
-        { path: "relatedTo", select: "firstName lastName email" },
-      ],
+      populate: [{ path: "assetcategoryId", select: "assetcategoryName" }],
+      sort: { createdAt: -1 },
     });
 
     return successResponse(res, 200, "Assets fetched successfully", {
@@ -106,7 +104,7 @@ exports.updateAsset = async (req, res, next) => {
     );
 
     return successResponse(res, 200, "Asset updated successfully", {
-      data: body.assetName,
+      data: payload.assetName,
     });
   } catch (error) {
     next(error);
