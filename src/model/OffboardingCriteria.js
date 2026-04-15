@@ -1,11 +1,15 @@
 const mongoose = require("mongoose");
 
-const bankSchema = new mongoose.Schema(
+const CriteriaSchema = new mongoose.Schema(
   {
-    bankName: {
+    criteria: {
       type: String,
       required: true,
       trim: true,
+    },
+    isRequired: {
+      type: Boolean,
+      default: false,
     },
     isDeleted: {
       type: Boolean,
@@ -23,4 +27,4 @@ const bankSchema = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model("bank", bankSchema);
+module.exports = mongoose.model("criteria", CriteriaSchema);

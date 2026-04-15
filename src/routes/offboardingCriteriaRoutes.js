@@ -2,58 +2,59 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  addBank,
-  getAllBanks,
-  updateBank,
-  deleteBank,
-  getBankById,
-} = require("../controller/bankController");
+  addCriteria,
+  getAllCriteria,
+  updateCriteria,
+  deleteCriteria,
+  getCriteriaById,
+} = require("../controller/offboardingCriteriaController");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
 const { ROLES } = require("../utils/enum");
 
 const {
-  addBankValidation,
-  getBankValidation,
-  updateBankValidation,
-  deleteBankValidation,
-  getBankByIdValidation,
-} = require("../validation/bankValidation");
+  addCriteriaValidation,
+  getCriteriaValidation,
+  deleteCriteriaValidation,
+  updateCriteriaValidation,
+  getCriteriaByIdValidation,
+} = require("../validation/offboardingValidation");
 const { validate } = require("express-validation");
 
 router.post(
   "/",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(addBankValidation),
-  addBank,
+  validate(addCriteriaValidation),
+  addCriteria,
 );
 router.get(
   "/",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(getBankValidation),
-  getAllBanks,
+  validate(getCriteriaValidation),
+  getAllCriteria,
 );
 router.get(
   "/:id",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(getBankByIdValidation),
-  getBankById,
+  validate(getCriteriaByIdValidation),
+  getCriteriaById,
 );
 router.put(
   "/:id",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(updateBankValidation),
-  updateBank,
+  validate(updateCriteriaValidation),
+  updateCriteria,
 );
 router.delete(
   "/:id",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(deleteBankValidation),
-  deleteBank,
+  validate(deleteCriteriaValidation),
+  deleteCriteria,
 );
+
 module.exports = router;

@@ -7,29 +7,24 @@ const organizationSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
     headHR: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "user", 
+      ref: "user",
       default: null,
     },
-
     organizationAddress: {
       type: String,
       required: true,
       trim: true,
     },
-
     logo: {
-      type: String, 
+      type: String,
       default: null,
     },
-
     organizationAccountNumber: {
       type: String,
       trim: true,
     },
-
     irregularEmployeeCriteria: {
       days: {
         type: Number,
@@ -44,23 +39,20 @@ const organizationSchema = new mongoose.Schema(
         default: 5,
       },
     },
-
     isDeleted: {
       type: Boolean,
       default: false,
     },
-
-    updatedBy: {
-      type: String,
-    },
-
-    deletedBy: {
-      type: String,
+    deletedAt: { type: Date },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model("organization", organizationSchema);
