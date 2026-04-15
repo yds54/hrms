@@ -11,7 +11,7 @@ const {
 
 const {
   authenticateJWT,
-  optionalAuth,
+  optionalAuthResetPassword,
 } = require("../middleware/authentication");
 const uploads = require("../middleware/uploads");
 const {
@@ -47,7 +47,7 @@ router.post(
 //============= CHANGE PASSWORD =================
 router.post(
   "/change-password",
-  optionalAuth,
+  optionalAuthResetPassword,
   validate(changePasswordValidation),
   changePassword,
 );

@@ -52,7 +52,7 @@ passport.use(
 
 const authenticateJWT = passport.authenticate("jwt", { session: false });
 
-const optionalAuth = (req, res, next) => {
+const optionalAuthResetPassword = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (authHeader) {
@@ -62,4 +62,4 @@ const optionalAuth = (req, res, next) => {
   next();
 };
 
-module.exports = { authenticateJWT, optionalAuth };
+module.exports = { authenticateJWT, optionalAuthResetPassword };
