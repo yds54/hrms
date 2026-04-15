@@ -15,6 +15,9 @@ const authSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    expiresAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -22,7 +25,5 @@ const authSchema = new mongoose.Schema(
 );
 
 authSchema.index({ token: 1 });
-
-
 
 module.exports = mongoose.model("auth", authSchema);

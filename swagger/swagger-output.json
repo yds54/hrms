@@ -339,6 +339,59 @@
         }
       }
     },
+    "/api/auth/forgot-password": {
+      "post": {
+        "tags": ["Auth"],
+        "description": "Forgot Password",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["email"],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "test@team.bigscal.com"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Reset link sent" }
+        }
+      }
+    },
+    "/api/auth/change-password": {
+      "post": {
+        "tags": ["Auth"],
+        "description": "Change Password",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "required": ["newPassword", "confirmPassword"],
+              "properties": {
+                "newPassword": { "type": "string" },
+                "confirmPassword": { "type": "string" },
+                "token": {
+                  "type": "string",
+                  "description": "Required for forgot password flow"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Password changed successfully" }
+        }
+      }
+    },
 
     "/api/drs/": {
       "post": {

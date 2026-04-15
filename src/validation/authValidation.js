@@ -114,4 +114,22 @@ exports.loginValidation = {
       ),
   }),
 };
-//
+
+//================ FORGOT PASSWORD VALIDATION ===================
+exports.forgotPasswordValidation = {
+  body: Joi.object({
+    email: Joi.string().email().required(),
+  }),
+};
+
+//============= CHANGE PASSWORD VALIDATION ==============
+exports.changePasswordValidation = {
+  body: Joi.object({
+    newPassword: Joi.string().min(6).required(),
+    confirmPassword: Joi.string()
+      .valid(Joi.ref("newPassword"))
+      .required()
+      .messages({ "any.only": "Passwords do not match" }),
+    token: Joi.string().optional(),
+  }),
+};
