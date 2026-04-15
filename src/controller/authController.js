@@ -8,6 +8,7 @@ const { USER, AUTH } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { USER_STATUS } = require("../utils/enum");
 const { sendMail } = require("../utils/sendMail");
+const moment = require("moment");
 
 exports.registerUser = async (req, res, next) => {
   try {
@@ -98,7 +99,7 @@ exports.loginUser = async (req, res, next) => {
     await AUTH.create({
       user: isUserExist._id,
       token,
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      expiresAt: moment().add(1, "hour").toDate(),
     });
 
     return successResponse(res, 200, "Login successful", { token });
@@ -130,7 +131,11 @@ exports.forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    const isUserExists = await USER.findOne({ email, isDeleted: false });
+    const isUserExists = await USER.findOne({
+      email,
+      isDeleted: false,
+    }).select("_id");
+
     if (!isUserExists) throw new AppError("User not found", 404);
 
     const token = crypto.randomBytes(32).toString("hex");
@@ -138,7 +143,7 @@ exports.forgotPassword = async (req, res, next) => {
     await AUTH.create({
       user: isUserExists._id,
       token,
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 min
+      expiresAt: moment().add(15, "minutes").toDate(),
     });
 
     const resetUrl = `${process.env.FRONTEND_URL}/change-password/${token}`;
@@ -175,14 +180,14 @@ exports.changePassword = async (req, res, next) => {
       const auth = await AUTH.findOne({
         token,
         isDeleted: false,
-        expiresAt: { $gt: new Date() },
+        expiresAt: { $gt: moment().toDate() },
       });
       if (!auth) throw new AppError("Invalid or expired token", 400);
       userId = auth.user;
 
       await AUTH.updateOne({ _id: auth._id }, { isDeleted: true });
     } else {
-      throw new AppError("Unauthorized", 401);
+      throw new AppError("You are not authorize to change password", 401);
     }
 
     await USER.updateOne(
@@ -190,7 +195,7 @@ exports.changePassword = async (req, res, next) => {
       { password: await bcrypt.hash(newPassword, 10) },
     );
 
-    return successResponse(res, 200, "Password updated successfully");
+    return successResponse(res, 200, "Password changed successfully");
   } catch (err) {
     next(err);
   }

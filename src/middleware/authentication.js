@@ -26,7 +26,7 @@ passport.use(
       const session = await AUTH.findOne({
         token,
         isDeleted: false,
-        expiresAt: { $gt: new Date() },
+        expiresAt: { $gt: moment().toDate() },
       });
 
       if (!session) {
