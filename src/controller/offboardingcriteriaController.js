@@ -9,15 +9,17 @@ const { AppError } = require("../utils/error");
 
 exports.addCriteria = async (req, res, next) => {
   try {
+    const { body } = req;
 
-    const isCriteriaExist = await OFFBORADINGCRITERIA.findOne({
-      criteria: req.body.criteria,
+    const isCriteriaExists = await OFFBORADINGCRITERIA.findOne({
+      criteria: body.criteria,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (isCriteriaExist) throw new AppError("Criteria already exists", 409);
+    if (isCriteriaExists) throw new AppError("Criteria already exists", 409);
 
-    await OFFBORADINGCRITERIA.create(req.body);
+    body.createdBy = req.user._id;
+    await OFFBORADINGCRITERIA.create(body);
 
     return successResponse(res, 200, "Criteria Add sucessfully", {});
   } catch (error) {
@@ -44,8 +46,9 @@ exports.getAllCriteria = async (req, res, next) => {
     const { data, pagination } = await paginate({
       model: OFFBORADINGCRITERIA,
       query: _whereCondition,
-      page: Number(page),
-      limit: Number(limit),
+      page: +page,
+      limit: +limit,
+      sort: { createdAt: -1 },
     });
 
     return successResponse(res, 200, "Criteria fetched successfully", {
@@ -62,30 +65,31 @@ exports.updateCriteria = async (req, res, next) => {
     const { params, body: payload } = req;
     const { id } = params;
 
-    const criterias = await OFFBORADINGCRITERIA.findOne({
+    const isCriteriaExists = await OFFBORADINGCRITERIA.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (!criterias) {
+    if (!isCriteriaExists) {
       throw new AppError("Criteria not found", 404);
     }
 
-    if (criterias) {
-      const exists = await OFFBORADINGCRITERIA.findOne({
+    if (isCriteriaExists) {
+      const criteriaExists = await OFFBORADINGCRITERIA.findOne({
         criteria: payload.criteria,
         _id: { $ne: id },
         isDeleted: false,
       });
 
-      if (exists) {
+      if (criteriaExists) {
         throw new AppError("Criteria already exists", 409);
       }
-
-      
     }
 
-    await OFFBORADINGCRITERIA.updateOne({ _id: id }, { $set: { ...payload } });
+    await OFFBORADINGCRITERIA.updateOne(
+      { _id: id, isDeleted: false },
+      { $set: { ...payload } },
+    );
 
     return successResponse(res, 200, "Criteria updated successfully", {
       data: payload.criteria,
@@ -99,20 +103,42 @@ exports.deleteCriteria = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const criterias = await OFFBORADINGCRITERIA.findOne({
+    const isCriteriaExists = await OFFBORADINGCRITERIA.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (!criterias) {
+    if (!isCriteriaExists) {
       throw new AppError("Criteria not found", 404);
     }
 
-    criterias.isDeleted = true;
-    criterias.deletedAt = moment().toDate();
-    await criterias.save();
+    isCriteriaExists.isDeleted = true;
+    isCriteriaExists.deletedAt = moment().toDate();
+
+    await isCriteriaExists.save();
 
     return successResponse(res, 200, "Criteria deleted successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getCriteriaById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const isCriteriaExists = await OFFBORADINGCRITERIA.findOne({
+      _id: id,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isCriteriaExists) {
+      throw new AppError("Criteria not found", 404);
+    }
+
+    return successResponse(res, 200, "Criteria fetched successfully", {
+      data: isCriteriaExists,
+    });
   } catch (error) {
     next(error);
   }

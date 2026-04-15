@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const moment = require("moment");
+
 require("dotenv").config();
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
@@ -7,27 +9,25 @@ const { AppError } = require("../utils/error");
 
 exports.addBank = async (req, res, next) => {
   try {
-    const data = { ...req.body };
+    const { body } = req;
 
-    const isBankExist = await BANK.findOne({
-      bankName: data.bankName,
+    const isBankExists = await BANK.findOne({
+      bankName: body.bankName,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (isBankExist) throw new AppError("Bank already exists", 409);
+    if (isBankExists) throw new AppError("Bank already exists", 409);
 
-    const department = new BANK(data);
-    await department.save();
+    body.createdBy = req.user._id;
+    await BANK.create(body);
 
     return successResponse(res, 200, "Bank Add sucessfully", {
-      bankName: department.bankName,
+      bankName: body.bankName,
     });
   } catch (error) {
-    console.log(error);
     next(error);
   }
 };
-
 
 exports.getAllBanks = async (req, res, next) => {
   try {
@@ -41,15 +41,16 @@ exports.getAllBanks = async (req, res, next) => {
     if (bankName) {
       _whereCondition.bankName = {
         $regex: bankName,
-        $options: "i", 
+        $options: "i",
       };
     }
 
     const { data, pagination } = await paginate({
       model: BANK,
       query: _whereCondition,
-      page: Number(page),
-      limit: Number(limit),
+      page: +page,
+      limit: +limit,
+      sort: { createdAt: -1 },
     });
 
     return successResponse(res, 200, "Banks fetched successfully", {
@@ -63,38 +64,37 @@ exports.getAllBanks = async (req, res, next) => {
 
 exports.updateBank = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { bankName } = req.body;
+    const { params, body: payload } = req;
+    const { id } = params;
 
-    const bank = await BANK.findOne({
+    const isBankExists = await BANK.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (!bank) {
+    if (!isBankExists) {
       throw new AppError("Bank not found", 404);
     }
 
-    if (bank) {
-      const exists = await BANK.findOne({
-        bankName,
+    if (isBankExists) {
+      const bankExists = await BANK.findOne({
+        bankName: payload.bankName,
         _id: { $ne: id },
         isDeleted: false,
       });
 
-      if (exists) {
+      if (bankExists) {
         throw new AppError("bank already exists", 409);
       }
-
-      bank.bankName = bankName;
     }
 
-    bank.updatedBy = req.user?.id || null;
-
-    await bank.save();
+    await BANK.updateOne(
+      { _id: id, isDeleted: false },
+      { $set: { ...payload } },
+    );
 
     return successResponse(res, 200, "Bank updated successfully", {
-      data: bank,
+      data: payload.bankName,
     });
   } catch (error) {
     next(error);
@@ -105,19 +105,19 @@ exports.deleteBank = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const department = await BANK.findOne({
+    const isBankExists = await BANK.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (!department) {
+    if (!isBankExists) {
       throw new AppError("Bank not found", 404);
     }
 
-    department.isDeleted = true;
-    department.deletedBy = req.user?.id || null;
+    isBankExists.isDeleted = true;
+    isBankExists.deletedAt = moment().toDate();
 
-    await department.save();
+    await isBankExists.save();
 
     return successResponse(res, 200, "Bank deleted successfully");
   } catch (error) {
@@ -125,4 +125,23 @@ exports.deleteBank = async (req, res, next) => {
   }
 };
 
+exports.getBankById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
 
+    const isBankExists = await BANK.findOne({
+      _id: id,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isBankExists) {
+      throw new AppError("Bank not found", 404);
+    }
+
+    return successResponse(res, 200, "Bank fetched sucessfully", {
+      data: isBankExists,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

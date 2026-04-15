@@ -6,32 +6,32 @@ const { successResponse } = require("../utils/sucess");
 const { ORGANIZATION } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 
-
 exports.addOrganization = async (req, res, next) => {
   try {
-    const data = { ...req.body };
+    const { body, file } = req;
 
-    const isExist = await ORGANIZATION.findOne({
-      organizationName: data.organizationName,
+    if (file) {
+      body.logo = `/uploads/organizationLogo/${file.filename}`;
+    }
+    const isOrganizationExists = await ORGANIZATION.findOne({
+      organizationName: body.organizationName,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (isExist) {
+    if (isOrganizationExists) {
       throw new AppError("Organization already exists", 409);
     }
 
-    const organization = new ORGANIZATION(data);
-    await organization.save();
+    body.createdBy = req.user._id;
+    await ORGANIZATION.create(body);
 
     return successResponse(res, 200, "Organization added successfully", {
-      organizationName: organization.organizationName,
+      organizationName: body.organizationName,
     });
   } catch (error) {
-    console.log(error);
     next(error);
   }
 };
-
 
 exports.getAllOrganizations = async (req, res, next) => {
   try {
@@ -51,8 +51,9 @@ exports.getAllOrganizations = async (req, res, next) => {
     const { data, pagination } = await paginate({
       model: ORGANIZATION,
       query: _whereCondition,
-      page: Number(page),
-      limit: Number(limit),
+      page: +page,
+      limit: +limit,
+      sort: { createdAt: -1 },
     });
 
     return successResponse(res, 200, "Organizations fetched successfully", {
@@ -64,99 +65,85 @@ exports.getAllOrganizations = async (req, res, next) => {
   }
 };
 
-
 exports.getOrganizationById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const organization = await ORGANIZATION.findOne({
+    const isOrganizationExists = await ORGANIZATION.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (!organization) {
+    if (!isOrganizationExists) {
       throw new AppError("Organization not found", 404);
     }
 
     return successResponse(res, 200, "Organization fetched successfully", {
-      data: organization,
+      data: isOrganizationExists,
     });
   } catch (error) {
     next(error);
   }
 };
 
-
 exports.updateOrganization = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const data = { ...req.body };
+    const { params, body: payload, file } = req;
+    const { id } = params;
 
-    const organization = await ORGANIZATION.findOne({
+    if (file) {
+      payload.logo = `/uploads/organizationLogo/${file.filename}`;
+    }
+
+    const isOrganizationExists = await ORGANIZATION.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (!organization) {
+    if (!isOrganizationExists) {
       throw new AppError("Organization not found", 404);
     }
 
-    if (data.organizationName) {
-      const exists = await ORGANIZATION.findOne({
-        organizationName: data.organizationName,
+    if (isOrganizationExists) {
+      const organizationExists = await ORGANIZATION.findOne({
+        organizationName: payload.organizationName,
         _id: { $ne: id },
         isDeleted: false,
       });
 
-      if (exists) {
+      if (organizationExists) {
         throw new AppError("Organization already exists", 409);
       }
-
-      organization.organizationName = data.organizationName;
     }
-
-    if (data.headHR) organization.headHR = data.headHR;
-    if (data.organizationAddress) organization.organizationAddress = data.organizationAddress;
-    if (data.logo) organization.logo = data.logo;
-    if (data.organizationAccountNumber) organization.organizationAccountNumber = data.organizationAccountNumber;
-
-    if (data.irregularEmployeeCriteria) {
-      organization.irregularEmployeeCriteria = {
-        ...organization.irregularEmployeeCriteria,
-        ...data.irregularEmployeeCriteria,
-      };
-    }
-
-    organization.updatedBy = req.user?.id || null;
-
-    await organization.save();
-
+    await ORGANIZATION.updateOne(
+      { _id: id, isDeleted: false },
+      { $set: { ...payload } },
+    );
     return successResponse(res, 200, "Organization updated successfully", {
-      data: organization,
+      data: payload.organizationName,
     });
   } catch (error) {
     next(error);
   }
 };
-
 
 exports.deleteOrganization = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const organization = await ORGANIZATION.findOne({
+    const isOrganizationExists = await ORGANIZATION.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (!organization) {
+    if (!isOrganizationExists) {
       throw new AppError("Organization not found", 404);
     }
 
-    organization.isDeleted = true;
-    organization.deletedBy = req.user?.id || null;
+    isOrganizationExists.isDeleted = true;
+    isOrganizationExists.deletedAt = moment().toDate();
 
-    await organization.save();
+    await isOrganizationExists.save();
 
     return successResponse(res, 200, "Organization deleted successfully");
   } catch (error) {

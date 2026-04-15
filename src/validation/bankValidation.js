@@ -1,16 +1,16 @@
-const { Joi } = require('express-validation');
+const { Joi } = require("express-validation");
 
 exports.addBankValidation = {
-    body: Joi.object({
-        bankName:Joi.string().required()
-    })
-}
+  body: Joi.object({
+    bankName: Joi.string().required(),
+  }),
+};
 
 exports.getBankValidation = {
   query: Joi.object({
     page: Joi.number().integer(),
     limit: Joi.number().integer(),
-    bankName:Joi.string()
+    bankName: Joi.string(),
   }),
 };
 
@@ -24,6 +24,12 @@ exports.updateBankValidation = {
 };
 
 exports.deleteBankValidation = {
+  params: Joi.object({
+    id: Joi.string().hex().length(24).required(),
+  }),
+};
+
+exports.getBankByIdValidation = {
   params: Joi.object({
     id: Joi.string().hex().length(24).required(),
   }),

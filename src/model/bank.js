@@ -7,18 +7,20 @@ const bankSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
     isDeleted: {
       type: Boolean,
       default: false,
     },
-
-    updatedBy: String,
-    deletedBy: String,
+    deletedAt: { type: Date },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-module.exports=mongoose.model("bank",bankSchema)
+module.exports = mongoose.model("bank", bankSchema);

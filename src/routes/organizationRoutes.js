@@ -11,8 +11,9 @@ const {
 
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
-const {ROLES}= require("../utils/enum")
+const uploads = require("../middleware/uploads");
 
+const { ROLES } = require("../utils/enum");
 
 const {
   addOrganizationValidation,
@@ -24,41 +25,46 @@ const {
 
 const { validate } = require("express-validation");
 
-
 router.post(
   "/",
+  uploads("organizationLogo").single("logo"),
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
   validate(addOrganizationValidation),
-  addOrganization
+  addOrganization,
 );
-
 
 router.get(
   "/",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
   validate(getOrganizationValidation),
-  getAllOrganizations
+  getAllOrganizations,
 );
 
-
-
-router.put(
+router.get(
   "/:id",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
-  validate(updateOrganizationValidation),
-  updateOrganization
+  validate(getOrganizationByIdValidation),
+  getOrganizationById,
 );
 
+router.put(
+  "/:id",
+  uploads("organizationLogo").single("logo"),
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN),
+  validate(updateOrganizationValidation),
+  updateOrganization,
+);
 
 router.delete(
   "/:id",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
   validate(deleteOrganizationValidation),
-  deleteOrganization
+  deleteOrganization,
 );
 
 module.exports = router;

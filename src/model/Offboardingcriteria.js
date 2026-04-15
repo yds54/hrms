@@ -1,21 +1,30 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const CriteriaSchema = new mongoose.Schema({
-  criteria: {
-    type: String,
-    required: true,
-    trim: true
+const CriteriaSchema = new mongoose.Schema(
+  {
+    criteria: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    isRequired: {
+      type: Boolean,
+      default: false,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: { type: Date },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
   },
-  isRequired: {
-    type: Boolean,
-    default: false
+  {
+    timestamps: true,
   },
-   isDeleted: {
-    type: Boolean,
-    default: false
-  }
-}, {
-  timestamps: true
-});
+);
 
-module.exports = mongoose.model('criteria', CriteriaSchema);
+module.exports = mongoose.model("criteria", CriteriaSchema);

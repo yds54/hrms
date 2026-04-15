@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.158:5000",
+  "host": "192.168.0.42:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -1115,6 +1115,32 @@
       }
     },
     "/api/banks/{id}": {
+      "get": {
+        "tags": ["bank"],
+        "description": "Get Bank  by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bank retrieved successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "404": {
+            "description": "Bank not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
       "put": {
         "tags": ["bank"],
         "description": "",
@@ -1218,6 +1244,32 @@
       }
     },
     "/api/criterias/{id}": {
+      "get": {
+        "tags": ["criterias"],
+        "description": "Get criteria  by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "criteria retrieved successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "404": {
+            "description": "criteria not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
       "put": {
         "tags": ["criterias"],
         "description": "",
@@ -1269,48 +1321,70 @@
     "/api/organizations/": {
       "post": {
         "tags": ["organization"],
-        "description": "Add Organization",
+        "summary": "Add Organization",
+        "description": "Create a new organization with logo upload",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "organizationName": {
-                  "example": "ABC Pvt Ltd"
-                },
-                "headHR": {
-                  "example": "64f1c2a5b5d2c12a34567890"
-                },
-                "organizationAddress": {
-                  "example": "New York, USA"
-                },
-                "logo": {
-                  "example": "uploads/logo.png"
-                },
-                "organizationAccountNumber": {
-                  "example": "1234567890"
-                },
-                "irregularEmployeeCriteria": {
-                  "type": "object",
-                  "properties": {
-                    "days": {
-                      "example": 10
-                    },
-                    "beforePercentage": {
-                      "example": 3
-                    },
-                    "afterPercentage": {
-                      "example": 5
-                    }
-                  }
-                }
-              }
-            }
+            "name": "organizationName",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "example": "ABC Pvt Ltd"
+          },
+          {
+            "name": "headHR",
+            "in": "formData",
+            "type": "string",
+            "example": "64f1c2a5b5d2c12a34567890"
+          },
+          {
+            "name": "organizationAddress",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "example": "New York, USA"
+          },
+          {
+            "name": "logo",
+            "in": "formData",
+            "type": "file",
+            "description": "Upload organization logo"
+          },
+          {
+            "name": "organizationAccountNumber",
+            "in": "formData",
+            "type": "string",
+            "example": "1234567890"
+          },
+
+          {
+            "name": "irregularEmployeeCriteria[days]",
+            "in": "formData",
+            "type": "number",
+            "example": 10
+          },
+          {
+            "name": "irregularEmployeeCriteria[beforePercentage]",
+            "in": "formData",
+            "type": "number",
+            "example": 3
+          },
+          {
+            "name": "irregularEmployeeCriteria[afterPercentage]",
+            "in": "formData",
+            "type": "number",
+            "example": 5
           }
         ],
         "responses": {
+          "200": {
+            "description": "Organization created successfully"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
           "403": {
             "description": "Forbidden"
           }
