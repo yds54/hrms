@@ -7,7 +7,7 @@ const {
   updateCriteria,
   deleteCriteria,
   getCriteriaById,
-} = require("../controller/offboardingcriteriaController");
+} = require("../controller/offboardingCriteriaController");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
 const { ROLES } = require("../utils/enum");

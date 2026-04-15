@@ -130,7 +130,7 @@ exports.getCriteriaById = async (req, res, next) => {
     const isCriteriaExists = await OFFBORADINGCRITERIA.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id");
+    });
 
     if (!isCriteriaExists) {
       throw new AppError("Criteria not found", 404);

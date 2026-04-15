@@ -72,7 +72,7 @@ exports.getOrganizationById = async (req, res, next) => {
     const isOrganizationExists = await ORGANIZATION.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id");
+    });
 
     if (!isOrganizationExists) {
       throw new AppError("Organization not found", 404);

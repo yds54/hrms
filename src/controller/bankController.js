@@ -132,7 +132,7 @@ exports.getBankById = async (req, res, next) => {
     const isBankExists = await BANK.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id");
+    });
 
     if (!isBankExists) {
       throw new AppError("Bank not found", 404);
