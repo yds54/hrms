@@ -5,14 +5,20 @@ const {
   loginUser,
   registerUser,
   logoutUser,
+  forgotPassword,
+  changePassword,
 } = require("../controller/authController");
 
-const { authenticateJWT } = require("../middleware/authentication");
-const { authorizeRoles, ROLES } = require("../middleware/roleAuthorization");
+const {
+  authenticateJWT,
+  optionalAuth,
+} = require("../middleware/authentication");
 const uploads = require("../middleware/uploads");
 const {
   userRegisterValidation,
   loginValidation,
+  forgotPasswordValidation,
+  changePasswordValidation,
 } = require("../validation/authValidation");
 
 const { validate } = require("express-validation");
@@ -30,5 +36,20 @@ router.post("/login", validate(loginValidation), loginUser);
 
 //============== LOGOUT =====================
 router.post("/logout", authenticateJWT, logoutUser);
+
+//============== FORGOT PASSWORD ==========================
+router.post(
+  "/forgot-password",
+  validate(forgotPasswordValidation),
+  forgotPassword,
+);
+
+//============= CHANGE PASSWORD =================
+router.post(
+  "/change-password",
+  optionalAuth,
+  validate(changePasswordValidation),
+  changePassword,
+);
 
 module.exports = router;

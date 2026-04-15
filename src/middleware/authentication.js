@@ -26,6 +26,7 @@ passport.use(
       const session = await AUTH.findOne({
         token,
         isDeleted: false,
+        expiresAt: { $gt: new Date() },
       });
 
       if (!session) {
@@ -51,4 +52,14 @@ passport.use(
 
 const authenticateJWT = passport.authenticate("jwt", { session: false });
 
-module.exports = { authenticateJWT };
+const optionalAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader) {
+    return authenticateJWT(req, res, next);
+  }
+
+  next();
+};
+
+module.exports = { authenticateJWT, optionalAuth };

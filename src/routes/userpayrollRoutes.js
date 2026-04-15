@@ -43,7 +43,7 @@ router.get(
 router.get(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.USER),
   validate(getPayrollByIdValidation),
   getUserPayrollById,
 );
