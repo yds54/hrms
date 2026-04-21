@@ -16,8 +16,8 @@ exports.createAttendanceValidation = {
 //--------------- DISPLAY ATTENDANCE VALIDATION -------------------
 exports.getAttendanceValidation = {
   query: Joi.object({
-    page: Joi.number().min(1).optional(),
-    limit: Joi.number().min(1).optional(),
+    page: Joi.number().min(1).optional().required(),
+    limit: Joi.number().min(1).optional().required(),
     month: Joi.number().min(1).max(12).optional(),
     year: Joi.number().min(2000).max(2100).optional(),
   }),

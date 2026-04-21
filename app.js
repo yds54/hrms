@@ -3,12 +3,11 @@ const session = require("express-session");
 const cors = require("cors");
 const passport = require("passport");
 
-require("dotenv").config()
-
+require("dotenv").config();
 
 const { errorHandler } = require("./src/utils/error");
 const indexRoutes = require("./src/routes/index");
-const {swaggerMiddleware}= require("./src/middleware/swaggerMiddleware")
+const { swaggerMiddleware } = require("./src/middleware/swaggerMiddleware");
 
 const app = express();
 app.use(cors());
@@ -19,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 // Session setup
 app.use(
   session({
-    secret:process.env.secrate_jwt,
+    secret: process.env.secrate_jwt,
     resave: false,
     saveUninitialized: true,
   }),
@@ -34,4 +33,3 @@ app.use("/uploads", express.static("uploads"));
 app.use(errorHandler);
 
 module.exports = app;
-

@@ -1,6 +1,13 @@
 const express = require("express");
 const router = express.Router();
 
+const { validate } = require("express-validation");
+const uploads = require("../middleware/uploads");
+const {
+  authenticateJWT,
+  resetPasswordAuthenticate,
+} = require("../middleware/authentication");
+
 const {
   loginUser,
   registerUser,
@@ -10,19 +17,13 @@ const {
 } = require("../controller/authController");
 
 const {
-  authenticateJWT,
-  optionalAuthResetPassword,
-} = require("../middleware/authentication");
-const uploads = require("../middleware/uploads");
-const {
   userRegisterValidation,
   loginValidation,
   forgotPasswordValidation,
   changePasswordValidation,
 } = require("../validation/authValidation");
 
-const { validate } = require("express-validation");
-
+//================ REGISTER USER ================
 router.post(
   "/register",
   uploads("profile").single("profilePicture"),
@@ -47,7 +48,7 @@ router.post(
 //============= CHANGE PASSWORD =================
 router.post(
   "/change-password",
-  optionalAuthResetPassword,
+  resetPasswordAuthenticate,
   validate(changePasswordValidation),
   changePassword,
 );

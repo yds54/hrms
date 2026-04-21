@@ -1,33 +1,46 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const { validate } = require("express-validation");
 
-
-const {authenticateJWT} = require('../middleware/authentication');
-const {authorizeRoles} = require('../middleware/roleAuthorization');
+const { authenticateJWT } = require("../middleware/authentication");
+const { authorizeRoles } = require("../middleware/roleAuthorization");
 const { ROLES } = require("../utils/enum");
 
-const {addDrs , getDrs , updateDrs} = require('../controller/drsController');
+const { addDrs, getDrs, updateDrs } = require("../controller/drsController");
 
-const {drsValidation , getDrsValidation , updateDrsValidation,  } = require('../validation/drsValidation');
+const {
+  drsValidation,
+  getDrsValidation,
+  updateDrsValidation,
+} = require("../validation/drsValidation");
 
 //==================== ADD DRS ===============================
 
-router.post('/',authenticateJWT,authorizeRoles(ROLES.USER),validate(drsValidation),addDrs);
+router.post(
+  "/",
+  authenticateJWT,
+  authorizeRoles(ROLES.USER),
+  validate(drsValidation),
+  addDrs,
+);
 
 //==================== SHOW DRS ===============================
 
-router.get("/show",authenticateJWT,authorizeRoles(ROLES.USER,ROLES.ADMIN),validate(getDrsValidation),getDrs);
+router.get(
+  "/show",
+  authenticateJWT,
+  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  validate(getDrsValidation),
+  getDrs,
+);
 
 //======================== EDIT DRS =============================
 router.put(
   "/:id",
   authenticateJWT,
+  authorizeRoles(ROLES.USER, ROLES.ADMIN),
   validate(updateDrsValidation),
-  updateDrs
+  updateDrs,
 );
-
-
-
 
 module.exports = router;

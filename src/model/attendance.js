@@ -109,7 +109,7 @@ const attendanceSchema = new mongoose.Schema(
   },
 );
 
-attendanceSchema.index({ userId: 1, date: 1 }, { unique: true });
+//attendanceSchema.index({ userId: 1, date: 1 }, { unique: true });
 
 const parseTime = (time) => {
   if (!time) return 0;

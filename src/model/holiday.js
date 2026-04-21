@@ -6,39 +6,20 @@ const holidaySchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-
     holidayReason: {
       type: String,
       required: true,
       trim: true,
     },
-
-    srNo:Number,
-
-    month: {
-      type: Number, 
-    },
-
-    year: {
-      type: Number,
-    },
-
     isDeleted: {
       type: Boolean,
       default: false,
     },
-
-    
-    updatedBy: String,
-   
-
-    deletedBy: String,
-      
-
+    deletedAt: { type: Date },
   },
   {
-    timestamps: true, 
-  }
+    timestamps: true,
+  },
 );
 
 module.exports = mongoose.model("holiday", holidaySchema);

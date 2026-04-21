@@ -25,7 +25,7 @@ const {
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.USER),
+  authorizeRoles(ROLES.USER, ROLES.ADMIN),
   upload("tickets").array("attachFile", 5),
   validate(createTicketValidation),
   createTicket,
@@ -35,7 +35,7 @@ router.post(
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.USER),
+  authorizeRoles(ROLES.USER, ROLES.ADMIN),
   validate(getTicketValidation),
   getTickets,
 );
@@ -53,8 +53,11 @@ router.get(
 router.put(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.USER),
-  upload("tickets").array("attachFile", 5),
+  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  upload("tickets", {
+    useUserFolder: true,
+    useTimestamp: true,
+  }).array("attachFile", 5),
   validate(updateTicketValidation),
   updateTicket,
 );
@@ -63,7 +66,7 @@ router.put(
 router.delete(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.USER),
+  authorizeRoles(ROLES.USER, ROLES.ADMIN),
   validate(deleteTicketValidation),
   deleteTicket,
 );

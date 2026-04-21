@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const { validate } = require("express-validation");
-
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
 const { ROLES } = require("../utils/enum");
@@ -22,7 +21,10 @@ router.post(
   "/",
   authenticateJWT,
   authorizeRoles(ROLES.USER),
-  upload("attendance").fields([
+  upload("attendance", {
+    useUserFolder: true,
+    useTimestamp: true,
+  }).fields([
     { name: "entry", maxCount: 1 },
     { name: "exit", maxCount: 1 },
   ]),
@@ -34,7 +36,7 @@ router.post(
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.USER),
+  authorizeRoles(ROLES.USER, ROLES.ADMIN),
   validate(getAttendanceValidation),
   getAttendance,
 );

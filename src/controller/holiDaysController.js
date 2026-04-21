@@ -1,57 +1,40 @@
-const mongoose = require("mongoose");
-require("dotenv").config();
+const moment = require("moment");
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
-const { Roles } = require("../utils/enum");
 const { HOLIDAY } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
-const { USER_STATUS } = require("../utils/enum");
 const { getProjection } = require("../utils/projection");
+const { TIMEZONES } = require("../utils/enum");
 
-
+//================== INSERT HOLIDAY ===============================
 exports.addHoliday = async (req, res, next) => {
   try {
-    const data= { holidayDate, holidayReason } = req.body;
+    const { holidayDate, holidayReason } = req.body;
 
     if (!holidayDate || !holidayReason) {
       throw new AppError("holidayDate and holidayReason are required", 400);
     }
 
-    const date = new Date(holidayDate);
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
+    const date = moment
+      .tz(holidayDate, "YYYY-MM-DD", TIMEZONES.INDIA)
+      .startOf("day");
 
-    const existing = await HOLIDAY.findOne({
-      holidayDate: date,
+    const start = date.clone().toDate();
+    const end = date.clone().endOf("day").toDate();
+
+    const isHolidayExists = await HOLIDAY.findOne({
+      holidayDate: { $gte: start, $lte: end },
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (existing) {
+    if (isHolidayExists) {
       throw new AppError("Holiday already exists for this date", 409);
     }
 
-    const lastHoliday = await HOLIDAY.findOne({
-      month,
-      year,
-      isDeleted: false,
-    }).sort({ srNo: -1 });
-
-    let nextSrNo = 1;
-
-    if (lastHoliday) {
-      nextSrNo = lastHoliday.srNo + 1;
-    }
-
-    const holiday = new HOLIDAY({
-      holidayDate: date,
+    const holiday = await HOLIDAY.create({
+      holidayDate: start,
       holidayReason,
-      month,
-      year,
-      srNo: nextSrNo,
-      updatedBy: req.user?.id || null,
     });
-
-    await holiday.save();
 
     return successResponse(res, 200, "Holiday added successfully", {
       data: holiday,
@@ -61,43 +44,16 @@ exports.addHoliday = async (req, res, next) => {
   }
 };
 
-// exports.viewAllHolidays = async (req, res, next) => {
-//   try {
-//     const { query } = req;
-//     const { page = 1, limit = 10, month, year } = query;
-
-//     const _whereCondition = { isDeleted: false };
-
-//     if (month && year) {
-//       _whereCondition["month"] = Number(month);
-//       _whereCondition["year"] = Number(year);
-//     }
-
-//     const { data, pagination } = await paginate({
-//       model: HOLIDAY,
-//       query: _whereCondition,
-//       page,
-//       limit,
-//     });
-
-//     return successResponse(res, 200, "Holidays fetched successfully", {
-//       data,
-//       pagination,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-
+//================== DISPLAY HOLIDAY ===============================
 exports.viewAllHolidays = async (req, res, next) => {
   try {
-    let { page = 1, limit = 10, search } = req.query;
+    let { page, limit, filter, search } = req.query;
     const _where = { isDeleted: false };
 
     let year, month;
 
-    if (search) {
-      [year, month] = search.split("-").map(Number);
+    if (filter) {
+      [year, month] = filter.split("-").map(Number);
     } else {
       const currentDate = new Date();
       year = currentDate.getFullYear();
@@ -110,6 +66,23 @@ exports.viewAllHolidays = async (req, res, next) => {
       $gte: startDate,
       $lte: endDate,
     };
+
+    //search
+    if (search) {
+      const searchConditions = [
+        {
+          holidayReason: { $regex: search, $options: "i" },
+        },
+      ];
+      if (moment(search, "YYYY-MM-DD", true).isValid()) {
+        const start = moment(search).startOf("day").toDate();
+        const end = moment(search).endOf("day").toDate();
+        searchConditions.push({
+          holidayDate: { $gte: start, $lte: end },
+        });
+      }
+      _where.$and = [{ $or: searchConditions }];
+    }
 
     const { data, pagination } = await paginate({
       model: HOLIDAY,
@@ -129,66 +102,77 @@ exports.viewAllHolidays = async (req, res, next) => {
   }
 };
 
-exports.deleteHoliday = async (req, res, next) => {
-  try {
-    const { id: holidayId } = req.params;
-
-    const holiday = await HOLIDAY.findById(holidayId);
-
-    if (!holiday) throw new AppError("Holiday not found", 404);
-
-    holiday.isDeleted = true;
-    await holiday.save();
-
-    return successResponse(res, 200, "Holiday deleted sucessfully");
-  } catch (error) {
-    console.error("Delete holiday Error", error);
-    next(error);
-  }
-};
-
+//================== UPDATE HOLIDAY ===============================
 exports.updateHoliday = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const data = { ...req.body };
+    const { holidayDate, holidayReason } = req.body;
 
-    const existingHoliday = await HOLIDAY.findOne({
+    const holiday = await HOLIDAY.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!existingHoliday) {
-      throw new AppError("Holiday not found", 404);
+    if (!holiday) {
+      throw new AppError("Holiday not found with given Id", 404);
     }
 
-    if (data.holidayDate) {
-      const date = new Date(data.holidayDate);
-      data.month = date.getMonth() + 1;
-      data.year = date.getFullYear();
+    // update holiday date
+    if (holidayDate) {
+      const date = moment
+        .tz(holidayDate, "YYYY-MM-DD", TIMEZONES.INDIA)
+        .startOf("day");
 
-      //  recalculate srNo if month/year changed
-      const lastHoliday = await HOLIDAY.findOne({
-        month: data.month,
-        year: data.year,
-        isDeleted: false,
+      const start = date.clone().toDate();
+      const end = date.clone().endOf("day").toDate();
+
+      const isDuplicate = await HOLIDAY.findOne({
         _id: { $ne: id },
-      }).sort({ srNo: -1 });
+        holidayDate: { $gte: start, $lte: end },
+        isDeleted: false,
+      }).select("_id");
 
-      data.srNo = lastHoliday ? lastHoliday.srNo + 1 : 1;
+      if (isDuplicate) {
+        throw new AppError("Holiday already exists for this date", 409);
+      }
+      holiday.holidayDate = start;
     }
 
-    data.updatedBy = req.user?.id || null;
+    //update holiday reason
+    if (holidayReason) {
+      holiday.holidayReason = holidayReason;
+    }
 
-    const updatedHoliday = await HOLIDAY.findByIdAndUpdate(
-      id,
-      { $set: data },
-      { new: true, runValidators: true },
-    );
-
+    await holiday.save();
     return successResponse(res, 200, "Holiday updated successfully", {
-      data: updatedHoliday,
+      data: holiday,
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+//================== DELETE HOLIDAY ===============================
+exports.deleteHoliday = async (req, res, next) => {
+  try {
+    const { id: holidayId } = req.params;
+
+    const isHolidayExists = await HOLIDAY.findOne({
+      _id: holidayId,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isHolidayExists)
+      throw new AppError("Holiday not found with given Id", 404);
+
+    await HOLIDAY.updateOne(
+      { _id: holidayId },
+      { $set: { isDeleted: true, deletedAt: new Date() } },
+    );
+
+    return successResponse(res, 200, "Holiday deleted sucessfully");
+  } catch (error) {
+    console.error("Delete holiday Error", error);
     next(error);
   }
 };

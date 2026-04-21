@@ -3,20 +3,13 @@ const { Joi } = require("express-validation");
 //====================== ADD DRS VALIDATION ==========================
 exports.drsValidation = {
   body: Joi.object({
-    // date: Joi.string()
-    //   .pattern(/^\d{4}-\d{2}-\d{2}$/)
-    //   .required()
-    //   .messages({
-    //     "string.pattern.base": "Date must be in YYYY-MM-DD format",
-    //   }),
-
     date: Joi.string()
       .pattern(/^\d{4}-\d{2}-\d{2}$/)
       .required()
       .custom((value, helpers) => {
         const [year, month, day] = value.split("-").map(Number);
         const date = new Date(value);
-        // check valid date 
+        // check valid date
         if (
           date.getFullYear() !== year ||
           date.getMonth() + 1 !== month ||
@@ -74,13 +67,13 @@ exports.drsValidation = {
 // ================== DISPLAY AND FILTER DRS VALIDATION ==================
 exports.getDrsValidation = {
   query: Joi.object({
-    page: Joi.number().integer().min(1).default(1),
-    limit: Joi.number().integer().min(1).max(100).default(10),
+    page: Joi.number().integer().min(1).default(1).required(),
+    limit: Joi.number().integer().min(1).max(100).default(10).required(),
     month: Joi.number().integer().min(1).max(12).optional(),
     year: Joi.number().integer().min(2000).max(2100).optional(),
+    search: Joi.string().optional(),
   }),
 };
-
 
 //===================== EDIT DRS VALIDATION ====================
 exports.updateDrsValidation = {
@@ -109,17 +102,17 @@ exports.updateDrsValidation = {
     done: Joi.string().allow("", null),
     inProgress: Joi.string().allow("", null),
     nextPlan: Joi.string().allow("", null),
-
   })
     .min(1)
     .custom((value, helpers) => {
       const isOnLeave = value.onLeave;
-      const hasWorkData = value.done !== undefined || value.inProgress !== undefined;
+      const hasWorkData =
+        value.done !== undefined || value.inProgress !== undefined;
 
       if (isOnLeave === false || isOnLeave === undefined) {
         if (!hasWorkData) {
           return helpers.message(
-            "Either 'done' or 'inProgress' is required when not on leave"
+            "Either 'done' or 'inProgress' is required when not on leave",
           );
         }
       }
@@ -127,4 +120,3 @@ exports.updateDrsValidation = {
       return value;
     }),
 };
-
