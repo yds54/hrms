@@ -1,4 +1,5 @@
 require("dotenv").config();
+const moment = require("moment");
 const passport = require("passport");
 const moment = require("moment");
 const { Strategy, ExtractJwt } = require("passport-jwt");
@@ -52,7 +53,7 @@ passport.use(
 
 const authenticateJWT = passport.authenticate("jwt", { session: false });
 
-const optionalAuthResetPassword = (req, res, next) => {
+const resetPasswordAuthenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (authHeader) {
@@ -62,4 +63,4 @@ const optionalAuthResetPassword = (req, res, next) => {
   next();
 };
 
-module.exports = { authenticateJWT, optionalAuthResetPassword };
+module.exports = { authenticateJWT, resetPasswordAuthenticate };

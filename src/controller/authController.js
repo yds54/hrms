@@ -1,15 +1,14 @@
+require("dotenv").config();
+const moment = require("moment");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
-
 const { successResponse } = require("../utils/sucess");
 const { USER, AUTH } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { USER_STATUS } = require("../utils/enum");
 const { renameFile } = require("../utils/fileHandler");
 const { sendMail } = require("../utils/sendMail");
-const moment = require("moment");
 
 exports.registerUser = async (req, res, next) => {
   try {

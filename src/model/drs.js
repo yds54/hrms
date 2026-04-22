@@ -7,35 +7,26 @@ const drsSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-
     date: {
       type: Date,
       required: true,
     },
-
     billableHours: { type: Number, default: 0 },
     nonBillableHours: { type: Number, default: 0 },
-
     projectsWorkedOn: { type: Number, default: 0 },
     estimationsGiven: { type: Number, default: 0 },
-
     interviewsGiven: { type: Number, default: 0 },
     interviewsCracked: { type: Number, default: 0 },
-
     bugSolvingHours: { type: Number, default: 0 },
     meetingsAttended: { type: Number, default: 0 },
-
     notes: { type: String, default: "" },
-
     done: { type: String, default: "" },
     inProgress: { type: String, default: "" },
     nextPlan: { type: String, default: "" },
-
     onLeave: {
       type: Boolean,
       default: false,
     },
-
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
@@ -45,10 +36,9 @@ const drsSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
     },
-
-    isDeleted : {
-      type : Boolean,
-      default : false
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true },

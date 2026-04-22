@@ -1,6 +1,7 @@
 const { Joi } = require("express-validation");
 const { GENDER, MARITAL_STATUS, ROLES, USER_STATUS } = require("../utils/enum");
 
+//================= DISPLAY USERS VALIDATION ======================
 exports.getuserValidation = {
   query: Joi.object({
     page: Joi.number().integer().min(1).required(),
@@ -16,6 +17,14 @@ exports.getuserValidation = {
   }),
 };
 
+//=================== DELETE USER VALIDATION ==================
+exports.userdeleteValidation = {
+  params: Joi.object({
+    id: Joi.string().length(24).hex().required(),
+  }),
+};
+
+//=============== UPDATE USER PROFILE VALIDATION ===================
 exports.updateUserValidation = {
   body: Joi.object({
     profilePicture: Joi.string(),
@@ -87,12 +96,7 @@ exports.updateUserValidation = {
   }).unknown(false),
 };
 
-exports.userdeleteValidation = {
-  params: Joi.object({
-    id: Joi.string().length(24).hex().required(),
-  }),
-};
-
+//================= DISPLAY USER BY ID VALIDATION ========================
 exports.getUserByIdValidation = {
   params: Joi.object({
     id: Joi.string().hex().length(24).required(),

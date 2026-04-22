@@ -1,11 +1,10 @@
-// const moment = require("moment");
+const moment = require("moment-timezone");
 const { LEAVE } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 const { paginate } = require("../utils/pagination");
 const { getProjection } = require("../utils/projection");
 const { LEAVE_DAY_TYPE, LEAVE_DURATION, TIMEZONES } = require("../utils/enum");
-const moment = require("moment-timezone");
 
 //======================= SEND LEAVE REQUEST =================================
 exports.createLeaveRequest = async (req, res, next) => {
@@ -102,9 +101,19 @@ exports.createLeaveRequest = async (req, res, next) => {
 exports.getLeaveHistory = async (req, res, next) => {
   try {
     const { _id: userId } = req.user;
-    let { page = 1, limit = 10, year, filter } = req.query;
+    let { page, limit, year, filter, search } = req.query;
     const _where = { user: userId, isDeleted: false };
     const conditions = [];
+
+    //search
+    if (search) {
+      const fields = ["reasonType", "reason", "numberOfDays", "declineReason"];
+
+      const searchCondition = fields.map((field) => ({
+        [field]: { $regex: search, $options: "i" },
+      }));
+      _where.$and = [{ $or: searchCondition }];
+    }
 
     // search by year
     if (year) {

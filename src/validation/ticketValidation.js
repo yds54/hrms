@@ -31,6 +31,7 @@ exports.getTicketValidation = {
     filter: Joi.string()
       .valid(...Object.values(TICKET_FILTER))
       .default(TICKET_FILTER.ALL),
+    search: Joi.string().optional(),
   }),
 };
 
