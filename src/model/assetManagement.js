@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const assetSchema = new mongoose.Schema(
   {
-    assetcategoryId: {
+    assetCategoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "assetCategory",
       required: true,

@@ -7,6 +7,7 @@ const { successResponse } = require("../utils/sucess");
 const { USER, AUTH } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { USER_STATUS } = require("../utils/enum");
+const { renameFile } = require("../utils/fileHandler");
 const { sendMail } = require("../utils/sendMail");
 const moment = require("moment");
 
@@ -15,20 +16,15 @@ exports.registerUser = async (req, res, next) => {
     const { body, file } = req;
 
     delete body.confirmPassword;
-
-    if (file) {
-      body.profilePicture = `/uploads/profile/${file.filename}`;
-    }
-
-    const isUserExist = await USER.findOne({
+    const isUserExists = await USER.findOne({
       email: body.email,
       contactNumber: body.contactNumber,
       isDeleted: false,
     }).select("email isDeleted contactNumber");
 
-    if (isUserExist) {
+    if (isUserExists) {
       throw new AppError(
-        "User already exists with this email or contact number",
+        "User already exists with given email or contact number",
         409,
       );
     }
@@ -51,7 +47,16 @@ exports.registerUser = async (req, res, next) => {
 
     body.employeeCode = `BS${String(nextNumber).padStart(3, "0")}`;
 
-    await USER.create(body);
+    const createdUser = await USER.create(body);
+
+    const profilePath = await renameFile(file, body.employeeCode, "profile");
+
+    if (profilePath) {
+      await USER.updateOne(
+        { _id: createdUser._id },
+        { $set: { profilePicture: profilePath } },
+      );
+    }
 
     return successResponse(res, 200, "User Registered Successfully", {
       employeeCode: body.employeeCode,
@@ -66,38 +71,33 @@ exports.loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const isUserExist = await USER.findOne({
+    const isUserExists = await USER.findOne({
       email,
       status: USER_STATUS.ACTIVE,
       isDeleted: false,
     }).select("+password");
 
-    if (!isUserExist) {
-      throw new AppError("Invalid credentials", 500);
+    if (!isUserExists) {
+      throw new AppError("Email or password is incorrect", 500);
     }
 
-    const isPassMatch = await bcrypt.compare(password, isUserExist.password);
+    const isPassMatch = await bcrypt.compare(password, isUserExists.password);
 
     if (!isPassMatch) {
-      throw new AppError("Invalid credentials", 500);
+      throw new AppError("Email or password is incorrect", 500);
     }
 
     const token = jwt.sign(
       {
-        id: isUserExist._id,
-        role: isUserExist.role,
+        id: isUserExists._id,
+        role: isUserExists.role,
       },
       process.env.secrate_jwt,
       { expiresIn: "1h" },
     );
 
-    await AUTH.updateMany(
-      { user: isUserExist._id, isDeleted: false },
-      { isDeleted: true },
-    );
-
     await AUTH.create({
-      user: isUserExist._id,
+      user: isUserExists._id,
       token,
       expiresAt: moment().add(1, "hour").toDate(),
     });

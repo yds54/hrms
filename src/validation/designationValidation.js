@@ -9,15 +9,16 @@ exports.addDesignationValidation = {
 
 exports.getDesignationValidation = {
   query: Joi.object({
-    page: Joi.number().integer(),
-    limit: Joi.number().integer(),
-    departmentId: Joi.string(),
+    page: Joi.number().integer().min(1).required(),
+    limit: Joi.number().integer().min(1).required(),
+    departmentId: Joi.string().hex().length(24),
+    designationName: Joi.string(),
   }),
 };
 
 exports.updateDesignationValidation = {
   body: Joi.object({
-    departmentId: Joi.string(),
+    departmentId: Joi.string().hex().length(24),
     designationName: Joi.string(),
   }),
   params: Joi.object({

@@ -1,6 +1,6 @@
 require("dotenv").config();
 const passport = require("passport");
-
+const moment = require("moment");
 const { Strategy, ExtractJwt } = require("passport-jwt");
 const { USER, AUTH } = require("../model/modelIndex");
 const { USER_STATUS } = require("../utils/enum");
@@ -9,7 +9,7 @@ const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
   secretOrKey: process.env.secrate_jwt,
   passReqToCallback: true,
-  ignoreExpiration: true,
+  ignoreExpiration: false,
 };
 
 passport.use(

@@ -1,21 +1,19 @@
-const mongoose = require("mongoose");
 const moment = require("moment");
-
-require("dotenv").config();
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
-const { DEPARTMENT } = require("../model/modelIndex");
+const { DEPARTMENT, DESIGNATION } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 
 exports.addDepartment = async (req, res, next) => {
   try {
     const { body } = req;
-    const isDepartmentExist = await DEPARTMENT.findOne({
+    const isDepartmentExists = await DEPARTMENT.findOne({
       departmentName: body.departmentName,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (isDepartmentExist) throw new AppError("Departmant already exists", 409);
+    if (isDepartmentExists)
+      throw new AppError("department with the given name already exists", 409);
     body.createdBy = req.user._id;
     await DEPARTMENT.create(body);
 
@@ -30,25 +28,23 @@ exports.updateDepartment = async (req, res, next) => {
     const { params, body: payload } = req;
     const { id } = params;
 
-    const isDepartmentExist = await DEPARTMENT.findOne({
+    const isDepartmentExists = await DEPARTMENT.findOne({
       _id: id,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isDepartmentExists) {
+      throw new AppError("Department not found for given ID", 404);
+    }
+
+    const departmentExists = await DEPARTMENT.findOne({
+      departmentName: payload.departmentName,
+      _id: { $ne: id },
       isDeleted: false,
     });
 
-    if (!isDepartmentExist) {
-      throw new AppError("Department not found", 404);
-    }
-
-    if (payload.departmentName) {
-      const departmentExist = await DEPARTMENT.findOne({
-        departmentName: payload.departmentName,
-        _id: { $ne: id },
-        isDeleted: false,
-      });
-
-      if (departmentExist) {
-        throw new AppError("Department already exists", 409);
-      }
+    if (departmentExists) {
+      throw new AppError("department with the given name already exists", 409);
     }
 
     await DEPARTMENT.updateOne(
@@ -68,21 +64,41 @@ exports.deleteDepartment = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const isDepartmentExist = await DEPARTMENT.findOne({
+    const department = await DEPARTMENT.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (!isDepartmentExist) {
-      throw new AppError("Department not found", 404);
+    if (!department) {
+      throw new AppError("Department not found for given ID", 404);
     }
 
-    isDepartmentExist.isDeleted = true;
-    isDepartmentExist.deletedAt = moment().toDate();
+    const deletedAt = moment().toDate();
 
-    await isDepartmentExist.save();
+    department.isDeleted = true;
+    department.deletedAt = deletedAt;
 
-    return successResponse(res, 200, "Department deleted successfully");
+    await Promise.all([
+      department.save(),
+      DESIGNATION.updateMany(
+        {
+          departmentId: id,
+          isDeleted: false,
+        },
+        {
+          $set: {
+            isDeleted: true,
+            deletedAt: deletedAt,
+          },
+        },
+      ),
+    ]);
+
+    return successResponse(
+      res,
+      200,
+      "Department and related designations deleted successfully",
+    );
   } catch (error) {
     next(error);
   }
@@ -91,7 +107,7 @@ exports.deleteDepartment = async (req, res, next) => {
 exports.getAllDepartments = async (req, res, next) => {
   try {
     const { query } = req;
-    const { page = 1, limit = 10, departmentName } = query;
+    const { page, limit, departmentName } = query;
 
     const _whereCondition = {
       isDeleted: false,
@@ -100,7 +116,7 @@ exports.getAllDepartments = async (req, res, next) => {
     if (departmentName) {
       _whereCondition.departmentName = {
         $regex: departmentName,
-        $options: "i", // case-insensitive
+        $options: "i",
       };
     }
 
@@ -125,17 +141,17 @@ exports.getDepartmentById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const isDepartmentExist = await DEPARTMENT.findOne({
+    const isDepartmentExists = await DEPARTMENT.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id departmentName");
 
-    if (!isDepartmentExist) {
-      throw new AppError("Department not found", 404);
+    if (!isDepartmentExists) {
+      throw new AppError("Department not found for given ID", 404);
     }
 
     return successResponse(res, 200, "Department fetched successfully", {
-      data: isDepartmentExist,
+      data: isDepartmentExists,
     });
   } catch (error) {
     next(error);

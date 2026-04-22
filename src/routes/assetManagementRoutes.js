@@ -8,7 +8,7 @@ const {
   updateAssetManagement,
   deleteAssetManagement,
   getAssetManagementById,
-} = require("../controller/assetmanagementController");
+} = require("../controller/assetManagementController");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
 const { ROLES } = require("../utils/enum");
@@ -19,7 +19,7 @@ const {
   updateAssetManagementValidation,
   deleteAssetManagementValidation,
   getAssetManagementByIdValidation,
-} = require("../validation/assetmanagementValidation");
+} = require("../validation/assetManagementValidation");
 
 router.post(
   "/",

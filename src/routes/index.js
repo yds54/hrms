@@ -11,14 +11,15 @@ const designationRoutes = require("./designationRoutes");
 const bankRoutes = require("./bankRoutes");
 const offboardingcriteriaRoutes = require("./offboardingCriteriaRoutes");
 const organizationRoutes = require("./organizationRoutes");
-const assetcategoryRoutes = require("./assetcategoryRoutes");
+const assetcategoryRoutes = require("./assetCategoryRoutes");
 const assetRoutes = require("./assetRoutes");
-const assetmanagementRoutes = require("./assetmanagementRoutes");
+const assetmanagementRoutes = require("./assetManagementRoutes");
 const ticketRoutes = require("./ticketRoutes");
 const userpayrollRoutes = require("./userpayrollRoutes");
 const incrementRoutes = require("./incrementRoutes");
 const attendanceRoutes = require("./attendanceRoutes");
 const ticketCommentRoutes = require("./ticketCommentRoutes");
+const userDocumentsRoutes = require("./userDocumentsRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -38,5 +39,6 @@ router.use("/userpayroll", userpayrollRoutes);
 router.use("/increments", incrementRoutes);
 router.use("/attendance", attendanceRoutes);
 router.use("/ticket", ticketCommentRoutes);
+router.use("/userDocuments", userDocumentsRoutes);
 
 module.exports = router;

@@ -1,25 +1,21 @@
-const mongoose = require("mongoose");
 const moment = require("moment");
-
-require("dotenv").config();
-
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
-const { ASSET } = require("../model/modelIndex");
+const { ASSET, ASSETMANAGEMENT } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 
 exports.addAsset = async (req, res, next) => {
   try {
     const { body, user } = req;
 
-    const isAssetExist = await ASSET.findOne({
+    const isAssetExists = await ASSET.findOne({
       assetName: body.assetName,
-      assetcategoryId: body.assetcategoryId,
+      assetCategoryId: body.assetCategoryId,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (isAssetExist) {
-      throw new AppError("Asset already exist in this AssetCategory", 409);
+    if (isAssetExists) {
+      throw new AppError("Asset already exists in given AssetCategory", 409);
     }
     body.createdBy = user._id;
     await ASSET.create(body);
@@ -34,13 +30,7 @@ exports.addAsset = async (req, res, next) => {
 
 exports.getAllAssets = async (req, res, next) => {
   try {
-    const {
-      page = 1,
-      limit = 10,
-      assetName,
-      assetcategoryId,
-      relatedTo,
-    } = req.query;
+    const { page, limit, assetName, assetCategoryId, relatedTo } = req.query;
 
     const _whereCondition = { isDeleted: false };
 
@@ -50,15 +40,21 @@ exports.getAllAssets = async (req, res, next) => {
         $options: "i",
       };
     }
-    if (assetcategoryId) _whereCondition.assetcategoryId = assetcategoryId;
+    if (assetCategoryId) _whereCondition.assetCategoryId = assetCategoryId;
     if (relatedTo) _whereCondition.relatedTo = relatedTo;
 
     const { data, pagination } = await paginate({
       model: ASSET,
       query: _whereCondition,
-      page: Number(page),
-      limit: Number(limit),
-      populate: [{ path: "assetcategoryId", select: "assetcategoryName" }],
+      page: +page,
+      limit: +limit,
+      populate: [
+        {
+          path: "assetCategoryId",
+          select: "assetCategoryName",
+          match: { isDeleted: false },
+        },
+      ],
       sort: { createdAt: -1 },
     });
 
@@ -76,25 +72,25 @@ exports.updateAsset = async (req, res, next) => {
     const { params, body: payload } = req;
     const { id } = params;
 
-    let isAssetExists = await ASSET.findOne({
+    const isAssetExists = await ASSET.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
     if (!isAssetExists) {
-      throw new AppError("Asset not found", 404);
+      throw new AppError("Asset not found for given ID", 404);
     }
 
     if (payload.assetName && payload.assetcategoryId) {
-      const isAssetExist = await ASSET.findOne({
+      const AssetExists = await ASSET.findOne({
         assetName: payload.assetName,
-        assetcategoryId: payload.assetcategoryId,
+        assetCategoryId: payload.assetCategoryId,
         _id: { $ne: id },
         isDeleted: false,
       });
 
-      if (isAssetExist) {
-        throw new AppError("Asset already exist in this AssetCategory", 409);
+      if (AssetExists) {
+        throw new AppError("Asset already exist in given AssetCategory", 409);
       }
     }
 
@@ -118,18 +114,38 @@ exports.deleteAsset = async (req, res, next) => {
     const isAssetExists = await ASSET.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
     if (!isAssetExists) {
-      throw new AppError("Asset not found", 404);
+      throw new AppError("Asset not found for given ID", 404);
     }
 
+    const deletedAt = moment().toDate();
+
     isAssetExists.isDeleted = true;
-    isAssetExists.deletedAt = moment().toDate();
+    isAssetExists.deletedAt = deletedAt;
 
-    await isAssetExists.save();
+    await Promise.all([
+      isAssetExists.save(),
+      ASSETMANAGEMENT.updateMany(
+        {
+          assetId: id,
+          isDeleted: false,
+        },
+        {
+          $set: {
+            isDeleted: true,
+            deletedAt: deletedAt,
+          },
+        },
+      ),
+    ]);
 
-    return successResponse(res, 200, "Asset deleted successfully");
+    return successResponse(
+      res,
+      200,
+      "Asset and related assignments deleted successfully",
+    );
   } catch (error) {
     next(error);
   }
@@ -139,17 +155,17 @@ exports.getAssetById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const isAssetExist = await ASSET.findOne({
+    const isAssetExists = await ASSET.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id assetName assetcategoryId");
 
-    if (!isAssetExist) {
-      throw new AppError("Asset not found", 404);
+    if (!isAssetExists) {
+      throw new AppError("Asset not found for given ID", 404);
     }
 
     return successResponse(res, 200, "Asset fetched successfully", {
-      data: isAssetExist,
+      data: isAssetExists,
     });
   } catch (error) {
     next(error);

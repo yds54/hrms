@@ -1,4 +1,4 @@
-const { Joi } = require('express-validation');
+const { Joi } = require("express-validation");
 
 exports.holidaydeleteValidation = {
   params: Joi.object({
@@ -8,34 +8,34 @@ exports.holidaydeleteValidation = {
 
 exports.getholidayValidation = {
   query: Joi.object({
-    page: Joi.number().integer(),
-    limit: Joi.number().integer(),
-     search: Joi.string()
+    page: Joi.number().integer().min(1).required(),
+    limit: Joi.number().integer().min(1).required(),
+    search: Joi.string()
       .pattern(/^\d{4}-(0[1-9]|1[0-2])$/) // YYYY-MM fomat
       .messages({
         "string.pattern.base": "Search must be in YYYY-MM format",
       })
       .optional(),
-    id:Joi.string().hex()
+    id: Joi.string().hex(),
   }),
 };
 
 exports.addholidayValidation = {
-    body: Joi.object({
-        holidayDate:Joi.date().required(),
-        holidayReason:Joi.string().required()
-    })
-}
+  body: Joi.object({
+    holidayDate: Joi.date().required(),
+    holidayReason: Joi.string().required(),
+  }),
+};
 
 exports.updateholidayValidation = {
-     params: Joi.object({
+  params: Joi.object({
     id: Joi.string().length(24).hex().required(),
   }),
-  
-   body: Joi.object({
-        holidayDate:Joi.date().required(),
-        holidayReason:Joi.string().required()
-    })
-}
+
+  body: Joi.object({
+    holidayDate: Joi.date().required(),
+    holidayReason: Joi.string().required(),
+  }),
+};
 //holidayDate
 //holidayReason

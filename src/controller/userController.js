@@ -1,9 +1,7 @@
-const bcrypt = require("bcryptjs");
-require("dotenv").config();
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { USER } = require("../model/modelIndex");
-const { getProjection } = require("../utils/projection");
+const { renameFile } = require("../utils/fileHandler");
 const { AppError } = require("../utils/error");
 
 const moment = require("moment");
@@ -12,19 +10,20 @@ exports.viewallUser = async (req, res, next) => {
   try {
     const { user, query } = req;
     const {
-      page = 1,
-      limit = 10,
+      page,
+      limit,
       gender,
       designation,
       organizationType,
       attendanceType,
       id,
+      search,
       Left,
     } = query;
 
     const _whereCondition = {
       isDeleted: false,
-      role: "user",
+      // role: "user",
       isLeft: false,
     };
 
@@ -40,14 +39,47 @@ exports.viewallUser = async (req, res, next) => {
     if (attendanceType) _whereCondition.attendanceType = attendanceType;
     if (Left === "true") _whereCondition.isLeft = true;
 
+    if (search) {
+      const fields = [
+        "name.firstName",
+        "name.middleName",
+        "name.lastName",
+        "email",
+        "employeeCode",
+        "gender",
+        "contactNumber",
+        "role",
+      ];
+
+      _whereCondition.$or = fields.map((field) => ({
+        [field]: { $regex: search, $options: "i" },
+      }));
+    }
+
     const { data, pagination } = await paginate({
       model: USER,
       query: _whereCondition,
       populate: [
-        { path: "designationId", select: "designationName" },
-        { path: "departmentId", select: "departmentName" },
-        { path: "bankDetails.bankId", select: "bankName" },
-        { path: "organizationId", select: "organizationName" },
+        {
+          path: "designationId",
+          select: "designationName",
+          match: { isDeleted: false },
+        },
+        {
+          path: "departmentId",
+          select: "departmentName",
+          match: { isDeleted: false },
+        },
+        {
+          path: "bankDetails.bankId",
+          select: "bankName",
+          match: { isDeleted: false },
+        },
+        {
+          path: "organizationId",
+          select: "organizationName",
+          match: { isDeleted: false },
+        },
       ],
       page: +page,
       limit: +limit,
@@ -68,25 +100,21 @@ exports.updateUser = async (req, res, next) => {
     const { params, body: payload, file } = req;
     const { id } = params;
 
-    const isUserExist = await USER.findOne(
+    const isUserExists = await USER.findOne(
       { _id: id, isDeleted: false },
       "_id isDeleted",
     );
 
-    if (!isUserExist) {
-      throw new AppError("User not found with ID", 404);
-    }
-
-    if (file) {
-      isUserExist.profilePicture = `/uploads/${file.filename}`;
+    if (!isUserExists) {
+      throw new AppError("User not found with given ID", 404);
     }
 
     //check if email already exists and mobile number already exists
     if (
-      payload.email !== isUserExist.email ||
-      payload.contactNumber !== isUserExist.contactNumber
+      payload.email !== isUserExists.email ||
+      payload.contactNumber !== isUserExists.contactNumber
     ) {
-      const existingUser = await USER.findOne({
+      const existingUsers = await USER.findOne({
         _id: { $ne: id },
         isDeleted: false,
         $or: [
@@ -95,8 +123,20 @@ exports.updateUser = async (req, res, next) => {
         ].filter(Boolean),
       });
 
-      if (existingUser) {
+      if (existingUsers) {
         throw new AppError("Email or mobile number already exists", 409);
+      }
+    }
+
+    if (file) {
+      const profilePath = await renameFile(
+        file,
+        isUserExists.employeeCode,
+        "profile",
+      );
+
+      if (profilePath) {
+        payload.profilePicture = profilePath;
       }
     }
 
@@ -117,14 +157,18 @@ exports.deleteUser = async (req, res, next) => {
   try {
     const { id: userID } = req.params;
 
-    const user = await USER.findById(userID);
+    const isUserExists = await USER.findOne({
+      _id: userID,
+      isDeleted: false,
+    }).select("_id ");
 
-    if (!user || user.isDeleted) throw new AppError("User not found", 404);
+    if (!isUserExists || isUserExists.isDeleted)
+      throw new AppError("User not found for given ID", 404);
 
-    user.isDeleted = true;
-    user.deletedAt = moment().toDate();
+    isUserExists.isDeleted = true;
+    isUserExists.deletedAt = moment().toDate();
 
-    await user.save();
+    await isUserExists.save();
 
     return successResponse(res, 200, "User deleted sucessfully");
   } catch (error) {
@@ -137,17 +181,17 @@ exports.getUserById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const isUserExist = await USER.findOne({
+    const isUserExists = await USER.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!isUserExist) {
-      throw new AppError("User not found", 404);
+    if (!isUserExists) {
+      throw new AppError("User not found for given ID", 404);
     }
 
     return successResponse(res, 200, "User fetched successfully", {
-      data: isUserExist,
+      data: isUserExists,
     });
   } catch (error) {
     next(error);

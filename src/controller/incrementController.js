@@ -1,5 +1,3 @@
-const bcrypt = require("bcryptjs");
-require("dotenv").config();
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { USERPAYROLL, INCREMENT } = require("../model/modelIndex");
@@ -11,26 +9,27 @@ exports.addIncrement = async (req, res, next) => {
   try {
     const { body } = req;
 
-    const isPayrollExist = await USERPAYROLL.findOne({
+    const isPayrollExists = await USERPAYROLL.findOne({
       userId: body.userId,
       isDeleted: false,
-    });
+    }).select("_id ");
 
-    if (!isPayrollExist) {
-      throw new AppError("Payroll not found for this user", 404);
+    if (!isPayrollExists) {
+      throw new AppError("Payroll not found for given userId", 404);
     }
 
-    await USERPAYROLL.updateOne(
-      { _id: payroll._id, isDeleted: false },
-      {
-        $set: {
-          salaryAmount: body.totalSalary,
-          incrementType: body.incrementMethod,
+    await Promise.all([
+      USERPAYROLL.updateOne(
+        { _id: payroll._id, isDeleted: false },
+        {
+          $set: {
+            salaryAmount: body.totalSalary,
+            incrementType: body.incrementMethod,
+          },
         },
-      },
-    );
-
-    await INCREMENT.create(body);
+      ),
+      INCREMENT.create(body),
+    ]);
 
     return successResponse(res, 200, "Increment added successfully", {
       salary: body.totalSalary,
@@ -43,7 +42,7 @@ exports.addIncrement = async (req, res, next) => {
 exports.getAllUsersIncrements = async (req, res, next) => {
   try {
     const { query } = req;
-    const { page = 1, limit = 10 } = query;
+    const { page, limit } = query;
 
     const _whereCondition = {
       isDeleted: false,
@@ -54,7 +53,13 @@ exports.getAllUsersIncrements = async (req, res, next) => {
       query: _whereCondition,
       page: +page,
       limit: +limit,
-      populate: [{ path: "userId", select: "name.firstName name.lastName" }],
+      populate: [
+        {
+          path: "userId",
+          select: "name.firstName name.lastName",
+          match: { isDeleted: false },
+        },
+      ],
       sort: { createdAt: -1 },
     });
 
@@ -71,16 +76,16 @@ exports.getIncrementById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const isIncrementExist = await INCREMENT.findOne({
+    const isIncrementExists = await INCREMENT.findOne({
       _id: id,
       isDeleted: false,
-    });
-    if (!isIncrementExist) {
-      throw new AppError("Increment not found", 404);
+    }).select("_id userId incrementAmount incrementType effectiveDate");
+    if (!isIncrementExists) {
+      throw new AppError("Increment not found for given userId", 404);
     }
 
     return successResponse(res, 200, "Increment fetched successfully", {
-      data: isIncrementExist,
+      data: isIncrementExists,
     });
   } catch (error) {
     next(error);
@@ -91,19 +96,19 @@ exports.deleteIncrement = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const isIncrementExist = await INCREMENT.findOne({
+    const isIncrementExists = await INCREMENT.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
-    if (!isIncrementExist) {
-      throw new AppError("User Increment not found", 404);
+    if (!isIncrementExists) {
+      throw new AppError("User Increment not found for given userId", 404);
     }
 
-    isIncrementExist.isDeleted = true;
-    isIncrementExist.deletedAt = moment().toDate();
+    isIncrementExists.isDeleted = true;
+    isIncrementExists.deletedAt = moment().toDate();
 
-    await isIncrementExist.save();
+    await isIncrementExists.save();
 
     return successResponse(res, 200, "User Increment deleted successfully");
   } catch (error) {

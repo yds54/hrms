@@ -4,9 +4,45 @@ const paginate = async ({
   page = 1,
   limit = 10,
   populate = [],
-  sort = { date: -1 },
+  sort = { createdAt: -1 },
   select = "",
+  pipeline = null,
 } = {}) => {
+  page = Number(page);
+  limit = Number(limit);
+
+  if (pipeline) {
+    const aggPipeline = [
+      ...(Object.keys(query).length ? [{ $match: query }] : []),
+
+      ...pipeline,
+
+      {
+        $facet: {
+          data: [
+            { $sort: sort },
+            { $skip: (page - 1) * limit },
+            { $limit: limit },
+          ],
+          totalCount: [{ $count: "count" }],
+        },
+      },
+    ];
+    const result = await model.aggregate(aggPipeline);
+
+    const data = result[0]?.data || [];
+    const totalrecords = result[0]?.totalCount[0]?.count || 0;
+    const totalpages = Math.ceil(totalrecords / limit);
+
+    return {
+      data,
+      pagination: {
+        totalpages,
+        totalrecords,
+      },
+    };
+  }
+
   const totalrecords = await model.countDocuments(query);
   const totalpages = Math.ceil(totalrecords / limit);
 
@@ -23,7 +59,8 @@ const paginate = async ({
       dbQuery = dbQuery.populate(p);
     });
   }
-  dbQuery = dbQuery.skip(skip).limit(limit).lean();
+
+  dbQuery = dbQuery.skip(skip).limit(limit);
 
   const data = await dbQuery;
 

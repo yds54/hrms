@@ -2,21 +2,21 @@ const { Joi } = require("express-validation");
 
 exports.addAssetCategoryValidation = {
   body: Joi.object({
-    assetcategoryName: Joi.string().required(),
+    assetCategoryName: Joi.string().required(),
   }),
 };
 
 exports.getAssetCategoriesValidation = {
   query: Joi.object({
-    page: Joi.number().integer(),
-    limit: Joi.number().integer(),
-    assetcategoryName: Joi.string(),
+    page: Joi.number().integer().min(1).required(),
+    limit: Joi.number().integer().min(1).required(),
+    assetCategoryName: Joi.string(),
   }),
 };
 
 exports.updateAssetCategoryValidation = {
   body: Joi.object({
-    assetcategoryName: Joi.string(),
+    assetCategoryName: Joi.string(),
   }),
   params: Joi.object({
     id: Joi.string().hex().length(24).required(),
