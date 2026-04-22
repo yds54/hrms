@@ -7,29 +7,24 @@ const ticketCommentSchema = new mongoose.Schema(
       ref: "ticket",
       required: true,
     },
-
     comment: {
       type: String,
       trim: true,
     },
-
     attachFile: [
       {
         type: String,
       },
     ],
-
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
     },
-
     isDeleted: {
       type: Boolean,
       default: false,
     },
-
     deletedAt: {
       type: Date,
       default: null,

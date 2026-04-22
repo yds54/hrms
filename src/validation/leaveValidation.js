@@ -75,8 +75,8 @@ exports.createLeaveValidation = {
 //===================== LEAVE REQUEST HISTORY VALIDATION ============================
 exports.getLeaveHistoryValidation = {
   query: Joi.object({
-    page: Joi.number().integer().min(1).default(1),
-    limit: Joi.number().integer().min(1).max(100).default(10),
+    page: Joi.number().integer().min(1).default(1).required(),
+    limit: Joi.number().integer().min(1).max(100).default(10).required(),
 
     year: Joi.number()
       .integer()
@@ -103,5 +103,7 @@ exports.getLeaveHistoryValidation = {
         "December",
       )
       .optional(),
+
+    search: Joi.string().optional(),
   }),
 };

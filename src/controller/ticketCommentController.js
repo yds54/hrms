@@ -15,7 +15,7 @@ exports.createComment = async (req, res, next) => {
     const isTicketExists = await TICKET.findOne({
       _id: ticketId,
       isDeleted: false,
-    });
+    }).select("_id");
 
     if (!isTicketExists) {
       throw new AppError("Ticket not found with given id", 404);
@@ -42,12 +42,27 @@ exports.getComments = async (req, res, next) => {
   try {
     const { ticketId } = req.params;
 
+    const isTicketExists = await TICKET.findOne({
+      _id: ticketId,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isTicketExists) {
+      throw new AppError("Ticket not found with given Id", 404);
+    }
+
     const comments = await TICKETCOMMENT.find({
       ticketId,
       isDeleted: false,
     })
       .sort({ createdAt: -1 })
-      .populate([{ path: "createdBy", select: "name profilePicture" }])
+      .populate([
+        {
+          path: "createdBy",
+          select: "name profilePicture",
+          match: { isDeleted: false },
+        },
+      ])
       .lean();
 
     return successResponse(res, 200, "Comments fetched", { comments });

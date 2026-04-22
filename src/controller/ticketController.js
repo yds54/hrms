@@ -1,3 +1,4 @@
+const moment = require("moment");
 const { USER, TICKET, TICKETACTIVITY } = require("../model/modelIndex");
 const { ROLES, TICKET_FILTER, TICKET_STATUS } = require("../utils/enum");
 const { AppError } = require("../utils/error");
@@ -59,7 +60,7 @@ exports.createTicket = async (req, res, next) => {
 exports.getTickets = async (req, res, next) => {
   try {
     const { _id: userId } = req.user;
-    let { startDate, endDate, isArchived, filter = "All" } = req.query;
+    let { startDate, endDate, isArchived, filter = "All", search } = req.query;
     const _where = { isDeleted: false, isArchived: isArchived };
 
     if (filter === TICKET_FILTER.MY_TICKETS) {
@@ -81,12 +82,31 @@ exports.getTickets = async (req, res, next) => {
       };
     }
 
+    //search
+    if (search) {
+      const fields = ["title", "content"];
+      const searchCondition = fields.map((field) => ({
+        [field]: { $regex: search, $options: "i" },
+      }));
+
+      // date search
+      if (moment(search, "YYYY-MM-DD", true).isValid()) {
+        const start = moment(search).startOf("day").toDate();
+        const end = moment(search).endOf("day").toDate();
+
+        searchCondition.push({
+          createdAt: { $gte: start, $lte: end },
+        });
+      }
+      _where.$and = [{ $or: searchCondition }];
+    }
+
     const data = await TICKET.find(_where)
       .sort({ createdAt: -1 })
       .select(getProjection())
       .populate([
-        { path: "assignedTo", select: "name" },
-        { path: "createdBy", select: "name" },
+        { path: "assignedTo", select: "name", match: { isDeleted: false } },
+        { path: "createdBy", select: "name", match: { isDeleted: false } },
       ])
       .lean();
 
@@ -182,9 +202,24 @@ exports.getTicketActivity = async (req, res, next) => {
   try {
     const { ticketId } = req.params;
 
+    const isTicketExists = await TICKET.findOne({
+      _id: ticketId,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isTicketExists) {
+      throw new AppError("Ticket not found with given Id", 404);
+    }
+
     const activity = await TICKETACTIVITY.find({ ticketId })
       .sort({ createdAt: -1 })
-      .populate([{ path: "changedBy", select: "name profilePicture" }])
+      .populate([
+        {
+          path: "changedBy",
+          select: "name profilePicture",
+          match: { isDeleted: false },
+        },
+      ])
       .lean();
 
     return successResponse(res, 200, "Activity fetched", { activity });
@@ -201,10 +236,10 @@ exports.deleteTicket = async (req, res, next) => {
     const isTicketExists = await TICKET.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
     if (!isTicketExists) {
-      throw new AppError("Ticket not found", 404);
+      throw new AppError("Ticket not found with given Id", 404);
     }
 
     await TICKET.updateOne(

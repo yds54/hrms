@@ -1,19 +1,18 @@
-const bcrypt = require("bcryptjs");
 require("dotenv").config();
+const moment = require("moment");
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { USER } = require("../model/modelIndex");
-const { getProjection } = require("../utils/projection");
 const { AppError } = require("../utils/error");
+const { ROLES } = require("../utils/enum");
 
-const moment = require("moment");
-
+//============= DISPLAY USERS =================
 exports.viewallUser = async (req, res, next) => {
   try {
     const { user, query } = req;
     const {
-      page = 1,
-      limit = 10,
+      page,
+      limit,
       gender,
       designation,
       organizationType,
@@ -63,9 +62,10 @@ exports.viewallUser = async (req, res, next) => {
   }
 };
 
+//================ UPDATE PROFILE ==============
 exports.updateUser = async (req, res, next) => {
   try {
-    const { params, body: payload, file } = req;
+    const { params, body: payload, file, user } = req;
     const { id } = params;
 
     const isUserExist = await USER.findOne(
@@ -77,14 +77,27 @@ exports.updateUser = async (req, res, next) => {
       throw new AppError("User not found with ID", 404);
     }
 
+    // if not admin only profile pic update
+    const isAdmin = user?.role === ROLES.ADMIN;
+    if (!isAdmin) {
+      const allowedFields = ["profilePicture"];
+      const invalidFields = Object.keys(payload).filter(
+        (key) => !allowedFields.includes(key),
+      );
+      if (invalidFields.length > 0) {
+        throw new AppError("You can only update profile picture", 403);
+      }
+    }
+
     if (file) {
       isUserExist.profilePicture = `/uploads/${file.filename}`;
     }
 
     //check if email already exists and mobile number already exists
     if (
-      payload.email !== isUserExist.email ||
-      payload.contactNumber !== isUserExist.contactNumber
+      isAdmin &&
+      (payload.email !== isUserExist.email ||
+        payload.contactNumber !== isUserExist.contactNumber)
     ) {
       const existingUser = await USER.findOne({
         _id: { $ne: id },
@@ -105,7 +118,7 @@ exports.updateUser = async (req, res, next) => {
       { $set: { ...payload } },
     );
 
-    return successResponse(res, 200, "User updated successfully", {
+    return successResponse(res, 200, "User changed successfully", {
       data: payload,
     });
   } catch (error) {
@@ -133,6 +146,7 @@ exports.deleteUser = async (req, res, next) => {
   }
 };
 
+//================ DISPLAY PROFILE BY ID ====================
 exports.getUserById = async (req, res, next) => {
   try {
     const { id } = req.params;

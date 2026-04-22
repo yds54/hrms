@@ -22,7 +22,10 @@ router.post(
   "/:ticketId/comment",
   authenticateJWT,
   authorizeRoles(ROLES.USER, ROLES.ADMIN),
-  upload("tickets").array("attachFile", 5),
+  upload("tickets", {
+    useUserFolder: true,
+    useTimestamp: true,
+  }).array("attachFile", 5),
   validate(createCommentValidation),
   createComment,
 );

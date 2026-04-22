@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.42:5000",
+  "host": "192.168.0.158:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -471,6 +471,12 @@
             "in": "query",
             "type": "string",
             "example": "2026"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "Done / 2026-03-25"
           }
         ],
         "responses": {
@@ -610,6 +616,12 @@
             "in": "query",
             "type": "string",
             "example": "Single Day / Multiple Day / Half Day / March"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "sick"
           }
         ],
         "responses": {
@@ -793,10 +805,16 @@
             "type": "string"
           },
           {
-            "name": "search",
+            "name": "filter",
             "in": "query",
             "type": "string",
             "example": "2026-03"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "Holi / 2026-03-25"
           }
         ],
         "responses": {
@@ -1645,6 +1663,13 @@
             "type": "string",
             "example": "All",
             "description": "all | myTickets | assignedToMe"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "attendance",
+            "description": "Search by title, content, or date (YYYY-MM-DD)"
           }
         ],
         "responses": {
@@ -1946,6 +1971,7 @@
         }
       }
     },
+
     "/api/assetcategories/": {
       "post": {
         "tags": ["asset category"],
@@ -1997,7 +2023,6 @@
         }
       }
     },
-
     "/api/assetcategories/{id}": {
       "put": {
         "tags": ["asset category"],
@@ -2356,6 +2381,7 @@
         }
       }
     },
+
     "/api/userpayroll": {
       "post": {
         "tags": ["user-payroll"],
@@ -2425,7 +2451,6 @@
           }
         }
       },
-
       "get": {
         "tags": ["user-payroll"],
         "description": "Get All User Payrolls",
@@ -2495,7 +2520,6 @@
           }
         }
       },
-
       "put": {
         "tags": ["user-payroll"],
         "description": "Update User Payroll",
@@ -2561,6 +2585,7 @@
         }
       }
     },
+
     "/api/increments": {
       "post": {
         "tags": ["increment"],
@@ -2616,7 +2641,6 @@
           }
         }
       },
-
       "get": {
         "tags": ["increment"],
         "description": "Get All Increments",
@@ -2644,7 +2668,6 @@
         }
       }
     },
-
     "/api/increments/{id}": {
       "get": {
         "tags": ["increment"],
@@ -2705,7 +2728,6 @@
           }
         }
       },
-
       "delete": {
         "tags": ["increment"],
         "description": "Delete Increment",

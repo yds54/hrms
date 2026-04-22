@@ -103,6 +103,7 @@ exports.userRegisterValidation = {
   }),
 };
 
+//============== LOGIN USER VALIDATION ================
 exports.loginValidation = {
   body: Joi.object({
     email: Joi.string().email().required(),

@@ -1,16 +1,10 @@
 const express = require("express");
 const router = express.Router();
-
-const {
-  viewallUser,
-  updateUser,
-  deleteUser,
-  getUserById,
-} = require("../controller/userController");
-
+const { validate } = require("express-validation");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
-const upload = require("../middleware/upload");
+const upload = require("../middleware/uploads");
+const { ROLES } = require("../utils/enum");
 
 const {
   getuserValidation,
@@ -19,9 +13,14 @@ const {
   getUserByIdValidation,
 } = require("../validation/userValidation");
 
-const { validate } = require("express-validation");
-const { ROLES } = require("../utils/enum");
+const {
+  viewallUser,
+  updateUser,
+  deleteUser,
+  getUserById,
+} = require("../controller/userController");
 
+//============ DISPLAY USERS =================
 router.get(
   "/",
   authenticateJWT,
@@ -29,6 +28,8 @@ router.get(
   validate(getuserValidation),
   viewallUser,
 );
+
+//============ DISPLAY USER BY ID - PROFILE ================
 router.get(
   "/:id",
   authenticateJWT,
@@ -37,15 +38,19 @@ router.get(
   getUserById,
 );
 
+//==================== UPDATE PROFILE ================
 router.put(
   "/:id",
   authenticateJWT,
-  upload.single("profilePicture"),
-  authorizeRoles(ROLES.ADMIN),
+  upload("profile", {
+    useTimestamp: true,
+  }).single("profilePicture"),
+  authorizeRoles(ROLES.ADMIN, ROLES.USER),
   validate(updateUserValidation),
   updateUser,
 );
 
+//==================== DELETE USER ================
 router.delete(
   "/:id",
   authenticateJWT,

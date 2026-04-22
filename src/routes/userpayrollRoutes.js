@@ -1,17 +1,9 @@
 const express = require("express");
 const router = express.Router();
-
-const {
-  addUserPayroll,
-  getUserPayrollById,
-  updateUserPayroll,
-  getAllUsersPayrolls,
-  deleteUserPayroll,
-} = require("../controller/userPayrollController");
-
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
-const upload = require("../middleware/upload");
+const { validate } = require("express-validation");
+const { ROLES } = require("../utils/enum");
 
 const {
   addPayrollValidation,
@@ -21,8 +13,13 @@ const {
   deletePayrollValidation,
 } = require("../validation/userpayrollValidation");
 
-const { validate } = require("express-validation");
-const { ROLES } = require("../utils/enum");
+const {
+  addUserPayroll,
+  getUserPayrollById,
+  updateUserPayroll,
+  getAllUsersPayrolls,
+  deleteUserPayroll,
+} = require("../controller/userPayrollController");
 
 router.post(
   "/",

@@ -1,6 +1,4 @@
-
-
-const { ROLES } = require('../utils/enum');
+const { ROLES } = require("../utils/enum");
 
 function authorizeRoles(...allowedRoles) {
   return (req, res, next) => {
