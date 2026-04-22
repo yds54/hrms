@@ -4,7 +4,12 @@ const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 const { paginate } = require("../utils/pagination");
 const { getProjection } = require("../utils/projection");
-const { LEAVE_DAY_TYPE, LEAVE_DURATION, TIMEZONES } = require("../utils/enum");
+const { LEAVE_DAY_TYPE, LEAVE_DURATION } = require("../utils/enum");
+const {
+  getDayRange,
+  getMonthRange,
+  dateSearchQuery,
+} = require("../utils/dateFormat");
 
 //======================= SEND LEAVE REQUEST =================================
 exports.createLeaveRequest = async (req, res, next) => {
@@ -25,18 +30,17 @@ exports.createLeaveRequest = async (req, res, next) => {
 
     const orConditions = [];
     if (date) {
+      const { startOfDay, endOfDay } = getDayRange(date);
       orConditions.push({
-        date: moment(date).startOf("day").toDate(),
+        date: { $gte: startOfDay, $lte: endOfDay },
       });
     }
     if (fromDate && toDate) {
+      const { startOfDay: start } = getDayRange(fromDate);
+      const { endOfDay: end } = getDayRange(toDate);
       orConditions.push({
-        fromDate: {
-          $lte: moment(toDate).endOf("day").toDate(),
-        },
-        toDate: {
-          $gte: moment(fromDate).startOf("day").toDate(),
-        },
+        fromDate: { $lte: end },
+        toDate: { $gte: start },
       });
     }
 
@@ -53,7 +57,8 @@ exports.createLeaveRequest = async (req, res, next) => {
 
     if (numberOfDays === LEAVE_DAY_TYPE.SINGLE) {
       if (!date) throw new AppError("Date is required", 400);
-      payload.date = moment(date).format("YYYY-MM-DD");
+      const { startOfDay } = getDayRange(date);
+      payload.date = startOfDay;
       payload.isFullDay = isFullDay === true;
 
       if (!payload.isFullDay) {
@@ -71,24 +76,22 @@ exports.createLeaveRequest = async (req, res, next) => {
         throw new AppError("From and To date required", 400);
       }
 
-      const startdate = moment
-        .tz(fromDate, "YYYY-MM-DD", TIMEZONES.INDIA)
-        .startOf("day");
-      const enddate = moment
-        .tz(toDate, "YYYY-MM-DD", TIMEZONES.INDIA)
-        .endOf("day");
+      const { startOfDay: startDate } = getDayRange(fromDate);
+      const { endOfDay: endDate } = getDayRange(toDate);
 
-      if (enddate.isBefore(startdate)) {
+      if (endDate < startDate) {
         throw new AppError("Invalid Date range", 400);
       }
 
-      payload.fromDate = startdate.format("YYYY-MM-DD");
-      payload.toDate = enddate.format("YYYY-MM-DD");
+      payload.fromDate = startDate;
+      payload.toDate = endDate;
       payload.fromTime = moment(fromTime, "HH:mm A").format("hh:mm A");
       payload.toTime = moment(toTime, "HH:mm A").format("hh:mm A");
     }
-    await LEAVE.create(payload);
-    return successResponse(res, 201, "Leave request created");
+    const leave = await LEAVE.create(payload);
+    return successResponse(res, 201, "Leave request created", {
+      data: leave,
+    });
   } catch (error) {
     if (error.code === 11000) {
       return next(new AppError("Leave already exists for this date", 409));
@@ -112,6 +115,14 @@ exports.getLeaveHistory = async (req, res, next) => {
       const searchCondition = fields.map((field) => ({
         [field]: { $regex: search, $options: "i" },
       }));
+
+      // date search
+      const dateQuery = dateSearchQuery("date", search);
+      const fromDateQuery = dateSearchQuery("fromDate", search);
+
+      if (dateQuery) searchCondition.push(dateQuery);
+      if (fromDateQuery) searchCondition.push(fromDateQuery);
+
       _where.$and = [{ $or: searchCondition }];
     }
 
@@ -132,12 +143,18 @@ exports.getLeaveHistory = async (req, res, next) => {
 
     if (filter) {
       const monthIndex = moment(filter, "MMMM", true).month();
-
       if (!isNaN(monthIndex)) {
+        const { startOfMonth, endOfMonth } = getMonthRange(
+          new Date().getFullYear(),
+          monthIndex + 1,
+        );
         conditions.push({
           $or: [
-            { $expr: { $eq: [{ $month: "$date" }, monthIndex + 1] } },
-            { $expr: { $eq: [{ $month: "$fromDate" }, monthIndex + 1] } },
+            { date: { $gte: startOfMonth, $lte: endOfMonth } },
+            {
+              fromDate: { $lte: endOfMonth },
+              toDate: { $gte: startOfMonth },
+            },
           ],
         });
       } else if (

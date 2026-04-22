@@ -1,25 +1,21 @@
-const moment = require("moment");
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { HOLIDAY } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
-const { getProjection } = require("../utils/projection");
-const { TIMEZONES } = require("../utils/enum");
+const {
+  getDayRange,
+  getMonthRange,
+  dateSearchQuery,
+} = require("../utils/dateFormat");
 
 //================== INSERT HOLIDAY ===============================
 exports.addHoliday = async (req, res, next) => {
   try {
     const { holidayDate, holidayReason } = req.body;
-
-    const date = moment
-      .tz(holidayDate, "YYYY-MM-DD", TIMEZONES.INDIA)
-      .startOf("day");
-
-    const start = date.clone().toDate();
-    const end = date.clone().endOf("day").toDate();
+    const { startOfDay, endOfDay } = getDayRange(holidayDate);
 
     const isHolidayExists = await HOLIDAY.findOne({
-      holidayDate: { $gte: start, $lte: end },
+      holidayDate: { $gte: startOfDay, $lte: endOfDay },
       isDeleted: false,
     }).select("_id");
 
@@ -28,7 +24,7 @@ exports.addHoliday = async (req, res, next) => {
     }
 
     const holiday = await HOLIDAY.create({
-      holidayDate: start,
+      holidayDate: startOfDay,
       holidayReason,
     });
 
@@ -55,12 +51,12 @@ exports.viewAllHolidays = async (req, res, next) => {
       year = currentDate.getFullYear();
       month = currentDate.getMonth() + 1;
     }
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
+
+    const { startOfMonth, endOfMonth } = getMonthRange(year, month);
 
     _where.holidayDate = {
-      $gte: startDate,
-      $lte: endDate,
+      $gte: startOfMonth,
+      $lte: endOfMonth,
     };
 
     //search
@@ -70,12 +66,10 @@ exports.viewAllHolidays = async (req, res, next) => {
           holidayReason: { $regex: search, $options: "i" },
         },
       ];
-      if (moment(search, "YYYY-MM-DD", true).isValid()) {
-        const start = moment(search).startOf("day").toDate();
-        const end = moment(search).endOf("day").toDate();
-        searchConditions.push({
-          holidayDate: { $gte: start, $lte: end },
-        });
+
+      const dateQuery = dateSearchQuery("holidayDate", search);
+      if (dateQuery) {
+        searchConditions.push(dateQuery);
       }
       _where.$and = [{ $or: searchConditions }];
     }
@@ -86,7 +80,6 @@ exports.viewAllHolidays = async (req, res, next) => {
       page,
       limit,
       sort: { holidayDate: -1 },
-      select: getProjection(["month", "year"]),
     });
 
     return successResponse(res, 200, "Holidays fetched successfully", {
@@ -115,23 +108,18 @@ exports.updateHoliday = async (req, res, next) => {
 
     // update holiday date
     if (holidayDate) {
-      const date = moment
-        .tz(holidayDate, "YYYY-MM-DD", TIMEZONES.INDIA)
-        .startOf("day");
-
-      const start = date.clone().toDate();
-      const end = date.clone().endOf("day").toDate();
+      const { startOfDay, endOfDay } = getDayRange(holidayDate);
 
       const isHolidayDuplicate = await HOLIDAY.findOne({
         _id: { $ne: id },
-        holidayDate: { $gte: start, $lte: end },
+        holidayDate: { $gte: startOfDay, $lte: endOfDay },
         isDeleted: false,
       }).select("_id");
 
       if (isHolidayDuplicate) {
         throw new AppError("Holiday already exists for this date", 409);
       }
-      holiday.holidayDate = start;
+      holiday.holidayDate = startOfDay;
     }
 
     //update holiday reason
