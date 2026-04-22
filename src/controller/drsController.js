@@ -18,12 +18,12 @@ exports.addDrs = async (req, res, next) => {
       .startOf("day")
       .toDate();
 
-    const isExist = await DRS.findOne({
+    const isDrsExists = await DRS.findOne({
       user: userId,
       date: selectedDate,
     }).select("_id");
 
-    if (isExist) {
+    if (isDrsExists) {
       throw new AppError("DRS already submitted for this date", 409);
     }
 
@@ -107,7 +107,7 @@ exports.getDrs = async (req, res, next) => {
           date: { $gte: start, $lte: end },
         });
       }
-      _where.$and.push = [{ $or: searchConditions }];
+      _where.$and = [{ $or: searchConditions }];
     }
 
     const { data, pagination } = await paginate({
@@ -134,7 +134,7 @@ exports.updateDrs = async (req, res, next) => {
     const { _id: userId } = req.user;
     const { id } = req.params;
 
-    const drs = await DRS.findOne({ _id: id });
+    const drs = await DRS.findOne({ _id: id, isDeleted: false });
 
     if (!drs) {
       throw new AppError("DRS not found with given Id", 404);

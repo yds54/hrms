@@ -11,10 +11,6 @@ exports.addHoliday = async (req, res, next) => {
   try {
     const { holidayDate, holidayReason } = req.body;
 
-    if (!holidayDate || !holidayReason) {
-      throw new AppError("holidayDate and holidayReason are required", 400);
-    }
-
     const date = moment
       .tz(holidayDate, "YYYY-MM-DD", TIMEZONES.INDIA)
       .startOf("day");
@@ -126,13 +122,13 @@ exports.updateHoliday = async (req, res, next) => {
       const start = date.clone().toDate();
       const end = date.clone().endOf("day").toDate();
 
-      const isDuplicate = await HOLIDAY.findOne({
+      const isHolidayDuplicate = await HOLIDAY.findOne({
         _id: { $ne: id },
         holidayDate: { $gte: start, $lte: end },
         isDeleted: false,
       }).select("_id");
 
-      if (isDuplicate) {
+      if (isHolidayDuplicate) {
         throw new AppError("Holiday already exists for this date", 409);
       }
       holiday.holidayDate = start;
