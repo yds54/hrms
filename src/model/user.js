@@ -131,4 +131,19 @@ userSchema.virtual("fullName").get(function () {
     .join(" ");
 });
 
+userSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    ret.designation = ret.designationId;
+    ret.department = ret.departmentId;
+    ret.organization = ret.organizationId;
+    ret.bankDetails.bank = ret.bankDetails?.bankId;
+
+    delete ret.designationId;
+    delete ret.departmentId;
+    delete ret.organizationId;
+    delete ret.bankDetails?.bankId;
+    return ret;
+  },
+});
+
 module.exports = mongoose.model("user", userSchema);

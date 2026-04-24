@@ -37,5 +37,11 @@ const payrollSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-
+payrollSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    ret.User = ret.userId;
+    delete ret.userId;
+    return ret;
+  },
+});
 module.exports = mongoose.model("payroll", payrollSchema);

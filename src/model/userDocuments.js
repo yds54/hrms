@@ -39,7 +39,7 @@ const userDocumentSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "user",
       required: true,
     },
     documentsTakenDate: {
@@ -109,5 +109,11 @@ const userDocumentSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-
+userDocumentSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    ret.User = ret.userId;
+    delete ret.userId;
+    return ret;
+  },
+});
 module.exports = mongoose.model("userDocument", userDocumentSchema);

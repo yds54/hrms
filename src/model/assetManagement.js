@@ -36,4 +36,13 @@ const assetSchema = new mongoose.Schema(
   },
 );
 
+assetSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    ret.assetCategory = ret.assetCategoryId;
+    ret.asset = ret.assetId;
+    delete ret.assetCategoryId;
+    delete ret.assetId;
+    return ret;
+  },
+});
 module.exports = mongoose.model("assetmanagement", assetSchema);

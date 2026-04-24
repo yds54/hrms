@@ -26,5 +26,12 @@ const designationSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+// designationSchema.set("toJSON", {
+//   transform: function (doc, ret) {
+//     ret.department = ret.departmentId;
+//     delete ret.departmentId;
+//     return ret;
+//   },
+// });
 
 module.exports = mongoose.model("designation", designationSchema);
