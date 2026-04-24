@@ -1,7 +1,4 @@
-const mongoose = require("mongoose");
 const moment = require("moment");
-
-require("dotenv").config();
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { OFFBORADINGCRITERIA } = require("../model/modelIndex");
@@ -30,7 +27,7 @@ exports.addCriteria = async (req, res, next) => {
 exports.getAllCriteria = async (req, res, next) => {
   try {
     const { query } = req;
-    const { page = 1, limit = 10, criteria } = query;
+    const { page, limit, criteria } = query;
 
     const _whereCondition = {
       isDeleted: false,
@@ -71,7 +68,7 @@ exports.updateCriteria = async (req, res, next) => {
     }).select("_id");
 
     if (!isCriteriaExists) {
-      throw new AppError("Criteria not found", 404);
+      throw new AppError("Criteria not found for given ID", 404);
     }
 
     if (isCriteriaExists) {
@@ -109,7 +106,7 @@ exports.deleteCriteria = async (req, res, next) => {
     }).select("_id");
 
     if (!isCriteriaExists) {
-      throw new AppError("Criteria not found", 404);
+      throw new AppError("Criteria not found for given ID", 404);
     }
 
     isCriteriaExists.isDeleted = true;
@@ -130,10 +127,10 @@ exports.getCriteriaById = async (req, res, next) => {
     const isCriteriaExists = await OFFBORADINGCRITERIA.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id criteria");
 
     if (!isCriteriaExists) {
-      throw new AppError("Criteria not found", 404);
+      throw new AppError("Criteria not found for given ID", 404);
     }
 
     return successResponse(res, 200, "Criteria fetched successfully", {

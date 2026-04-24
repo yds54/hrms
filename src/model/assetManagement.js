@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const assetSchema = new mongoose.Schema(
   {
-    assetcategoryId: {
+    assetCategoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "assetCategory",
       required: true,
@@ -36,4 +36,13 @@ const assetSchema = new mongoose.Schema(
   },
 );
 
+assetSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    ret.assetCategory = ret.assetCategoryId;
+    ret.asset = ret.assetId;
+    delete ret.assetCategoryId;
+    delete ret.assetId;
+    return ret;
+  },
+});
 module.exports = mongoose.model("assetmanagement", assetSchema);

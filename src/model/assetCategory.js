@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const assetCategorySchema = new mongoose.Schema(
   {
-    assetcategoryName: {
+    assetCategoryName: {
       type: String,
       required: true,
       trim: true,

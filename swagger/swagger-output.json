@@ -668,12 +668,14 @@
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "gender",
@@ -704,6 +706,11 @@
             "name": "Left",
             "in": "query",
             "type": "boolean"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string"
           }
         ],
         "responses": {
@@ -932,12 +939,14 @@
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "departmentName",
@@ -1061,15 +1070,22 @@
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "departmentId",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "designationName",
             "in": "query",
             "type": "string"
           }
@@ -1190,12 +1206,14 @@
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "bankName",
@@ -1319,12 +1337,14 @@
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "criteria",
@@ -1493,12 +1513,14 @@
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "organizationName",
@@ -2008,7 +2030,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "assetcategoryName": {
+                "assetCategoryName": {
                   "example": "Electronics"
                 }
               }
@@ -2028,15 +2050,17 @@
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
-            "name": "assetcategoryName",
+            "name": "assetCategoryName",
             "in": "query",
             "type": "string"
           }
@@ -2065,7 +2089,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "assetcategoryName": {
+                "assetCategoryName": {
                   "example": "mobile"
                 }
               }
@@ -2111,7 +2135,7 @@
                 "assetName": {
                   "example": "Electronics"
                 },
-                "assetcategoryId": {
+                "assetCategoryId": {
                   "example": "69ca544451e27dd860867e71(assetcategory_id)"
                 }
               }
@@ -2131,12 +2155,14 @@
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "assetcategoryId",
@@ -2172,7 +2198,7 @@
                 "id": {
                   "type": "string"
                 },
-                "assetcategoryName": {
+                "assetCategoryName": {
                   "type": "string",
                   "example": "mobile"
                 }
@@ -2206,7 +2232,7 @@
                 "assetName": {
                   "example": "mobile"
                 },
-                "assetcategoryId": {
+                "assetCategoryId": {
                   "example": "69ca544451e27dd860867e71(assetcategory_id)"
                 }
               }
@@ -2249,7 +2275,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "assetcategoryId": {
+                "assetCategoryId": {
                   "example": "69ca544451e27dd860867e71(assetcategory_id)"
                 },
                 "assetId": {
@@ -2281,12 +2307,14 @@
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "assetId",
@@ -2294,7 +2322,7 @@
             "type": "string"
           },
           {
-            "name": "assetcategoryId",
+            "name": "assetCategoryId",
             "in": "query",
             "type": "string"
           },
@@ -2302,6 +2330,14 @@
             "name": "relatedTo",
             "in": "query",
             "type": "string"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "Search by employee name, employee code, asset name, remark, or issue date (YYYY-MM-DD)",
+            "example": "john"
           }
         ],
         "responses": {
@@ -2363,7 +2399,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "assetcategoryId": {
+                "assetCategoryId": {
                   "example": "69ca544451e27dd860867e71(assetcategory_id)"
                 },
                 "assetId": {
@@ -2483,12 +2519,14 @@
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "required": true
           }
         ],
         "responses": {
@@ -2674,13 +2712,15 @@
             "name": "page",
             "in": "query",
             "type": "string",
-            "example": "1"
+            "example": "1",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
             "type": "string",
-            "example": "10"
+            "example": "10",
+            "required": true
           }
         ],
         "responses": {
@@ -2771,6 +2811,173 @@
           "404": {
             "description": "User Increment not found"
           },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/userDocuments/": {
+      "post": {
+        "tags": ["user-documents"],
+        "summary": "Add User Documents",
+        "description": "Upload user documents with remarks and other documents",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "example": "661234abcd1234abcd123456"
+          },
+          {
+            "name": "documentsTakenDate",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "example": "2026-03-14"
+          },
+          {
+            "name": "twelfthOrDiplomaType",
+            "in": "formData",
+            "type": "string",
+            "enum": ["12th", "Diploma"]
+          },
+
+          {
+            "name": "offerLetter",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "offerLetter[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "appointmentLetter",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "appointmentLetter[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "tenthMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "tenthMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "twelfthOrDiplomaMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "twelfthOrDiplomaMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "bachelorsCertificate",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "bachelorsCertificate[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "mastersDegreeMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "mastersDegreeMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "panCard",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "panCard[panNumber]",
+            "in": "formData",
+            "type": "string",
+            "example": "ABCDE1234F"
+          },
+          {
+            "name": "panCard[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "string",
+            "example": "[{\"documentName\":\"Aadhar\",\"remark\":\"Front\"},{\"documentName\":\"License\",\"remark\":\"Valid\"}]"
+          },
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "file",
+            "description": "Upload multiple files using same key"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User documents created successfully"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "get": {
+        "tags": ["user-documents"],
+        "description": "Get all user documents",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
           "403": {
             "description": "Forbidden"
           }

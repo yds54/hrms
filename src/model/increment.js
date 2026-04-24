@@ -40,4 +40,12 @@ const incrementSchema = new mongoose.Schema(
   },
 );
 
+incrementSchema.set("toJSON", {
+  transform: function (doc, ret) {
+    ret.User = ret.userId;
+    delete ret.userId;
+    return ret;
+  },
+});
+
 module.exports = mongoose.model("Increment", incrementSchema);

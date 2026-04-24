@@ -4,8 +4,8 @@ const { GENDER, MARITAL_STATUS, ROLES, USER_STATUS } = require("../utils/enum");
 //================= DISPLAY USERS VALIDATION ======================
 exports.getuserValidation = {
   query: Joi.object({
-    page: Joi.number().integer(),
-    limit: Joi.number().integer(),
+    page: Joi.number().integer().min(1).required(),
+    limit: Joi.number().integer().min(1).required(),
     designation: Joi.string(),
     organizationType: Joi.string(),
     mobileNo: Joi.string().pattern(/^[0-9]{10}$/),
@@ -13,6 +13,7 @@ exports.getuserValidation = {
     gender: Joi.string().valid(...Object.values(GENDER)),
     attendanceType: Joi.string(),
     Left: Joi.boolean(),
+    search: Joi.string(),
   }),
 };
 
@@ -37,8 +38,8 @@ exports.updateUserValidation = {
     aadhaarNumber: Joi.string().length(12),
     birthDate: Joi.date(),
     gender: Joi.string().valid(...Object.values(GENDER)),
-    contactNumber: Joi.string().pattern(/^[6-9]\d{9}$/),
-    emergencyContactNumber: Joi.string().pattern(/^[6-9]\d{9}$/),
+    contactNumber: Joi.string().pattern(/^[0-9]{10}$/),
+    emergencyContactNumber: Joi.string().pattern(/^[0-9]{10}$/),
     correspondenceAddress: Joi.string(),
     permanentAddress: Joi.string(),
     maritalStatus: Joi.string().valid(...Object.values(MARITAL_STATUS)),
@@ -46,10 +47,10 @@ exports.updateUserValidation = {
     rentalAllowance: Joi.boolean(),
     rentalAllowanceAmount: Joi.number(),
     leavecreaditType: Joi.string(),
-    designationId: Joi.string(),
+    designationId: Joi.string().hex().length(24),
     position: Joi.string(),
-    departmentId: Joi.string(),
-    vehicleNumber: Joi.string(),
+    departmentId: Joi.string().hex().length(24),
+    vehicleNumber: Joi.string().allow("", null),
 
     education: Joi.object({
       degree: Joi.string(),
@@ -58,7 +59,7 @@ exports.updateUserValidation = {
     }),
 
     bankDetails: Joi.object({
-      bankId: Joi.string(),
+      bankId: Joi.string().hex().length(24).required(),
       accountNumber: Joi.string(),
       ifscCode: Joi.string().pattern(/^[A-Z]{4}0[A-Z0-9]{6}$/),
       accountHolderName: Joi.string(),

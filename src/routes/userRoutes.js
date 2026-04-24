@@ -24,7 +24,14 @@ const {
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.USER),
+  authorizeRoles(
+    ROLES.ADMIN,
+    ROLES.USER,
+    ROLES.HR_RECRUITER,
+    ROLES.HR,
+    ROLES.TEAM_LEAD,
+    ROLES.PROJECT_MANAGER,
+  ),
   validate(getuserValidation),
   viewallUser,
 );

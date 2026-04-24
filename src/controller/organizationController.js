@@ -1,18 +1,12 @@
-const mongoose = require("mongoose");
-require("dotenv").config();
-
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { ORGANIZATION } = require("../model/modelIndex");
+const { renameFile } = require("../utils/fileHandler");
 const { AppError } = require("../utils/error");
 
 exports.addOrganization = async (req, res, next) => {
   try {
     const { body, file } = req;
-
-    if (file) {
-      body.logo = `/uploads/organizationLogo/${file.filename}`;
-    }
     const isOrganizationExists = await ORGANIZATION.findOne({
       organizationName: body.organizationName,
       isDeleted: false,
@@ -23,7 +17,21 @@ exports.addOrganization = async (req, res, next) => {
     }
 
     body.createdBy = req.user._id;
-    await ORGANIZATION.create(body);
+
+    const createdOrganization = await ORGANIZATION.create(body);
+
+    const logoPath = await renameFile(
+      file,
+      body.organizationName,
+      "organizationLogo",
+    );
+
+    if (logoPath) {
+      await ORGANIZATION.updateOne(
+        { _id: createdOrganization._id },
+        { $set: { logo: logoPath } },
+      );
+    }
 
     return successResponse(res, 200, "Organization added successfully", {
       organizationName: body.organizationName,
@@ -35,7 +43,7 @@ exports.addOrganization = async (req, res, next) => {
 
 exports.getAllOrganizations = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, organizationName } = req.query;
+    const { page, limit, organizationName } = req.query;
 
     const _whereCondition = {
       isDeleted: false,
@@ -72,10 +80,10 @@ exports.getOrganizationById = async (req, res, next) => {
     const isOrganizationExists = await ORGANIZATION.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id organizationName logo");
 
     if (!isOrganizationExists) {
-      throw new AppError("Organization not found", 404);
+      throw new AppError("Organization not found for given ID", 404);
     }
 
     return successResponse(res, 200, "Organization fetched successfully", {
@@ -101,7 +109,7 @@ exports.updateOrganization = async (req, res, next) => {
     }).select("_id");
 
     if (!isOrganizationExists) {
-      throw new AppError("Organization not found", 404);
+      throw new AppError("Organization not found for given ID", 404);
     }
 
     if (isOrganizationExists) {
@@ -137,7 +145,7 @@ exports.deleteOrganization = async (req, res, next) => {
     }).select("_id");
 
     if (!isOrganizationExists) {
-      throw new AppError("Organization not found", 404);
+      throw new AppError("Organization not found for given ID", 404);
     }
 
     isOrganizationExists.isDeleted = true;

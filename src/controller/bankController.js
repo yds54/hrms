@@ -1,7 +1,4 @@
-const mongoose = require("mongoose");
 const moment = require("moment");
-
-require("dotenv").config();
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { BANK } = require("../model/modelIndex");
@@ -16,7 +13,8 @@ exports.addBank = async (req, res, next) => {
       isDeleted: false,
     }).select("_id");
 
-    if (isBankExists) throw new AppError("Bank already exists", 409);
+    if (isBankExists)
+      throw new AppError("Bank with the given name already exists", 409);
 
     body.createdBy = req.user._id;
     await BANK.create(body);
@@ -32,7 +30,7 @@ exports.addBank = async (req, res, next) => {
 exports.getAllBanks = async (req, res, next) => {
   try {
     const { query } = req;
-    const { page = 1, limit = 10, bankName } = query;
+    const { page, limit, bankName } = query;
 
     const _whereCondition = {
       isDeleted: false,
@@ -73,19 +71,17 @@ exports.updateBank = async (req, res, next) => {
     }).select("_id");
 
     if (!isBankExists) {
-      throw new AppError("Bank not found", 404);
+      throw new AppError("Bank not found for given ID", 404);
     }
 
-    if (isBankExists) {
-      const bankExists = await BANK.findOne({
-        bankName: payload.bankName,
-        _id: { $ne: id },
-        isDeleted: false,
-      });
+    const bankExists = await BANK.findOne({
+      bankName: payload.bankName,
+      _id: { $ne: id },
+      isDeleted: false,
+    });
 
-      if (bankExists) {
-        throw new AppError("bank already exists", 409);
-      }
+    if (bankExists) {
+      throw new AppError("bank with the given name already exists", 409);
     }
 
     await BANK.updateOne(
@@ -111,7 +107,7 @@ exports.deleteBank = async (req, res, next) => {
     }).select("_id");
 
     if (!isBankExists) {
-      throw new AppError("Bank not found", 404);
+      throw new AppError("Bank not found for given ID", 404);
     }
 
     isBankExists.isDeleted = true;
@@ -132,10 +128,10 @@ exports.getBankById = async (req, res, next) => {
     const isBankExists = await BANK.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id bankName");
 
     if (!isBankExists) {
-      throw new AppError("Bank not found", 404);
+      throw new AppError("Bank not found for given ID", 404);
     }
 
     return successResponse(res, 200, "Bank fetched sucessfully", {

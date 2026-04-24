@@ -8,8 +8,8 @@ exports.addDepartmentValidation = {
 
 exports.getDepartmentValidation = {
   query: Joi.object({
-    page: Joi.number().integer(),
-    limit: Joi.number().integer(),
+    page: Joi.number().integer().min(1).required(),
+    limit: Joi.number().integer().min(1).required(),
     departmentName: Joi.string(),
   }),
 };
