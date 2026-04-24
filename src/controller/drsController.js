@@ -1,11 +1,16 @@
-const moment = require("moment");
-
-const { DRS } = require("../model/modelIndex");
+const moment = require("moment-timezone");
+const { DRS, HOLIDAY } = require("../model/modelIndex");
 const { successResponse } = require("../utils/sucess");
 const { paginate } = require("../utils/pagination");
 const { AppError } = require("../utils/error");
 const { getProjection } = require("../utils/projection");
 const { TIMEZONES } = require("../utils/enum");
+const {
+  getDayRange,
+  getMonthRange,
+  dateSearchQuery,
+  formatDate,
+} = require("../utils/dateFormat");
 
 //======================= ADD DRS =================================
 exports.addDrs = async (req, res, next) => {
@@ -13,14 +18,11 @@ exports.addDrs = async (req, res, next) => {
     const { _id: userId } = req.user;
     const { date, onLeave, done, inProgress } = req.body;
 
-    const selectedDate = moment
-      .tz(date, "YYYY-MM-DD", TIMEZONES.INDIA)
-      .startOf("day")
-      .toDate();
+    const { startOfDay } = getDayRange(date);
 
     const isDrsExists = await DRS.findOne({
       user: userId,
-      date: selectedDate,
+      date: startOfDay,
     }).select("_id");
 
     if (isDrsExists) {
@@ -33,7 +35,7 @@ exports.addDrs = async (req, res, next) => {
 
     const drs = await DRS.create({
       ...req.body,
-      date: selectedDate,
+      date: startOfDay,
       user: userId,
       createdBy: userId,
       updatedBy: userId,
@@ -53,27 +55,20 @@ exports.getDrs = async (req, res, next) => {
 
     const currentDate = new Date();
 
-    const selectedMonth = month ? Number(month) - 1 : currentDate.getMonth();
+    const selectedMonth = month ? Number(month) : currentDate.getMonth();
     const selectedYear = year ? Number(year) : currentDate.getFullYear();
 
-    const startDate = moment()
-      .year(selectedYear)
-      .month(selectedMonth)
-      .startOf("month")
-      .toDate();
-
-    const endDate = moment()
-      .year(selectedYear)
-      .month(selectedMonth)
-      .endOf("month")
-      .toDate();
+    const { startOfMonth, endOfMonth } = getMonthRange(
+      selectedYear,
+      selectedMonth,
+    );
 
     const _where = {
       user: userId,
       isDeleted: false,
       date: {
-        $gte: startDate,
-        $lte: endDate,
+        $gte: startOfMonth,
+        $lte: endOfMonth,
       },
     };
 
@@ -100,12 +95,9 @@ exports.getDrs = async (req, res, next) => {
         );
       }
       // date search (YYYY-MM-DD)
-      if (moment(search, "YYYY-MM-DD", true).isValid()) {
-        const start = moment(search).startOf("day").toDate();
-        const end = moment(search).endOf("day").toDate();
-        searchConditions.push({
-          date: { $gte: start, $lte: end },
-        });
+      const dateQuery = dateSearchQuery("date", search);
+      if (dateQuery) {
+        searchConditions.push(dateQuery);
       }
       _where.$and = [{ $or: searchConditions }];
     }
@@ -150,6 +142,69 @@ exports.updateDrs = async (req, res, next) => {
     return successResponse(res, 200, "DRS changed successfully");
   } catch (error) {
     console.log(error);
+    next(error);
+  }
+};
+
+//=============== NOT FILLED DRS ==========================
+exports.getNotFilledDrs = async (req, res, next) => {
+  try {
+    let { month, year } = req.query;
+    const { _id: userId } = req.user;
+
+    const now = moment.tz(TIMEZONES.INDIA).subtract(1, "day");
+    const selectedMonth = month ? Number(month) : now.month() + 1;
+    const selectedYear = year ? Number(year) : now.year();
+
+    const { startOfMonth, endOfMonth } = getMonthRange(
+      selectedYear,
+      selectedMonth,
+    );
+
+    // limit till yesterday (If current month-syesterday , past month → full month)
+    const loopEnd = endOfMonth > now.toDate() ? now.toDate() : endOfMonth;
+    const dateFilter = {
+      $gte: startOfMonth,
+      $lte: loopEnd,
+    };
+
+    const [drsData, holidays] = await Promise.all([
+      DRS.find({ user: userId, isDeleted: false, date: dateFilter }).lean(),
+      HOLIDAY.find({
+        isDeleted: false,
+        holidayDate: dateFilter,
+      }).lean(),
+    ]);
+
+    const holidaySet = new Set(holidays.map((h) => formatDate(h.holidayDate)));
+    const drsMap = new Map(drsData.map((d) => [formatDate(d.date), d]));
+
+    const result = [];
+    let currentDay = moment(startOfMonth);
+
+    while (currentDay.toDate() <= loopEnd) {
+      const key = formatDate(currentDay.toDate());
+      if (currentDay.day() !== 0 && !holidaySet.has(key)) {
+        const record = drsMap.get(key);
+
+        if (
+          !record ||
+          !(
+            record.done?.trim() ||
+            record.inProgress?.trim() ||
+            record.nextPlan?.trim()
+          )
+        ) {
+          result.push({ date: key, userId });
+        }
+      }
+      currentDay.add(1, "day");
+    }
+
+    return successResponse(res, 200, "Not filled DRS fetched", {
+      data: result,
+    });
+  } catch (error) {
     next(error);
   }
 };

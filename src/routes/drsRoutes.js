@@ -6,12 +6,18 @@ const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
 const { ROLES } = require("../utils/enum");
 
-const { addDrs, getDrs, updateDrs } = require("../controller/drsController");
+const {
+  addDrs,
+  getDrs,
+  updateDrs,
+  getNotFilledDrs,
+} = require("../controller/drsController");
 
 const {
   drsValidation,
   getDrsValidation,
   updateDrsValidation,
+  notFilledDrsValidation,
 } = require("../validation/drsValidation");
 
 //==================== ADD DRS ===============================
@@ -41,6 +47,15 @@ router.put(
   authorizeRoles(ROLES.USER, ROLES.ADMIN),
   validate(updateDrsValidation),
   updateDrs,
+);
+
+//============== NOT FILLED DRS ROUTES ====================
+router.get(
+  "/not-filled",
+  authenticateJWT,
+  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  validate(notFilledDrsValidation),
+  getNotFilledDrs,
 );
 
 module.exports = router;

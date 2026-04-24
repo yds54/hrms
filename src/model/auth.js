@@ -15,6 +15,9 @@ const authSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    deletedAt: {
+      type: Date,
+    },
     expiresAt: {
       type: Date,
     },

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { formatDate } = require("../utils/dateFormat");
 
 const holidaySchema = new mongoose.Schema(
   {
@@ -21,5 +22,12 @@ const holidaySchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+holidaySchema.set("toJSON", {
+  transform: (doc, ret) => {
+    ret.holidayDate = formatDate(ret.holidayDate);
+    return ret;
+  },
+});
 
 module.exports = mongoose.model("holiday", holidaySchema);

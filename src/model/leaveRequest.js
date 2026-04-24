@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { formatDate } = require("../utils/dateFormat");
 const {
   LEAVE_DAY_TYPE,
   LEAVE_STATUS,
@@ -73,9 +74,22 @@ const leaveRequestSchema = new mongoose.Schema(
   },
 );
 
+leaveRequestSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    if (ret.date) ret.date = formatDate(ret.date);
+    if (ret.fromDate) ret.fromDate = formatDate(ret.fromDate);
+    if (ret.toDate) ret.toDate = formatDate(ret.toDate);
+    return ret;
+  },
+});
+
 // calculate total days
 leaveRequestSchema.pre("save", function () {
-  if ( this.numberOfDays === LEAVE_DAY_TYPE.MULTIPLE && this.fromDate && this.toDate) {
+  if (
+    this.numberOfDays === LEAVE_DAY_TYPE.MULTIPLE &&
+    this.fromDate &&
+    this.toDate
+  ) {
     const fromDate = new Date(this.fromDate);
     const toDate = new Date(this.toDate);
 

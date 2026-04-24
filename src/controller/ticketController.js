@@ -1,9 +1,9 @@
-const moment = require("moment");
 const { USER, TICKET, TICKETACTIVITY } = require("../model/modelIndex");
 const { ROLES, TICKET_FILTER, TICKET_STATUS } = require("../utils/enum");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 const { getProjection } = require("../utils/projection");
+const { getDayRange, dateSearchQuery } = require("../utils/dateFormat");
 
 const ALLOWED_ROLES = [
   ROLES.ADMIN,
@@ -72,9 +72,8 @@ exports.getTickets = async (req, res, next) => {
     }
 
     if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
+      const { startOfDay: start } = getDayRange(startDate);
+      const { endOfDay: end } = getDayRange(endDate);
 
       _where.createdAt = {
         $gte: start,
@@ -90,13 +89,9 @@ exports.getTickets = async (req, res, next) => {
       }));
 
       // date search
-      if (moment(search, "YYYY-MM-DD", true).isValid()) {
-        const start = moment(search).startOf("day").toDate();
-        const end = moment(search).endOf("day").toDate();
-
-        searchCondition.push({
-          createdAt: { $gte: start, $lte: end },
-        });
+      const dateQuery = dateSearchQuery("createdAt", search);
+      if (dateQuery) {
+        searchCondition.push(dateQuery);
       }
       _where.$and = [{ $or: searchCondition }];
     }

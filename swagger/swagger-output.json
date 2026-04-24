@@ -540,6 +540,31 @@
         }
       }
     },
+    "/api/drs/not-filled": {
+      "get": {
+        "tags": ["Drs"],
+        "description": "GET NOT FILLED DRS",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "type": "string",
+            "example": "04"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "string",
+            "example": "2026"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
 
     "/api/leaveRequest/": {
       "post": {

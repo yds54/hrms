@@ -111,6 +111,7 @@ exports.logoutUser = async (req, res, next) => {
       { token, isDeleted: false },
       {
         isDeleted: true,
+        deletedAt: new Date(),
       },
     );
 

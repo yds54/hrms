@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { formatDate } = require("../utils/dateFormat");
 
 const drsSchema = new mongoose.Schema(
   {
@@ -43,6 +44,15 @@ const drsSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+drsSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    if (ret.date) {
+      ret.date = formatDate(ret.date);
+    }
+    return ret;
+  },
+});
 
 drsSchema.pre("save", function () {
   if (this.onLeave) {
