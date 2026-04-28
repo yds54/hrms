@@ -71,8 +71,8 @@ exports.createAttendance = async (req, res, next) => {
         },
       ],
     });
-    if (existingAttendance.length > 0 && !approvedLeave) {
-      throw new AppError("Attendance already exists for this date", 400);
+    if (existingAttendance && !approvedLeave) {
+      throw new AppError("Attendance already exists for this date", 409);
     }
 
     const inMin = parseTime(inTime);
@@ -244,7 +244,7 @@ exports.getAttendance = async (req, res, next) => {
         continue;
       }
 
-      if (worked > 0) {
+      if (worked) {
         summary.totalPresentDays++;
       }
       let dayCounter = records.some((r) => r.usedCounter === 1) ? 1 : 0;
