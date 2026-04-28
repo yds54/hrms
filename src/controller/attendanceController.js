@@ -1,18 +1,38 @@
 const moment = require("moment");
 const mongoose = require("mongoose");
-const { ATTENDANCE, USER, HOLIDAY } = require("../model/modelIndex");
+const { ATTENDANCE, USER, HOLIDAY, LEAVE } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
-const { TIMEZONES, LEAVE_DURATION } = require("../utils/enum");
-const { paginate } = require("../utils/pagination");
+const {
+  TIMEZONES,
+  LEAVE_DURATION,
+  LEAVE_STATUS,
+  ROLES,
+} = require("../utils/enum");
+const { paginate, paginateArray } = require("../utils/pagination");
+const { parseTime } = require("../utils/timeFormat");
+const {
+  getDayRange,
+  getMonthRange,
+  formatDate,
+  dateSearchQuery,
+} = require("../utils/dateFormat");
 
-const parseTime = (time) => {
-  if (!time) return 0;
-  const [t, mod] = time.split(" ");
-  let [h, m] = t.split(":").map(Number);
-  if (mod === "PM" && h !== 12) h += 12;
-  if (mod === "AM" && h === 12) h = 0;
-  return h * 60 + m;
+//-------- calculate worked minutes , FULL DAY (No outTime) ------------
+const calculateDayStats = (records) => {
+  let workedMinutes = 0;
+  let hasMissingOut = false;
+  records.forEach((r) => {
+    if (r.inTime && !r.outTime) {
+      hasMissingOut = true;
+    }
+    if (r.inTime && r.outTime) {
+      workedMinutes += parseTime(r.outTime) - parseTime(r.inTime);
+    }
+  });
+
+  const requiredMinutes = records?.[0]?.totalMinutes || 0;
+  return { workedMinutes, hasMissingOut, requiredMinutes };
 };
 
 //--------------- INSERT ATTENDANCE ------------------
@@ -22,23 +42,38 @@ exports.createAttendance = async (req, res, next) => {
     const { date, inTime, outTime, lateReason, leaveReason, overTimeReason } =
       req.body;
 
-    const isUserExists = await USER.findById(userId).select(
-      "officeTiming attendanceType",
-    );
+    const isUserExists = await USER.findOne({
+      _id: userId,
+      isDeleted: false,
+    }).select("officeTiming attendanceType");
     if (!isUserExists) throw new AppError("User not found with given Id", 404);
 
-    const attendanceDate = moment
-      .tz(date, "YYYY-MM-DD", TIMEZONES.INDIA)
-      .startOf("day")
-      .toDate();
+    const { startOfDay, endOfDay } = getDayRange(date);
+    const attendanceDate = startOfDay;
 
-    // const isAttendanceExists = await ATTENDANCE.findOne({
-    //   userId,
-    //   date: attendanceDate,
-    //   isDeleted: false,
-    // });
-    // if (isAttendanceExists)
-    //   throw new AppError("Attendance already exists for this date", 400);
+    // check attendance already exists
+    const existingAttendance = await ATTENDANCE.find({
+      userId,
+      isDeleted: false,
+      date: { $gte: startOfDay, $lte: endOfDay },
+    }).select("_id");
+
+    // check leave request is approved or not
+    const approvedLeave = await LEAVE.findOne({
+      user: userId,
+      isDeleted: false,
+      isPMApproved: LEAVE_STATUS.APPROVED,
+      $or: [
+        { date: { $gte: startOfDay, $lte: endOfDay } },
+        {
+          fromDate: { $lte: endOfDay },
+          toDate: { $gte: startOfDay },
+        },
+      ],
+    });
+    if (existingAttendance.length > 0 && !approvedLeave) {
+      throw new AppError("Attendance already exists for this date", 400);
+    }
 
     const inMin = parseTime(inTime);
     const officeIn = parseTime(isUserExists.officeTiming.entryTime);
@@ -98,32 +133,33 @@ exports.createAttendance = async (req, res, next) => {
 //------------- DISPLAY ATTENDANCE ------------------------
 exports.getAttendance = async (req, res, next) => {
   try {
-    let { page = 1, limit = 10, month, year } = req.query;
-    const { _id: userId } = req.user;
+    let { page, limit, month, year, search, userId: queryUserId } = req.query;
+    const { _id: loggedInUserId, role } = req.user;
 
-    const currentDate = moment();
-    const selectedMonth = month ? Number(month) - 1 : currentDate.month();
-    const selectedYear = year ? Number(year) : currentDate.year();
+    const now = moment.tz(TIMEZONES.INDIA);
+    const selectedMonth = month ? Number(month) : now.month() + 1;
+    const selectedYear = year ? Number(year) : now.year();
 
-    const startDate = moment()
-      .year(selectedYear)
-      .month(selectedMonth)
-      .startOf("month")
-      .toDate();
-    const endDate = moment()
-      .year(selectedYear)
-      .month(selectedMonth)
-      .endOf("month")
-      .toDate();
+    const { startOfMonth, endOfMonth } = getMonthRange(
+      selectedYear,
+      selectedMonth,
+    );
+
+    const userId =
+      role === ROLES.ADMIN && queryUserId ? queryUserId : loggedInUserId;
 
     const _where = {
       userId,
       isDeleted: false,
-      date: {
-        $gte: startDate,
-        $lte: endDate,
-      },
+      date: { $gte: startOfMonth, $lte: endOfMonth },
     };
+
+    if (search) {
+      const dateQuery = dateSearchQuery("date", search);
+      if (dateQuery) {
+        _where.date = dateQuery.date;
+      }
+    }
 
     const { data, pagination } = await paginate({
       model: ATTENDANCE,
@@ -135,230 +171,224 @@ exports.getAttendance = async (req, res, next) => {
         {
           path: "createdBy",
           select: "name",
+          match: { isDeleted: false },
+          options: { lean: true },
         },
       ],
     });
 
-    const stats = await ATTENDANCE.aggregate([
-      {
-        $match: {
-          userId: new mongoose.Types.ObjectId(userId),
-          isDeleted: false,
-          date: { $gte: startDate, $lte: endDate },
-        },
-      },
-      {
-        $group: {
-          _id: userId,
-          totalPresentDays: {
-            $sum: {
-              $cond: [{ $and: ["$inTime", "$outTime"] }, 1, 0],
-            },
-          },
-          totalDeductedMinutes: { $sum: "$deductedMinutes" },
-          totalAdditionalMinutes: { $sum: "$overTime" },
-          totalUsedCounter: { $sum: "$usedCounter" },
-          totalFullDayLeave: {
-            $sum: {
-              $cond: [{ $eq: ["$leaveDay", "Full Day"] }, 1, 0],
-            },
-          },
-          totalPermittedMinutes: { $sum: "$permittedMinutes" },
-        },
-      },
+    const [attendanceData, holidays, leaves] = await Promise.all([
+      ATTENDANCE.find(_where).lean(),
+      HOLIDAY.find({
+        isDeleted: false,
+        holidayDate: { $gte: startOfMonth, $lte: endOfMonth },
+      }).lean(),
+      LEAVE.find({
+        user: userId,
+        isDeleted: false,
+        isPMApproved: LEAVE_STATUS.APPROVED,
+        date: { $gte: startOfMonth, $lte: endOfMonth },
+      }).lean(),
     ]);
 
-    let summary = stats[0] || {
+    const holidaySet = new Set(holidays.map((h) => formatDate(h.holidayDate)));
+    const leaveSet = new Set(leaves.map((l) => formatDate(l.date)));
+    const attendanceMap = new Map();
+    attendanceData.forEach((a) => {
+      const key = formatDate(a.date);
+      if (!attendanceMap.has(key)) attendanceMap.set(key, []);
+      attendanceMap.get(key).push(a);
+    });
+
+    let summary = {
       totalPresentDays: 0,
       totalDeductedMinutes: 0,
       totalAdditionalMinutes: 0,
       totalUsedCounter: 0,
       totalFullDayLeave: 0,
-      totalPermittedMinutes: 0,
+      totalLateEntryDeduction: 0,
     };
 
-    // late entry
-    summary.totalLateEntryDeduction = summary.totalUsedCounter >= 4 ? 180 : 0;
+    // Holiday and Leave
+    let current = moment(startOfMonth);
+    while (current.toDate() <= endOfMonth) {
+      const key = formatDate(current.toDate());
+      const isSunday = current.day() === 0;
+      const isHoliday = holidaySet.has(key);
+      const records = attendanceMap.get(key);
+      const hasLeave = leaveSet.has(key);
+
+      if ((isSunday || isHoliday) && !records) {
+        current.add(1, "day");
+        continue;
+      }
+
+      // no attendance = full leave
+      if (!records) {
+        summary.totalFullDayLeave++;
+        current.add(1, "day");
+        continue;
+      }
+
+      //calculate worked minutes and FULLDAY if any record has inTime but no outTime
+      const {
+        workedMinutes: worked,
+        hasMissingOut,
+        requiredMinutes: required,
+      } = calculateDayStats(records);
+
+      if (hasMissingOut && !hasLeave) {
+        summary.totalFullDayLeave++;
+        summary.totalDeductedMinutes += required;
+        current.add(1, "day");
+        continue;
+      }
+
+      if (worked > 0) {
+        summary.totalPresentDays++;
+      }
+      let dayCounter = records.some((r) => r.usedCounter === 1) ? 1 : 0;
+      // ignore counter if leave approved
+      if (hasLeave) {
+        dayCounter = 0;
+      }
+      summary.totalUsedCounter += dayCounter;
+
+      // overtime and deduction
+      if (worked > required) {
+        summary.totalAdditionalMinutes += worked - required;
+      } else if (worked < required) {
+        summary.totalDeductedMinutes += required - worked;
+      }
+      current.add(1, "day");
+    }
+
+    // late penalty
+    if (summary.totalUsedCounter >= 4) {
+      summary.totalLateEntryDeduction = 180;
+      summary.totalDeductedMinutes += 180;
+    }
 
     return successResponse(res, 200, "Attendance fetched successfully", {
       data,
       pagination,
       summary,
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
-/*
-//------------- DISPLAY ATTENDANCE ------------------------
-exports.getAttendance = async (req, res, next) => {
+//================ attendance leave history ======================
+exports.getAttendanceHistory = async (req, res, next) => {
   try {
-    let { page, limit, month, year } = req.query;
+    let { page, limit, month, year, search } = req.query;
     const { _id: userId } = req.user;
 
-    const isUserExists = await USER.findById(userId).select("officeTiming");
-    if (!isUserExists) throw new AppError("User not found with given Id", 404);
+    const now = moment.tz(TIMEZONES.INDIA).subtract(1, "day");
+    const selectedMonth = month ? Number(month) : now.month() + 1;
+    const selectedYear = year ? Number(year) : now.year();
 
-    const requiredMinutes = isUserExists.officeTiming.totalMinutes;
+    const { startOfMonth, endOfMonth } = getMonthRange(
+      selectedYear,
+      selectedMonth,
+    );
 
-    const now           = moment.utc().subtract(1, "day").endOf("day");
-    const selectedMonth = month ? Number(month) - 1 : now.month(); // 0-indexed
-    const selectedYear  = year  ? Number(year)      : now.year();
+    const loopEnd = endOfMonth > now.toDate() ? now.toDate() : endOfMonth;
 
-    const startDate = moment.utc()
-      .year(selectedYear).month(selectedMonth).startOf("month");
-    const endDate   = moment.utc()
-      .year(selectedYear).month(selectedMonth).endOf("month");
-
-    const [attendanceRecords, holidays] = await Promise.all([
+    const [attendanceData, holidays] = await Promise.all([
       ATTENDANCE.find({
         userId,
         isDeleted: false,
-        date: { $gte: startDate.toDate(), $lte: endDate.toDate() },
-      })
-        .populate({ path: "createdBy", select: "name" })
-        .lean(),
-
+        date: { $gte: startOfMonth, $lte: loopEnd },
+      }).lean(),
       HOLIDAY.find({
-        holidayDate: { $gte: startDate.toDate(), $lte: endDate.toDate() },
         isDeleted: false,
+        holidayDate: { $gte: startOfMonth, $lte: loopEnd },
       }).lean(),
     ]);
 
-    const holidaySet = new Set(
-      holidays.map((h) => moment.utc(h.holidayDate).format("YYYY-MM-DD"))
-    );
+    const holidaySet = new Set(holidays.map((h) => formatDate(h.holidayDate)));
 
-    const attendanceMap = new Map(); // "YYYY-MM-DD" → [rec, ...]
-    for (const rec of attendanceRecords) {
-      const key = moment.utc(rec.date).format("YYYY-MM-DD");
+    // group by date
+    const attendanceMap = new Map();
+    attendanceData.forEach((a) => {
+      const key = formatDate(a.date);
       if (!attendanceMap.has(key)) attendanceMap.set(key, []);
-      attendanceMap.get(key).push(rec);
-    }
-
-    const finalData       = [];
-    let totalFullDayLeave = 0;
-    let totalPresentDays  = 0;
-
-    const loopEnd    = endDate.isAfter(now) ? now.clone() : endDate.clone();
-    let   currentDay = startDate.clone();
-
-    while (currentDay.isSameOrBefore(loopEnd, "day")) {
-      const dateStr  = currentDay.format("YYYY-MM-DD");
-      const isSunday = currentDay.day() === 0;
-
-      // skip Sundays and holidays 
-      if (isSunday || holidaySet.has(dateStr)) {
-        currentDay.add(1, "day");
-        continue;
-      }
-      const dayRecords = attendanceMap.get(dateStr) || [];
-
-      if (dayRecords.length === 0) {
-        finalData.push({
-          date:                  currentDay.toDate(),
-          attendances:           [],
-          totalTime:             0,
-          totalDeductedMinutes:  0,
-          totalOverTime:         0,
-          totalPermittedMinutes: 0,
-          totalUsedCounter:      0,
-          leaveDay:              LEAVE_DURATION.FULL,
-          leaveStatus:           "-",
-          status:                "Leave",
-        });
-        totalFullDayLeave++;
-        currentDay.add(1, "day");
-        continue;
-      }
-
-      let totalTime             = 0;
-      let totalDeductedMinutes  = 0;
-      let totalPermittedMinutes = 0;
-      let totalUsedCounter      = 0;
-      let totalOverTime         = 0;
-
-      for (const rec of dayRecords) {
-        totalTime             += rec.totalTime        || 0;
-        totalDeductedMinutes  += rec.deductedMinutes  || 0;
-        totalPermittedMinutes += rec.permittedMinutes || 0;
-        totalUsedCounter      += rec.usedCounter      || 0;
-        totalOverTime         += rec.overTime         || 0;
-      }
-
-      if (totalDeductedMinutes > requiredMinutes) {
-        totalDeductedMinutes = requiredMinutes;
-      }
-
-      const isPresent = totalTime >= requiredMinutes;
-      const isHalfDay = !isPresent && totalTime >= Math.floor(requiredMinutes / 2);
-
-      let leaveDay, leaveStatus, status;
-
-      if (isPresent) {
-        totalPresentDays++;
-        leaveDay             = LEAVE_DURATION.NONE;
-        leaveStatus          = "-";
-        status               = "Present";
-        totalDeductedMinutes = 0; 
-      } else if (isHalfDay) {
-        leaveDay      = LEAVE_DURATION.HALF;
-        leaveStatus   = `${requiredMinutes - totalTime} minutes early`;
-        status        = "Half Day Leave";
-        totalOverTime = 0; 
-      } else {
-        // worked less than half a day, or inTime only (no outTime)
-        totalFullDayLeave++;
-        leaveDay             = LEAVE_DURATION.FULL;
-        leaveStatus          = "-";
-        status               = "Leave";
-        totalDeductedMinutes = 0;
-        totalOverTime        = 0;
-      }
-
-      finalData.push({
-        date:                  currentDay.toDate(),
-        attendances:           dayRecords,
-        totalTime,
-        totalDeductedMinutes,
-        totalOverTime,
-        totalPermittedMinutes,
-        totalUsedCounter,
-        leaveDay,
-        leaveStatus,
-        status,
-      });
-
-      currentDay.add(1, "day");
-    }
-    finalData.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    // ── Summary
-    const sumDeducted    = finalData.reduce((s, d) => s + d.totalDeductedMinutes,  0);
-    const sumOverTime    = finalData.reduce((s, d) => s + d.totalOverTime,          0);
-    const sumPermitted   = finalData.reduce((s, d) => s + d.totalPermittedMinutes,  0);
-    const sumUsedCounter = finalData.reduce((s, d) => s + d.totalUsedCounter,       0);
-
-    const totalLateEntryDeduction = sumUsedCounter >= 4 ? 180 : 0;
-
-    const summary = {
-      totalPresentDays,
-      totalFullDayLeave,
-      totalDeductedMinutes:   sumDeducted + totalLateEntryDeduction,
-      totalAdditionalMinutes: sumOverTime,
-      totalPermittedMinutes:  sumPermitted,
-      totalUsedCounter:       sumUsedCounter,
-      totalLateEntryDeduction,
-    };
-
-    return successResponse(res, 200, "Attendance fetched successfully", {
-      data: finalData,
-      summary,
+      attendanceMap.get(key).push(a);
     });
-  } catch (error) {
-    next(error);
+
+    let result = [];
+
+    let current = moment(startOfMonth);
+    while (current.toDate() <= loopEnd) {
+      const key = formatDate(current.toDate());
+      const isSunday = current.day() === 0;
+      const isHoliday = holidaySet.has(key);
+
+      // if sunday and holiday - skip
+      if (isSunday || isHoliday) {
+        current.add(1, "day");
+        continue;
+      }
+
+      const record = attendanceMap.get(key);
+
+      //no attendance → FULL day leave
+      if (!record) {
+        result.push({
+          date: key,
+          leaveDay: LEAVE_DURATION.FULL,
+          leaveStatus: "-",
+        });
+        current.add(1, "day");
+        continue;
+      }
+
+      const { workedMinutes, hasMissingOut, requiredMinutes } =
+        calculateDayStats(record);
+
+      // FULL DAY
+      if (hasMissingOut) {
+        result.push({
+          date: key,
+          leaveDay: LEAVE_DURATION.FULL,
+          leaveStatus: "-",
+        });
+        current.add(1, "day");
+        continue;
+      }
+
+      // HALF DAY
+      if (workedMinutes < requiredMinutes) {
+        const diff = requiredMinutes - workedMinutes;
+        result.push({
+          date: key,
+          leaveDay: LEAVE_DURATION.HALF,
+          leaveStatus: `${diff} minutes early`,
+        });
+      }
+      current.add(1, "day");
+    }
+
+    //search
+    if (search) {
+      const s = search.toLowerCase();
+      result = result.filter((item) => {
+        return (
+          item.date.includes(s) ||
+          item.leaveDay?.toLowerCase().includes(s) ||
+          item.leaveStatus?.toLowerCase().includes(s)
+        );
+      });
+    }
+
+    const { data, pagination } = paginateArray(result, page, limit);
+    return successResponse(res, 200, "Leave history fetched successfully", {
+      data,
+      pagination,
+    });
+  } catch (err) {
+    next(err);
   }
 };
-
-*/

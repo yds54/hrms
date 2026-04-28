@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const { LEAVE_DURATION } = require("../utils/enum");
+const { parseTime } = require("../utils/timeFormat");
+const { formatDate } = require("../utils/dateFormat");
 
 const attendanceSchema = new mongoose.Schema(
   {
@@ -109,55 +111,51 @@ const attendanceSchema = new mongoose.Schema(
   },
 );
 
-//attendanceSchema.index({ userId: 1, date: 1 }, { unique: true });
-
-const parseTime = (time) => {
-  if (!time) return 0;
-  const [t, modifier] = time.split(" ");
-  let [h, m] = t.split(":").map(Number);
-  if (modifier === "PM" && h !== 12) h += 12;
-  if (modifier === "AM" && h === 12) h = 0;
-  return h * 60 + m;
-};
-
 attendanceSchema.pre("save", function () {
   const inMinutes = parseTime(this.inTime);
   const outMinutes = parseTime(this.outTime);
-  const lateEntryLimit = parseTime(this.lateEntryAfterMinutes);
 
-  // ----- total time calculation -----
+  // Reset leave , deduction , overtime
+  this.leaveDay = LEAVE_DURATION.NONE;
+  this.leaveStatus = "";
+  this.deductedMinutes = 0;
+  this.overTime = 0;
+  this.usedCounter = 0;
+
+  // calculate total working min
   if (this.inTime && this.outTime) {
     this.totalTime = outMinutes - inMinutes;
   }
 
-  // ----- no outTime (full day leave) -----
+  // Full Day - no outTime
   if (this.inTime && !this.outTime) {
-    const diff = this.totalMinutes;
     this.leaveDay = LEAVE_DURATION.FULL;
-    this.leaveStatus = LEAVE_DURATION.NONE;
-    this.deductedMinutes = diff;
+    this.leaveStatus = "-";
+    this.deductedMinutes = this.totalMinutes || 0;
     return;
   }
 
-  //--------- early leave calculation - Half day -----
-  if (this.totalTime < this.totalMinutes) {
+  // Half Day - workiing less
+  if (this.inTime && this.outTime && this.totalTime < this.totalMinutes) {
     const diff = this.totalMinutes - this.totalTime;
     this.leaveDay = LEAVE_DURATION.HALF;
     this.leaveStatus = `${diff} minutes early`;
     this.deductedMinutes = diff;
   }
 
-  // ----- overtime calculation -----
-  if (this.totalTime > this.totalMinutes) {
-    const diff = this.totalTime - this.totalMinutes;
-    this.overTime = diff;
-    this.extraMinutes = 0;
+  // Overtime - working more
+  if (this.inTime && this.outTime && this.totalTime > this.totalMinutes) {
+    this.overTime = this.totalTime - this.totalMinutes;
   }
+});
 
-  // ----- late entry -----
-  if (this.inTime && this.lateEntryAfterMinutes) {
-    this.usedCounter = inMinutes > lateEntryLimit ? 1 : 0;
-  }
+attendanceSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    if (ret.date) {
+      ret.date = formatDate(ret.date);
+    }
+    return ret;
+  },
 });
 
 module.exports = mongoose.model("attendance", attendanceSchema);

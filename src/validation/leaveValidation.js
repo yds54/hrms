@@ -3,6 +3,7 @@ const {
   LEAVE_DAY_TYPE,
   LEAVE_DURATION,
   LEAVE_REASON_TYPE,
+  LEAVE_STATUS,
 } = require("../utils/enum");
 
 const timeRegex = /^(0?[1-9]|1[0-2]):([0-5]\d)\s(AM|PM)$/;
@@ -105,5 +106,34 @@ exports.getLeaveHistoryValidation = {
       .optional(),
 
     search: Joi.string().optional(),
+    pmFilter: Joi.string()
+      .optional()
+      .valid(...Object.values(LEAVE_STATUS)),
+    hrFilter: Joi.string()
+      .optional()
+      .valid(...Object.values(LEAVE_STATUS)),
+  }),
+};
+
+//===================== LEAVE REQUEST UPDATE VALIDATION ==============================
+exports.updateLeaveValidation = {
+  params: Joi.object({
+    id: Joi.string().hex().length(24).required(),
+  }),
+  body: Joi.object({
+    isPMApproved: Joi.string()
+      .valid(...Object.values(LEAVE_STATUS))
+      .optional(),
+    isHRApproved: Joi.string()
+      .valid(...Object.values(LEAVE_STATUS))
+      .optional(),
+    declineReason: Joi.string().allow("").optional(),
+  }),
+};
+
+//===================== DELETE LEAVE REQUEST VALIDATION ==========================
+exports.deleteLeaveValidation = {
+  params: Joi.object({
+    id: Joi.string().length(24).hex().required(),
   }),
 };

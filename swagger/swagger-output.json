@@ -647,12 +647,81 @@
             "in": "query",
             "type": "string",
             "example": "sick"
+          },
+          {
+            "name": "pmFilter",
+            "in": "query",
+            "type": "string",
+            "example": "Pending / Approved / Declined"
+          },
+          {
+            "name": "hrFilter",
+            "in": "query",
+            "type": "string",
+            "example": "Pending / Approved / Declined"
           }
         ],
         "responses": {
           "200": {
             "description": "Leave history fetched successfully"
           },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/leaveRequest/{id}": {
+      "put": {
+        "tags": ["Leave Request"],
+        "description": "Approve Leave Request by PM and HR",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "66123abc123abc123abc1234"
+          },
+          {
+            "name": "isPMApproved",
+            "in": "formData",
+            "type": "string",
+            "enum": ["Pending", "Approved", "Declined"],
+            "example": "Approved"
+          },
+          {
+            "name": "isHRApproved",
+            "in": "formData",
+            "type": "string",
+            "enum": ["Pending", "Approved", "Declined"],
+            "example": "Approved"
+          },
+          {
+            "name": "declineReason",
+            "in": "formData",
+            "type": "string",
+            "example": "Too many leave"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leave Request updated successfully"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Leave Request"],
+        "description": "Admin Delete Leave Request",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
           "403": {
             "description": "Forbidden"
           }
@@ -1893,8 +1962,7 @@
     "/api/attendance/": {
       "post": {
         "tags": ["Attendance"],
-        "summary": "Create Attendance",
-        "description": "Create attendance entry for logged-in user",
+        "description": "Create attendance",
         "consumes": ["multipart/form-data"],
         "parameters": [
           {
@@ -1974,8 +2042,7 @@
     "/api/attendance": {
       "get": {
         "tags": ["Attendance"],
-        "summary": "Get Attendance with Monthly Summary",
-        "description": "Fetch paginated attendance data along with monthly summary for logged-in user",
+        "description": "Get Attendance",
         "parameters": [
           {
             "name": "page",
@@ -2006,11 +2073,79 @@
             "required": false,
             "example": 2026,
             "description": "Year, default = current year"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "2026-01-13",
+            "description": "Search by date"
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "example": "69c50b13cd55ac8e54ca6ea8",
+            "description": "Only for ADMIN: pass userId to view specific user's attendance"
           }
         ],
         "responses": {
           "200": {
             "description": "Attendance fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/attendance/history": {
+      "get": {
+        "tags": ["Attendance"],
+        "description": "Get Attendance History",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number",
+            "required": false,
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number",
+            "required": false,
+            "example": 10
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "type": "number",
+            "required": false,
+            "example": 4,
+            "description": "Month (1-12), default = current month"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "number",
+            "required": false,
+            "example": 2026,
+            "description": "Year, default = current year"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "half",
+            "description": "Search by date or leaveDay (Half/Full) or leaveStatus"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance History fetched successfully"
           },
           "403": {
             "description": "Forbidden"
