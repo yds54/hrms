@@ -324,12 +324,13 @@ exports.deleteTicket = async (req, res, next) => {
       );
     }
 
-    const isOwner = isTicketExists.createdBy.toString() === userId.toString();
-    const isAssignee =
-      isTicketExists.assignedTo?.toString() === userId.toString();
-    const isAdmin = role === ROLES.ADMIN;
+    // owner , assignee , admin allowed
+    const isRoleAllowed =
+      isTicketExists.createdBy.toString() === userId.toString() ||
+      isTicketExists.assignedTo.toString() === userId.toString() ||
+      role === ROLES.ADMIN;
 
-    if (!isAdmin && !isOwner && !isAssignee) {
+    if (!isRoleAllowed) {
       throw new AppError("Not authorized to delete ticket", 403);
     }
 

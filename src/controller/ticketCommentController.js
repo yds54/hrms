@@ -22,13 +22,13 @@ exports.createComment = async (req, res, next) => {
       throw new AppError("Ticket not found with given id", 404);
     }
 
-    // role check
-    const isOwner = isTicketExists.createdBy.toString() === userId.toString();
-    const isAssignee =
-      isTicketExists.assignedTo.toString() === userId.toString();
-    const isAdmin = role === ROLES.ADMIN;
+    // owner, assignee, admin allowed
+    const isRoleAllowed =
+      isTicketExists.createdBy.toString() === userId.toString() ||
+      isTicketExists.assignedTo.toString() === userId.toString() ||
+      role === ROLES.ADMIN;
 
-    if (!isOwner && !isAssignee && !isAdmin) {
+    if (!isRoleAllowed) {
       throw new AppError("You are not allowed to comment on this ticket", 403);
     }
 
@@ -65,14 +65,14 @@ exports.getComments = async (req, res, next) => {
       throw new AppError("Ticket not found with given Ticket Id", 404);
     }
 
-    // role check
-    const isOwner = isTicketExists.createdBy.toString() === userId.toString();
-    const isAssignee =
-      isTicketExists.assignedTo.toString() === userId.toString();
-    const isAdmin = role === ROLES.ADMIN;
+    // owner , assignee , admin allowed
+    const isRoleAllowed =
+      isTicketExists.createdBy.toString() === userId.toString() ||
+      isTicketExists.assignedTo.toString() === userId.toString() ||
+      role === ROLES.ADMIN;
 
-    if (!isOwner && !isAssignee && !isAdmin) {
-      throw new AppError("You are not allowed to view comments", 403);
+    if (!isRoleAllowed) {
+      throw new AppError("You are not allowed to to view comments", 403);
     }
 
     const comments = await TICKETCOMMENT.find({
