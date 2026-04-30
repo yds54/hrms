@@ -8,13 +8,20 @@ const { USER, AUTH } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { USER_STATUS } = require("../utils/enum");
 const { renameFile } = require("../utils/fileHandler");
+const cloudinary = require("../config/cloudinary");
 const { sendMail } = require("../utils/sendMail");
 
 exports.registerUser = async (req, res, next) => {
+  let uploadedPublicId = null;
+
   try {
     const { body, file } = req;
 
     delete body.confirmPassword;
+
+    if (file?.cloudinaryData?.path) {
+      uploadedPublicId = file.cloudinaryData.path;
+    }
 
     const isUserExists = await USER.findOne({
       email: body.email,
@@ -47,9 +54,10 @@ exports.registerUser = async (req, res, next) => {
 
     body.employeeCode = `BS${String(nextNumber).padStart(3, "0")}`;
 
-    if (file?.cloudinaryData) {
+    if (uploadedPublicId) {
       body.profilePicture = {
-        fileName: file.cloudinaryData.path.split("/").pop(),
+        fileName: uploadedPublicId.split("/").pop(),
+        publicId: uploadedPublicId,
         fileType: file.mimetype,
         size: Math.round(file.size / 1024),
       };
@@ -61,6 +69,10 @@ exports.registerUser = async (req, res, next) => {
       employeeCode: body.employeeCode,
     });
   } catch (error) {
+    if (uploadedPublicId) {
+      await cloudinary.uploader.destroy(uploadedPublicId);
+    }
+
     next(error);
   }
 };

@@ -1,7 +1,8 @@
 const moment = require("moment");
+const cloudinary = require("../config/cloudinary");
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
-const { USERDOCUMENT } = require("../model/modelIndex");
+const { USER_DOCUMENT } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { getFileUrl } = require("../utils/fileUrl");
 
@@ -13,19 +14,30 @@ const buildFileObject = (uploadedFile, originalFile = null, remark = "") => ({
   remark,
 });
 
+const documentFields = [
+  "offerLetter",
+  "appointmentLetter",
+  "tenthMarksheet",
+  "twelfthOrDiplomaMarksheet",
+  "bachelorsCertificate",
+  "mastersDegreeMarksheet",
+  "panCard",
+];
+
 exports.addUserDocuments = async (req, res, next) => {
+  const uploadedPublicIds = [];
+
   try {
     const { body, files: multerFiles } = req;
     const files = req.uploadedFiles;
 
-    const documentFields = [
-      "offerLetter",
-      "appointmentLetter",
-      "tenthMarksheet",
-      "twelfthOrDiplomaMarksheet",
-      "bachelorsCertificate",
-      "mastersDegreeMarksheet",
-    ];
+    for (const field in files) {
+      for (const file of files[field]) {
+        if (file?.path) {
+          uploadedPublicIds.push(file.path);
+        }
+      }
+    }
 
     for (const field of documentFields) {
       if (files?.[field]?.[0]) {
@@ -79,10 +91,14 @@ exports.addUserDocuments = async (req, res, next) => {
 
     body.createdBy = req.user._id;
 
-    await USERDOCUMENT.create(body);
+    await USER_DOCUMENT.create(body);
 
     return successResponse(res, 200, "User documents added successfully");
   } catch (error) {
+    for (const publicId of uploadedPublicIds) {
+      await cloudinary.uploader.destroy(publicId);
+    }
+
     next(error);
   }
 };
@@ -98,7 +114,7 @@ exports.getAllUserDocuments = async (req, res, next) => {
     }
 
     const { data, pagination } = await paginate({
-      model: USERDOCUMENT,
+      model: USER_DOCUMENT,
       query,
       populate: [
         {
@@ -110,16 +126,6 @@ exports.getAllUserDocuments = async (req, res, next) => {
       limit: Number(limit),
       sort: { createdAt: -1 },
     });
-
-    const documentFields = [
-      "offerLetter",
-      "appointmentLetter",
-      "tenthMarksheet",
-      "twelfthOrDiplomaMarksheet",
-      "bachelorsCertificate",
-      "mastersDegreeMarksheet",
-      "panCard",
-    ];
 
     const formattedData = data.map((item) => {
       const doc = item.toObject ? item.toObject() : { ...item };
@@ -158,45 +164,38 @@ exports.getUserDocumentsById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const doc = await USERDOCUMENT.findOne({
+    const isUserDocumentsExists = await USER_DOCUMENT.findOne({
       _id: id,
       isDeleted: false,
     }).lean();
 
-    if (!doc) {
+    if (!isUserDocumentsExists) {
       throw new AppError("User documents not found", 404);
     }
 
-    const documentFields = [
-      "offerLetter",
-      "appointmentLetter",
-      "tenthMarksheet",
-      "twelfthOrDiplomaMarksheet",
-      "bachelorsCertificate",
-      "mastersDegreeMarksheet",
-      "panCard",
-    ];
-
     for (const field of documentFields) {
-      if (doc?.[field]?.fileName) {
-        doc[field].url = getFileUrl(`userDocuments/${doc[field].fileName}`);
+      if (isUserDocumentsExists?.[field]?.fileName) {
+        isUserDocumentsExists[field].url = getFileUrl(
+          `userDocuments/${isUserDocumentsExists[field].fileName}`,
+        );
       }
     }
 
-    if (doc.otherDocuments?.length) {
-      doc.otherDocuments = doc.otherDocuments.map((item) => ({
-        ...item,
-        url: item.fileName
-          ? getFileUrl(`userDocuments/${item.fileName}`)
-          : null,
-      }));
+    if (isUserDocumentsExists.otherDocuments?.length) {
+      isUserDocumentsExists.otherDocuments =
+        isUserDocumentsExists.otherDocuments.map((item) => ({
+          ...item,
+          url: item.fileName
+            ? getFileUrl(`userDocuments/${item.fileName}`)
+            : null,
+        }));
     }
 
     return successResponse(
       res,
       200,
       "User documents fetched successfully",
-      doc,
+      isUserDocumentsExists,
     );
   } catch (error) {
     next(error);
@@ -204,35 +203,38 @@ exports.getUserDocumentsById = async (req, res, next) => {
 };
 
 exports.updateUserDocuments = async (req, res, next) => {
+  const uploadedPublicIds = [];
+
   try {
     const { body: payload, params, files: multerFiles } = req;
     const files = req.uploadedFiles;
     const { id } = params;
 
-    const existingData = await USERDOCUMENT.findOne({
+    const isUserDocumentsExists = await USER_DOCUMENT.findOne({
       _id: id,
       isDeleted: false,
     }).lean();
 
-    if (!existingData) {
+    if (!isUserDocumentsExists) {
       throw new AppError("User documents not found for given Id", 404);
     }
 
-    const documentFields = [
-      "offerLetter",
-      "appointmentLetter",
-      "tenthMarksheet",
-      "twelfthOrDiplomaMarksheet",
-      "bachelorsCertificate",
-      "mastersDegreeMarksheet",
-    ];
+    for (const field in files) {
+      for (const file of files[field]) {
+        if (file?.path) {
+          uploadedPublicIds.push(file.path);
+        }
+      }
+    }
 
     for (const field of documentFields) {
       if (files?.[field]?.[0]) {
         payload[field] = buildFileObject(
           files[field][0],
           multerFiles[field]?.[0],
-          payload?.[field]?.remark || existingData?.[field]?.remark || "",
+          payload?.[field]?.remark ||
+            isUserDocumentsExists?.[field]?.remark ||
+            "",
         );
       }
     }
@@ -242,10 +244,14 @@ exports.updateUserDocuments = async (req, res, next) => {
         ...buildFileObject(
           files.panCard[0],
           multerFiles.panCard?.[0],
-          payload?.panCard?.remark || existingData?.panCard?.remark || "",
+          payload?.panCard?.remark ||
+            isUserDocumentsExists?.panCard?.remark ||
+            "",
         ),
         panNumber:
-          payload?.panCard?.panNumber || existingData?.panCard?.panNumber || "",
+          payload?.panCard?.panNumber ||
+          isUserDocumentsExists?.panCard?.panNumber ||
+          "",
       };
     }
 
@@ -278,13 +284,17 @@ exports.updateUserDocuments = async (req, res, next) => {
       }));
     }
 
-    await USERDOCUMENT.updateOne(
+    await USER_DOCUMENT.updateOne(
       { _id: id, isDeleted: false },
       { $set: payload },
     );
 
     return successResponse(res, 200, "User documents updated successfully");
   } catch (error) {
+    for (const publicId of uploadedPublicIds) {
+      await cloudinary.uploader.destroy(publicId);
+    }
+
     next(error);
   }
 };
@@ -293,19 +303,19 @@ exports.deleteUserDocuments = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const data = await USERDOCUMENT.findOne({
+    const isUserDocumentsExists = await USER_DOCUMENT.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!data) {
+    if (!isUserDocumentsExists) {
       throw new AppError("User documents not found for given Id", 404);
     }
 
-    data.isDeleted = true;
-    data.deletedAt = moment().toDate();
+    isUserDocumentsExists.isDeleted = true;
+    isUserDocumentsExists.deletedAt = moment().toDate();
 
-    await data.save();
+    await isUserDocumentsExists.save();
 
     return successResponse(res, 200, "User documents deleted successfully");
   } catch (error) {

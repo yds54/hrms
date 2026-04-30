@@ -1,4 +1,5 @@
 const moment = require("moment");
+const cloudinary = require("../config/cloudinary");
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { ORGANIZATION } = require("../model/modelIndex");
@@ -6,8 +7,14 @@ const { AppError } = require("../utils/error");
 const { getFileUrl } = require("../utils/fileUrl");
 
 exports.addOrganization = async (req, res, next) => {
+  let uploadedPublicId = null;
+
   try {
     const { body, file } = req;
+
+    if (file?.cloudinaryData?.path) {
+      uploadedPublicId = file.cloudinaryData.path;
+    }
 
     const isOrganizationExists = await ORGANIZATION.findOne({
       organizationName: body.organizationName,
@@ -20,9 +27,10 @@ exports.addOrganization = async (req, res, next) => {
 
     body.createdBy = req.user._id;
 
-    if (file?.cloudinaryData) {
+    if (uploadedPublicId) {
       body.logo = {
-        fileName: file.cloudinaryData.path.split("/").pop(),
+        fileName: uploadedPublicId.split("/").pop(),
+        publicId: uploadedPublicId,
         fileType: file.mimetype,
         size: Math.round(file.size / 1024),
       };
@@ -34,6 +42,10 @@ exports.addOrganization = async (req, res, next) => {
       organizationName: body.organizationName,
     });
   } catch (error) {
+    if (uploadedPublicId) {
+      await cloudinary.uploader.destroy(uploadedPublicId);
+    }
+
     next(error);
   }
 };
@@ -82,16 +94,16 @@ exports.getOrganizationById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const organization = await ORGANIZATION.findOne({
+    const isOrganizationExists = await ORGANIZATION.findOne({
       _id: id,
       isDeleted: false,
     }).select("_id organizationName logo");
 
-    if (!organization) {
+    if (!isOrganizationExists) {
       throw new AppError("Organization not found for given ID", 404);
     }
 
-    const data = organization.toObject();
+    const data = isOrganizationExists.toObject();
 
     if (data.logo?.fileName) {
       data.logo.url = getFileUrl(`organizationLogo/${data.logo.fileName}`);
@@ -106,16 +118,22 @@ exports.getOrganizationById = async (req, res, next) => {
 };
 
 exports.updateOrganization = async (req, res, next) => {
+  let uploadedPublicId = null;
+
   try {
     const { params, body: payload, file } = req;
     const { id } = params;
 
-    const organization = await ORGANIZATION.findOne({
+    if (file?.cloudinaryData?.path) {
+      uploadedPublicId = file.cloudinaryData.path;
+    }
+
+    const existingOrganization = await ORGANIZATION.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id");
+    }).select("_id logo");
 
-    if (!organization) {
+    if (!existingOrganization) {
       throw new AppError("Organization not found for given ID", 404);
     }
 
@@ -129,9 +147,10 @@ exports.updateOrganization = async (req, res, next) => {
       throw new AppError("Organization already exists", 409);
     }
 
-    if (file?.cloudinaryData) {
+    if (uploadedPublicId) {
       payload.logo = {
-        fileName: file.cloudinaryData.path.split("/").pop(),
+        fileName: uploadedPublicId.split("/").pop(),
+        publicId: uploadedPublicId,
         fileType: file.mimetype,
         size: Math.round(file.size / 1024),
       };
@@ -143,6 +162,10 @@ exports.updateOrganization = async (req, res, next) => {
       data: payload.organizationName,
     });
   } catch (error) {
+    if (uploadedPublicId) {
+      await cloudinary.uploader.destroy(uploadedPublicId);
+    }
+
     next(error);
   }
 };
@@ -151,19 +174,19 @@ exports.deleteOrganization = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const organization = await ORGANIZATION.findOne({
+    const isOrganizationExists = await ORGANIZATION.findOne({
       _id: id,
       isDeleted: false,
     });
 
-    if (!organization) {
+    if (!isOrganizationExists) {
       throw new AppError("Organization not found for given ID", 404);
     }
 
-    organization.isDeleted = true;
-    organization.deletedAt = moment().toDate();
+    isOrganizationExists.isDeleted = true;
+    isOrganizationExists.deletedAt = moment().toDate();
 
-    await organization.save();
+    await isOrganizationExists.save();
 
     return successResponse(res, 200, "Organization deleted successfully");
   } catch (error) {

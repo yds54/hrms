@@ -17,4 +17,4 @@ exports.INCREMENT = require("./increment");
 exports.ATTENDANCE = require("./attendance");
 exports.TICKETCOMMENT = require("./ticketComment");
 exports.TICKETACTIVITY = require("./ticketActivity");
-exports.USERDOCUMENT = require("./userDocuments");
+exports.USER_DOCUMENT = require("./userDocuments");

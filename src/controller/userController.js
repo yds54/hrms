@@ -1,6 +1,7 @@
 require("dotenv").config();
 const moment = require("moment");
 const { paginate } = require("../utils/pagination");
+const cloudinary = require("../config/cloudinary");
 const { successResponse } = require("../utils/sucess");
 const { USER } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
@@ -17,7 +18,7 @@ exports.viewallUser = async (req, res, next) => {
       limit,
       gender,
       designation,
-      organizationType,
+      organizationId,
       attendanceType,
       id,
       search,
@@ -37,7 +38,7 @@ exports.viewallUser = async (req, res, next) => {
 
     if (gender) _whereCondition.gender = gender;
     if (designation) _whereCondition.designationId = designation;
-    if (organizationType) _whereCondition.organizationId = organizationType;
+    if (organizationId) _whereCondition.organizationId = organizationId;
     if (attendanceType) _whereCondition.attendanceType = attendanceType;
 
     if (Left === "true") {
@@ -117,9 +118,15 @@ exports.viewallUser = async (req, res, next) => {
 };
 //================ UPDATE PROFILE ==============
 exports.updateUser = async (req, res, next) => {
+  let uploadedPublicId = null;
+
   try {
     const { params, body: payload, file, user } = req;
     const { id } = params;
+
+    if (file?.cloudinaryData?.path) {
+      uploadedPublicId = file.cloudinaryData.path;
+    }
 
     const isUserExists = await USER.findOne(
       {
@@ -141,7 +148,7 @@ exports.updateUser = async (req, res, next) => {
         (key) => !allowedFields.includes(key),
       );
 
-      if (invalidFields.length > 0) {
+      if (invalidFields.length) {
         throw new AppError("You can only update profile picture", 403);
       }
     }
@@ -165,9 +172,10 @@ exports.updateUser = async (req, res, next) => {
       }
     }
 
-    if (file?.cloudinaryData) {
+    if (uploadedPublicId) {
       payload.profilePicture = {
-        fileName: file.cloudinaryData.path.split("/").pop(),
+        fileName: uploadedPublicId.split("/").pop(),
+        publicId: uploadedPublicId,
         fileType: file.mimetype,
         size: Math.round(file.size / 1024),
       };
@@ -187,6 +195,10 @@ exports.updateUser = async (req, res, next) => {
       data: payload,
     });
   } catch (error) {
+    if (uploadedPublicId) {
+      await cloudinary.uploader.destroy(uploadedPublicId);
+    }
+
     next(error);
   }
 };
@@ -220,7 +232,7 @@ exports.getUserById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const userData = await USER.findOne({
+    const isUserExists = await USER.findOne({
       _id: id,
       isDeleted: false,
     }).populate([
@@ -246,11 +258,11 @@ exports.getUserById = async (req, res, next) => {
       },
     ]);
 
-    if (!userData) {
+    if (!isUserExists) {
       throw new AppError("User not found for given ID", 404);
     }
 
-    const formattedUser = userData.toJSON();
+    const formattedUser = isUserExists.toJSON();
 
     if (formattedUser.profilePicture?.fileName) {
       formattedUser.profilePicture.url = getFileUrl(

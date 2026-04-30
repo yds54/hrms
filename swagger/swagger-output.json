@@ -3053,24 +3053,6 @@
             "in": "formData",
             "type": "file",
             "description": "Upload document file 1 (First file - corresponds to first object in JSON metadata)"
-          },
-          {
-            "name": "otherDocuments",
-            "in": "formData",
-            "type": "file",
-            "description": "Upload document file 2 (Second file - corresponds to second object in JSON metadata)"
-          },
-          {
-            "name": "otherDocuments",
-            "in": "formData",
-            "type": "file",
-            "description": "Upload document file 3 (Optional - corresponds to third object in JSON metadata)"
-          },
-          {
-            "name": "otherDocuments",
-            "in": "formData",
-            "type": "file",
-            "description": "Upload document file 4 (Optional - corresponds to fourth object in JSON metadata)"
           }
         ],
         "responses": {
@@ -3266,12 +3248,6 @@
             "in": "formData",
             "type": "file",
             "description": "Upload document file 1 (First file - corresponds to first object in JSON metadata)"
-          },
-          {
-            "name": "otherDocuments",
-            "in": "formData",
-            "type": "file",
-            "description": "Upload document file 2 (Second file - corresponds to second object in JSON metadata)"
           }
         ],
         "responses": {
