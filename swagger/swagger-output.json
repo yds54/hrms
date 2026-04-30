@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.158:5000",
+  "host": "192.168.0.42:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -749,28 +749,121 @@
       },
       "put": {
         "tags": ["User"],
-        "description": "",
+        "description": "Update user with profile picture upload",
+        "consumes": ["multipart/form-data"],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "example": "69ca544451e27dd860867e71"
+          },
+
+          {
+            "name": "profilePicture",
+            "in": "formData",
+            "type": "file",
+            "required": false
+          },
+
+          {
+            "name": "name[firstName]",
+            "in": "formData",
+            "type": "string",
+            "example": "Rahul"
           },
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "departmentName": {
-                  "example": "any"
-                }
-              }
-            }
+            "name": "name[middleName]",
+            "in": "formData",
+            "type": "string",
+            "example": "Kumar"
+          },
+          {
+            "name": "name[lastName]",
+            "in": "formData",
+            "type": "string",
+            "example": "Sharma"
+          },
+
+          {
+            "name": "email",
+            "in": "formData",
+            "type": "string",
+            "example": "rahul.sharma@example.com"
+          },
+
+          {
+            "name": "contactNumber",
+            "in": "formData",
+            "type": "string",
+            "example": "9876543210"
+          },
+
+          {
+            "name": "designationId",
+            "in": "formData",
+            "type": "string",
+            "example": "69ca544451e27dd860867e71"
+          },
+
+          {
+            "name": "departmentId",
+            "in": "formData",
+            "type": "string",
+            "example": "69ca21fadb1d7afaac5378af"
+          },
+
+          {
+            "name": "organizationId",
+            "in": "formData",
+            "type": "string",
+            "example": "69ccc24cf2041b075ef23882"
+          },
+
+          {
+            "name": "bankDetails[bankId]",
+            "in": "formData",
+            "type": "string",
+            "example": "69ca72900ce2f3165dd8c199"
+          },
+          {
+            "name": "bankDetails[accountNumber]",
+            "in": "formData",
+            "type": "string",
+            "example": "123456789012"
+          },
+          {
+            "name": "bankDetails[ifscCode]",
+            "in": "formData",
+            "type": "string",
+            "example": "SBIN0001234"
+          },
+
+          {
+            "name": "officeTiming[entryTime]",
+            "in": "formData",
+            "type": "string",
+            "example": "09:00"
+          },
+          {
+            "name": "officeTiming[exitTime]",
+            "in": "formData",
+            "type": "string",
+            "example": "18:00"
+          },
+
+          {
+            "name": "attendanceType",
+            "in": "formData",
+            "type": "string",
+            "example": "Card"
           }
         ],
         "responses": {
+          "200": {
+            "description": "User updated successfully"
+          },
           "403": {
             "description": "Forbidden"
           }
@@ -1555,7 +1648,10 @@
       },
       "put": {
         "tags": ["organization"],
-        "description": "Update Organization",
+        "summary": "Update Organization",
+        "description": "Update organization with optional logo upload",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
         "parameters": [
           {
             "name": "id",
@@ -1564,45 +1660,61 @@
             "type": "string"
           },
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "organizationName": {
-                  "example": "ABC Pvt Ltd"
-                },
-                "headHR": {
-                  "example": "64f1c2a5b5d2c12a34567890"
-                },
-                "organizationAddress": {
-                  "example": "New York, USA"
-                },
-                "logo": {
-                  "example": "uploads/logo.png"
-                },
-                "organizationAccountNumber": {
-                  "example": "1234567890"
-                },
-                "irregularEmployeeCriteria": {
-                  "type": "object",
-                  "properties": {
-                    "days": {
-                      "example": 10
-                    },
-                    "beforePercentage": {
-                      "example": 3
-                    },
-                    "afterPercentage": {
-                      "example": 5
-                    }
-                  }
-                }
-              }
-            }
+            "name": "organizationName",
+            "in": "formData",
+            "type": "string",
+            "example": "ABC Pvt Ltd"
+          },
+          {
+            "name": "headHR",
+            "in": "formData",
+            "type": "string",
+            "example": "64f1c2a5b5d2c12a34567890"
+          },
+          {
+            "name": "organizationAddress",
+            "in": "formData",
+            "type": "string",
+            "example": "New York, USA"
+          },
+          {
+            "name": "logo",
+            "in": "formData",
+            "type": "file",
+            "description": "Upload organization logo"
+          },
+          {
+            "name": "organizationAccountNumber",
+            "in": "formData",
+            "type": "string",
+            "example": "1234567890"
+          },
+          {
+            "name": "irregularEmployeeCriteria[days]",
+            "in": "formData",
+            "type": "number",
+            "example": 10
+          },
+          {
+            "name": "irregularEmployeeCriteria[beforePercentage]",
+            "in": "formData",
+            "type": "number",
+            "example": 3
+          },
+          {
+            "name": "irregularEmployeeCriteria[afterPercentage]",
+            "in": "formData",
+            "type": "number",
+            "example": 5
           }
         ],
         "responses": {
+          "200": {
+            "description": "Organization updated successfully"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
           "403": {
             "description": "Forbidden"
           }
@@ -2933,13 +3045,32 @@
             "name": "otherDocuments",
             "in": "formData",
             "type": "string",
-            "example": "[{\"documentName\":\"Aadhar\",\"remark\":\"Front\"},{\"documentName\":\"License\",\"remark\":\"Valid\"}]"
+            "description": "JSON metadata array for other documents. Order must match uploaded files. Each object requires documentName and remark fields.",
+            "example": "[{\"documentName\":\"Aadhar Card\",\"remark\":\"Front Side\"},{\"documentName\":\"Driving License\",\"remark\":\"Valid Copy\"}]"
           },
           {
             "name": "otherDocuments",
             "in": "formData",
             "type": "file",
-            "description": "Upload multiple files using same key"
+            "description": "Upload document file 1 (First file - corresponds to first object in JSON metadata)"
+          },
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "file",
+            "description": "Upload document file 2 (Second file - corresponds to second object in JSON metadata)"
+          },
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "file",
+            "description": "Upload document file 3 (Optional - corresponds to third object in JSON metadata)"
+          },
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "file",
+            "description": "Upload document file 4 (Optional - corresponds to fourth object in JSON metadata)"
           }
         ],
         "responses": {
@@ -2980,6 +3111,208 @@
         "responses": {
           "403": {
             "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/userDocuments/{id}": {
+      "get": {
+        "tags": ["user-documents"],
+        "description": "Get User Documents By ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User documents fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "404": {
+            "description": "Increment not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "put": {
+        "tags": ["user-documents"],
+        "summary": "Update User Documents",
+        "description": "Update user documents with file uploads, remarks and other documents",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "661234abcd1234abcd123456"
+          },
+
+          {
+            "name": "documentsTakenDate",
+            "in": "formData",
+            "type": "string",
+            "example": "2026-03-14"
+          },
+          {
+            "name": "twelfthOrDiplomaType",
+            "in": "formData",
+            "type": "string",
+            "enum": ["12th", "Diploma"]
+          },
+
+          {
+            "name": "offerLetter",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "offerLetter[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "appointmentLetter",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "appointmentLetter[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "tenthMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "tenthMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "twelfthOrDiplomaMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "twelfthOrDiplomaMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "bachelorsCertificate",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "bachelorsCertificate[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "mastersDegreeMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "mastersDegreeMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "panCard",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "panCard[panNumber]",
+            "in": "formData",
+            "type": "string",
+            "example": "ABCDE1234F"
+          },
+          {
+            "name": "panCard[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "string",
+            "description": "JSON metadata array for other documents. Order must match uploaded files. Each object requires documentName and remark fields.",
+            "example": "[{\"documentName\":\"Aadhar Card\",\"remark\":\"Front Side\"},{\"documentName\":\"Driving License\",\"remark\":\"Valid Copy\"}]"
+          },
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "file",
+            "description": "Upload document file 1 (First file - corresponds to first object in JSON metadata)"
+          },
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "file",
+            "description": "Upload document file 2 (Second file - corresponds to second object in JSON metadata)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User documents updated successfully"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User documents not found"
+          }
+        }
+      },
+
+      "delete": {
+        "tags": ["user-documents"],
+        "summary": "Delete User Documents",
+        "description": "Soft delete user documents by ID",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "661234abcd1234abcd123456"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User documents deleted successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User documents not found"
           }
         }
       }

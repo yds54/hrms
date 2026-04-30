@@ -15,6 +15,7 @@ exports.registerUser = async (req, res, next) => {
     const { body, file } = req;
 
     delete body.confirmPassword;
+
     const isUserExists = await USER.findOne({
       email: body.email,
       contactNumber: body.contactNumber,
@@ -39,23 +40,22 @@ exports.registerUser = async (req, res, next) => {
 
     let nextNumber = 1;
 
-    if (lastUser && lastUser.employeeCode) {
+    if (lastUser?.employeeCode) {
       const num = parseInt(lastUser.employeeCode.replace("BS", ""));
       nextNumber = num + 1;
     }
 
     body.employeeCode = `BS${String(nextNumber).padStart(3, "0")}`;
 
-    const createdUser = await USER.create(body);
-
-    const profilePath = await renameFile(file, body.employeeCode, "profile");
-
-    if (profilePath) {
-      await USER.updateOne(
-        { _id: createdUser._id },
-        { $set: { profilePicture: profilePath } },
-      );
+    if (file?.cloudinaryData) {
+      body.profilePicture = {
+        fileName: file.cloudinaryData.path.split("/").pop(),
+        fileType: file.mimetype,
+        size: Math.round(file.size / 1024),
+      };
     }
+
+    await USER.create(body);
 
     return successResponse(res, 200, "User Registered Successfully", {
       employeeCode: body.employeeCode,
@@ -65,7 +65,6 @@ exports.registerUser = async (req, res, next) => {
   }
 };
 
-//================= LOGIN ======================================
 exports.loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;

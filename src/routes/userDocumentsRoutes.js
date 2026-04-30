@@ -11,6 +11,7 @@ const {
 
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
+const cloudinaryUpload = require("../middleware/cloudinaryUpload");
 const createUploader = require("../middleware/uploads");
 
 const {
@@ -18,14 +19,15 @@ const {
   getUserDocumentsValidation,
   deleteUserDocumentsValidation,
   updateUserDocumentsValidation,
-  getUserDocumentsByIdValidation
+  getUserDocumentsByIdValidation,
 } = require("../validation/userDocumentsValidation");
 
 const { validate } = require("express-validation");
 const { ROLES } = require("../utils/enum");
 
-const upload = createUploader("userDocuments");
-
+const upload = createUploader("userDocuments", {
+  useUserFolder: true,
+});
 const documentUploadFields = [
   { name: "offerLetter", maxCount: 1 },
   { name: "appointmentLetter", maxCount: 1 },
@@ -42,6 +44,10 @@ router.post(
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
   upload.fields(documentUploadFields),
+  cloudinaryUpload({
+    folder: "userDocuments",
+    useUserFolder: true,
+  }),
   validate(addUserDocumentsValidation),
   addUserDocuments,
 );
@@ -67,6 +73,10 @@ router.put(
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
   upload.fields(documentUploadFields),
+  cloudinaryUpload({
+    folder: "userDocuments",
+    useUserFolder: true,
+  }),
   validate(updateUserDocumentsValidation),
   updateUserDocuments,
 );

@@ -2,86 +2,79 @@ const moment = require("moment");
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { USERDOCUMENT } = require("../model/modelIndex");
-const { getProjection } = require("../utils/projection");
 const { AppError } = require("../utils/error");
+const { getFileUrl } = require("../utils/fileUrl");
+
+const buildFileObject = (uploadedFile, originalFile = null, remark = "") => ({
+  fileName: uploadedFile?.path?.replace(/^userDocuments\//, "") || null,
+  fileType: originalFile?.mimetype || null,
+  size: Math.round(originalFile.size / 1024),
+
+  remark,
+});
 
 exports.addUserDocuments = async (req, res, next) => {
   try {
-    const { body, files } = req;
+    const { body, files: multerFiles } = req;
+    const files = req.uploadedFiles;
 
-    const getFilePath = (file) => {
-      return `/uploads/userDocuments/${body.userId}/${file.filename}`;
-    };
+    const documentFields = [
+      "offerLetter",
+      "appointmentLetter",
+      "tenthMarksheet",
+      "twelfthOrDiplomaMarksheet",
+      "bachelorsCertificate",
+      "mastersDegreeMarksheet",
+    ];
 
-    if (files) {
-      if (files.offerLetter?.[0]) {
-        body.offerLetter = {
-          ...body.offerLetter,
-          documentUrl: getFilePath(files.offerLetter[0]),
-        };
+    for (const field of documentFields) {
+      if (files?.[field]?.[0]) {
+        body[field] = buildFileObject(
+          files[field][0],
+          multerFiles[field]?.[0],
+          body?.[field]?.remark || "",
+        );
+      }
+    }
+
+    if (files?.panCard?.[0]) {
+      body.panCard = {
+        ...buildFileObject(
+          files.panCard[0],
+          multerFiles.panCard?.[0],
+          body?.panCard?.remark || "",
+        ),
+        panNumber: body?.panCard?.panNumber || "",
+      };
+    }
+
+    if (files?.otherDocuments?.length && body.otherDocuments) {
+      let otherDocs;
+
+      try {
+        otherDocs =
+          typeof body.otherDocuments === "string"
+            ? JSON.parse(body.otherDocuments)
+            : body.otherDocuments;
+      } catch {
+        throw new AppError("Invalid otherDocuments JSON format", 400);
       }
 
-      if (files.appointmentLetter?.[0]) {
-        body.appointmentLetter = {
-          ...body.appointmentLetter,
-          documentUrl: getFilePath(files.appointmentLetter[0]),
-        };
+      if (otherDocs.length !== files.otherDocuments.length) {
+        throw new AppError(
+          "otherDocuments metadata count must match uploaded files count",
+          400,
+        );
       }
 
-      if (files.tenthMarksheet?.[0]) {
-        body.tenthMarksheet = {
-          ...body.tenthMarksheet,
-          documentUrl: getFilePath(files.tenthMarksheet[0]),
-        };
-      }
-
-      if (files.twelfthOrDiplomaMarksheet?.[0]) {
-        body.twelfthOrDiplomaMarksheet = {
-          ...body.twelfthOrDiplomaMarksheet,
-          documentUrl: getFilePath(files.twelfthOrDiplomaMarksheet[0]),
-        };
-      }
-
-      if (files.bachelorsCertificate?.[0]) {
-        body.bachelorsCertificate = {
-          ...body.bachelorsCertificate,
-          documentUrl: getFilePath(files.bachelorsCertificate[0]),
-        };
-      }
-
-      if (files.mastersDegreeMarksheet?.[0]) {
-        body.mastersDegreeMarksheet = {
-          ...body.mastersDegreeMarksheet,
-          documentUrl: getFilePath(files.mastersDegreeMarksheet[0]),
-        };
-      }
-
-      if (files.panCard?.[0]) {
-        body.panCard = {
-          ...body.panCard,
-          documentUrl: getFilePath(files.panCard[0]),
-        };
-      }
-
-      if (files.otherDocuments && body.otherDocuments) {
-        let otherDocs = [];
-
-        if (typeof body.otherDocuments === "string") {
-          otherDocs = JSON.parse(body.otherDocuments);
-        } else {
-          otherDocs = body.otherDocuments;
-        }
-
-        body.otherDocuments = otherDocs.map((doc, index) => {
-          if (files.otherDocuments[index]) {
-            return {
-              ...doc,
-              documentUrl: getFilePath(files.otherDocuments[index]),
-            };
-          }
-          return doc;
-        });
-      }
+      body.otherDocuments = otherDocs.map((doc, index) => ({
+        ...doc,
+        ...buildFileObject(
+          files.otherDocuments[index],
+          multerFiles.otherDocuments?.[index],
+          doc?.remark || "",
+        ),
+      }));
     }
 
     body.createdBy = req.user._id;
@@ -96,28 +89,64 @@ exports.addUserDocuments = async (req, res, next) => {
 
 exports.getAllUserDocuments = async (req, res, next) => {
   try {
-    const { query } = req;
-    const { page, limit, userId } = query;
+    const { page, limit, userId } = req.query;
 
-    const _whereCondition = {
-      isDeleted: false,
-    };
+    const query = { isDeleted: false };
 
     if (userId) {
-      _whereCondition.userId = userId;
+      query.userId = userId;
     }
 
     const { data, pagination } = await paginate({
       model: USERDOCUMENT,
-      query: _whereCondition,
-      populate: [{ path: "userId", select: "name.firstName name.lastName" }],
-      page: +page,
-      limit: +limit,
+      query,
+      populate: [
+        {
+          path: "userId",
+          select: "name.firstName name.lastName",
+        },
+      ],
+      page: Number(page),
+      limit: Number(limit),
       sort: { createdAt: -1 },
     });
 
+    const documentFields = [
+      "offerLetter",
+      "appointmentLetter",
+      "tenthMarksheet",
+      "twelfthOrDiplomaMarksheet",
+      "bachelorsCertificate",
+      "mastersDegreeMarksheet",
+      "panCard",
+    ];
+
+    const formattedData = data.map((item) => {
+      const doc = item.toObject ? item.toObject() : { ...item };
+
+      for (const field of documentFields) {
+        if (doc?.[field]?.fileName) {
+          doc[field] = {
+            ...doc[field],
+            url: getFileUrl(`userDocuments/${doc[field].fileName}`),
+          };
+        }
+      }
+
+      if (doc.otherDocuments?.length) {
+        doc.otherDocuments = doc.otherDocuments.map((otherDoc) => ({
+          ...otherDoc,
+          url: otherDoc.fileName
+            ? getFileUrl(`userDocuments/${otherDoc.fileName}`)
+            : null,
+        }));
+      }
+
+      return doc;
+    });
+
     return successResponse(res, 200, "User documents fetched successfully", {
-      data,
+      data: formattedData,
       pagination,
     });
   } catch (error) {
@@ -129,20 +158,45 @@ exports.getUserDocumentsById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const data = await USERDOCUMENT.findOne({
+    const doc = await USERDOCUMENT.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).lean();
 
-    if (!data) {
+    if (!doc) {
       throw new AppError("User documents not found", 404);
+    }
+
+    const documentFields = [
+      "offerLetter",
+      "appointmentLetter",
+      "tenthMarksheet",
+      "twelfthOrDiplomaMarksheet",
+      "bachelorsCertificate",
+      "mastersDegreeMarksheet",
+      "panCard",
+    ];
+
+    for (const field of documentFields) {
+      if (doc?.[field]?.fileName) {
+        doc[field].url = getFileUrl(`userDocuments/${doc[field].fileName}`);
+      }
+    }
+
+    if (doc.otherDocuments?.length) {
+      doc.otherDocuments = doc.otherDocuments.map((item) => ({
+        ...item,
+        url: item.fileName
+          ? getFileUrl(`userDocuments/${item.fileName}`)
+          : null,
+      }));
     }
 
     return successResponse(
       res,
       200,
       "User documents fetched successfully",
-      data,
+      doc,
     );
   } catch (error) {
     next(error);
@@ -151,63 +205,82 @@ exports.getUserDocumentsById = async (req, res, next) => {
 
 exports.updateUserDocuments = async (req, res, next) => {
   try {
-    const { body: payload, files, params } = req;
+    const { body: payload, params, files: multerFiles } = req;
+    const files = req.uploadedFiles;
     const { id } = params;
 
     const existingData = await USERDOCUMENT.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).lean();
 
     if (!existingData) {
       throw new AppError("User documents not found for given Id", 404);
     }
 
-    const getFilePath = (file) => {
-      return `/uploads/userDocuments/${file.filename}`;
-    };
+    const documentFields = [
+      "offerLetter",
+      "appointmentLetter",
+      "tenthMarksheet",
+      "twelfthOrDiplomaMarksheet",
+      "bachelorsCertificate",
+      "mastersDegreeMarksheet",
+    ];
 
-    if (files) {
-      if (files.offerLetter?.[0]) {
-        payload.offerLetter = {
-          ...existingData.offerLetter,
-          ...payload.offerLetter,
-          documentUrl: getFilePath(files.offerLetter[0]),
-        };
+    for (const field of documentFields) {
+      if (files?.[field]?.[0]) {
+        payload[field] = buildFileObject(
+          files[field][0],
+          multerFiles[field]?.[0],
+          payload?.[field]?.remark || existingData?.[field]?.remark || "",
+        );
+      }
+    }
+
+    if (files?.panCard?.[0]) {
+      payload.panCard = {
+        ...buildFileObject(
+          files.panCard[0],
+          multerFiles.panCard?.[0],
+          payload?.panCard?.remark || existingData?.panCard?.remark || "",
+        ),
+        panNumber:
+          payload?.panCard?.panNumber || existingData?.panCard?.panNumber || "",
+      };
+    }
+
+    if (files?.otherDocuments?.length && payload.otherDocuments) {
+      let otherDocs;
+
+      try {
+        otherDocs =
+          typeof payload.otherDocuments === "string"
+            ? JSON.parse(payload.otherDocuments)
+            : payload.otherDocuments;
+      } catch {
+        throw new AppError("Invalid otherDocuments JSON format", 400);
       }
 
-      if (files.panCard?.[0]) {
-        payload.panCard = {
-          ...existingData.panCard,
-          ...payload.panCard,
-          documentUrl: getFilePath(files.panCard[0]),
-        };
+      if (otherDocs.length !== files.otherDocuments.length) {
+        throw new AppError(
+          "otherDocuments metadata count must match uploaded files count",
+          400,
+        );
       }
 
-      if (files.otherDocuments && payload.otherDocuments) {
-        let otherDocs = [];
-
-        if (typeof payload.otherDocuments === "string") {
-          otherDocs = JSON.parse(payload.otherDocuments);
-        } else {
-          otherDocs = payload.otherDocuments;
-        }
-
-        payload.otherDocuments = otherDocs.map((doc, index) => {
-          if (files.otherDocuments[index]) {
-            return {
-              ...doc,
-              documentUrl: getFilePath(files.otherDocuments[index]),
-            };
-          }
-          return doc;
-        });
-      }
+      payload.otherDocuments = otherDocs.map((doc, index) => ({
+        ...doc,
+        ...buildFileObject(
+          files.otherDocuments[index],
+          multerFiles.otherDocuments?.[index],
+          doc?.remark || "",
+        ),
+      }));
     }
 
     await USERDOCUMENT.updateOne(
       { _id: id, isDeleted: false },
-      { $set: { ...payload } },
+      { $set: payload },
     );
 
     return successResponse(res, 200, "User documents updated successfully");
@@ -230,7 +303,7 @@ exports.deleteUserDocuments = async (req, res, next) => {
     }
 
     data.isDeleted = true;
-    data.deletedAt = new moment().toDate();
+    data.deletedAt = moment().toDate();
 
     await data.save();
 

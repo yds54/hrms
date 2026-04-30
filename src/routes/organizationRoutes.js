@@ -11,6 +11,7 @@ const {
 
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
+const cloudinaryUpload = require("../middleware/cloudinaryUpload");
 const uploads = require("../middleware/uploads");
 
 const { ROLES } = require("../utils/enum");
@@ -27,13 +28,15 @@ const { validate } = require("express-validation");
 
 router.post(
   "/",
-  uploads("organizationLogo").single("logo"),
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
+  uploads("organizationLogo").single("logo"),
+  cloudinaryUpload({
+    folder: "organizationLogo",
+  }),
   validate(addOrganizationValidation),
   addOrganization,
 );
-
 router.get(
   "/",
   authenticateJWT,
@@ -52,9 +55,12 @@ router.get(
 
 router.put(
   "/:id",
-  uploads("organizationLogo").single("logo"),
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
+  uploads("organizationLogo").single("logo"),
+  cloudinaryUpload({
+    folder: "organizationLogo",
+  }),
   validate(updateOrganizationValidation),
   updateOrganization,
 );

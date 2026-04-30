@@ -7,28 +7,41 @@ const createUploader = (folderName, options = {}) => {
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
       let dir = path.join(__dirname, `../uploads/${folderName}`);
-      if (options.useUserFolder && req.user?._id) {
-        dir = path.join(dir, req.user._id.toString());
+
+      const userId = options.useUserFolder
+        ? req.body?.userId || req.user?._id
+        : null;
+
+      if (userId) {
+        dir = path.join(dir, userId.toString());
       }
+
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
+
       cb(null, dir);
     },
+
     filename: (req, file, cb) => {
       const ext = path.extname(file.originalname);
+
+      let fileName;
+
       if (options.useTimestamp) {
-        const timestamp = `${moment().format("YYYY-MM-DD_HH-mm-ss-SSS")}-${file.fieldname}`;
-        return cb(null, `${timestamp}${ext}`);
+        fileName = `${moment().format(
+          "YYYY-MM-DD_HH-mm-ss-SSS",
+        )}-${file.fieldname}${ext}`;
+      } else {
+        const basename = path.basename(file.originalname, ext);
+        fileName = `${basename}-${Date.now()}${ext}`;
       }
-      const basename = path.basename(file.originalname, ext);
-      cb(null, `${basename}-${Date.now()}${ext}`);
+
+      cb(null, fileName);
     },
   });
 
-  return multer({
-    storage,
-  });
+  return multer({ storage });
 };
 
 module.exports = createUploader;

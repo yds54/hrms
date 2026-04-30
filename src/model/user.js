@@ -3,8 +3,20 @@ const { GENDER, MARITAL_STATUS, ROLES, USER_STATUS } = require("../utils/enum");
 
 const userSchema = new mongoose.Schema(
   {
-    profilePicture: { type: String },
-
+    profilePicture: {
+      fileName: {
+        type: String,
+        default: null,
+      },
+      fileType: {
+        type: String,
+        default: null,
+      },
+      size: {
+        type: Number,
+        default: null,
+      },
+    },
     name: {
       firstName: { type: String },
       middleName: { type: String },
