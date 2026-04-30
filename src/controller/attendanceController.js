@@ -52,7 +52,7 @@ exports.createAttendance = async (req, res, next) => {
     const attendanceDate = startOfDay;
 
     // check attendance already exists
-    const existingAttendance = await ATTENDANCE.find({
+    const existingAttendance = await ATTENDANCE.findOne({
       userId,
       isDeleted: false,
       date: { $gte: startOfDay, $lte: endOfDay },

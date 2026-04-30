@@ -1,12 +1,13 @@
 const { TICKETCOMMENT, TICKET } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
+const { ROLES } = require("../utils/enum");
 
 //================ CREATE COMMENT =================
 exports.createComment = async (req, res, next) => {
   try {
     const {
-      user: { _id: userId },
+      user: { _id: userId, role },
       params: { ticketId },
       body: { comment },
       files,
@@ -15,10 +16,20 @@ exports.createComment = async (req, res, next) => {
     const isTicketExists = await TICKET.findOne({
       _id: ticketId,
       isDeleted: false,
-    }).select("_id");
+    }).select("createdBy assignedTo");
 
     if (!isTicketExists) {
       throw new AppError("Ticket not found with given id", 404);
+    }
+
+    // role check
+    const isOwner = isTicketExists.createdBy.toString() === userId.toString();
+    const isAssignee =
+      isTicketExists.assignedTo.toString() === userId.toString();
+    const isAdmin = role === ROLES.ADMIN;
+
+    if (!isOwner && !isAssignee && !isAdmin) {
+      throw new AppError("You are not allowed to comment on this ticket", 403);
     }
 
     const attachFile =
@@ -40,15 +51,28 @@ exports.createComment = async (req, res, next) => {
 //================ GET COMMENTS =================
 exports.getComments = async (req, res, next) => {
   try {
-    const { ticketId } = req.params;
+    const {
+      params: { ticketId },
+      user: { _id: userId, role },
+    } = req;
 
     const isTicketExists = await TICKET.findOne({
       _id: ticketId,
       isDeleted: false,
-    }).select("_id");
+    }).select("createdBy assignedTo");
 
     if (!isTicketExists) {
-      throw new AppError("Ticket not found with given Id", 404);
+      throw new AppError("Ticket not found with given Ticket Id", 404);
+    }
+
+    // role check
+    const isOwner = isTicketExists.createdBy.toString() === userId.toString();
+    const isAssignee =
+      isTicketExists.assignedTo.toString() === userId.toString();
+    const isAdmin = role === ROLES.ADMIN;
+
+    if (!isOwner && !isAssignee && !isAdmin) {
+      throw new AppError("You are not allowed to view comments", 403);
     }
 
     const comments = await TICKETCOMMENT.find({
@@ -66,6 +90,54 @@ exports.getComments = async (req, res, next) => {
       .lean();
 
     return successResponse(res, 200, "Comments fetched", { comments });
+  } catch (err) {
+    next(err);
+  }
+};
+
+//=============== DELETE COMMENTS ===============
+exports.deleteComment = async (req, res, next) => {
+  try {
+    const {
+      user: { _id: userId },
+      params: { commentId },
+    } = req;
+
+    const isCommentExists = await TICKETCOMMENT.findOne({
+      _id: commentId,
+      isDeleted: false,
+    });
+
+    if (!isCommentExists) {
+      throw new AppError("Comment not found with given CommentId", 404);
+    }
+
+    // check ticket
+    const isTicketExists = await TICKET.findOne({
+      _id: isCommentExists.ticketId,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isTicketExists) {
+      throw new AppError("Ticket not found with given comment Id", 404);
+    }
+
+    // only comment owner can delete
+    if (isCommentExists.createdBy.toString() !== userId.toString()) {
+      throw new AppError("You can delete only your own comment", 403);
+    }
+
+    await TICKETCOMMENT.updateOne(
+      { _id: commentId },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date(),
+        },
+      },
+    );
+
+    return successResponse(res, 200, "Comment deleted successfully");
   } catch (err) {
     next(err);
   }

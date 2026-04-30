@@ -69,3 +69,21 @@ exports.deleteTicketValidation = {
     id: Joi.string().hex().length(24).required(),
   }),
 };
+
+//========================== GET TICKET BY USER ID VALIDATION ==========================
+exports.getTicketByUserIdValidation = {
+  params: Joi.object({
+    userId: Joi.string().hex().length(24).required(),
+  }),
+};
+
+//========================== UPDATE ASSIGNEE VALIDATION ==========================
+exports.updateAssigneeValidation = {
+  body: Joi.object({
+    status: Joi.string()
+      .valid(...Object.values(TICKET_STATUS))
+      .required(),
+    currentAssignee: Joi.string().hex().length(24).required(),
+    newAssignee: Joi.string().hex().length(24).required(),
+  }),
+};
