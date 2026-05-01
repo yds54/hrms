@@ -3206,6 +3206,181 @@
           }
         }
       }
+    },
+
+    "/api/evaluationCriteria": {
+      "post": {
+        "tags": ["Evaluation Criteria"],
+        "description": "Create Evaluation Criteria",
+        "parameters": [
+          {
+            "name": "criteria",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "criteria": {
+                  "type": "string",
+                  "example": "Coding Convention"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Criteria created successfully"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Evaluation Criteria"],
+        "description": "Get Evaluation Criteria List",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number",
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number",
+            "example": 10
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "Communication"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Criteria fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/evaluationCriteria/{id}": {
+      "delete": {
+        "tags": ["Evaluation Criteria"],
+        "description": "Delete Evaluation Criteria",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Criteria deleted successfully"
+          },
+          "404": {
+            "description": "Criteria not found"
+          }
+        }
+      }
+    },
+
+    "/api/drsfactor": {
+      "post": {
+        "tags": ["DRS Factor"],
+        "description": "Create DRS Factor",
+        "parameters": [
+          {
+            "name": "criteria",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "criteria": {
+                  "type": "string",
+                  "example": "Team Collaboration"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Criteria created successfully"
+          }
+        }
+      },
+      "get": {
+        "tags": ["DRS Factor"],
+        "description": "Get DRS Factor List",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number",
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number",
+            "example": 10
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "team"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Criteria fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/drsfactor/{id}": {
+      "delete": {
+        "tags": ["DRS Factor"],
+        "description": "Delete DRS Factor",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drs Factor Criteria deleted successfully"
+          },
+          "404": {
+            "description": "Drs Factor Criteria not found"
+          }
+        }
+      }
+    },
+
+    "/api/quotes/": {
+      "get": {
+        "tags": ["Quotes"],
+        "description": "Get daily quote (different per user)",
+        "responses": {
+          "200": {
+            "description": "Quote fetched successfully"
+          },
+          "404": {
+            "description": "No quotes found"
+          }
+        }
+      }
     }
   },
 
