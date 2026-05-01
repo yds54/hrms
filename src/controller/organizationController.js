@@ -1,25 +1,25 @@
 const moment = require("moment");
-const cloudinary = require("../config/cloudinary");
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
+const {
+  uploadToCloudinary,
+  cleanupLocalFile,
+  deleteFromCloudinary,
+} = require("../utils/cloudinaryHelper");
 const { ORGANIZATION } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { getFileUrl } = require("../utils/fileUrl");
 
 exports.addOrganization = async (req, res, next) => {
-  let uploadedPublicId = null;
+  let uploadedFilePublicId = null;
 
   try {
     const { body, file } = req;
 
-    if (file?.cloudinaryData?.path) {
-      uploadedPublicId = file.cloudinaryData.path;
-    }
-
     const isOrganizationExists = await ORGANIZATION.findOne({
       organizationName: body.organizationName,
       isDeleted: false,
-    }).select("_id");
+    });
 
     if (isOrganizationExists) {
       throw new AppError("Organization already exists", 409);
@@ -27,24 +27,21 @@ exports.addOrganization = async (req, res, next) => {
 
     body.createdBy = req.user._id;
 
-    if (uploadedPublicId) {
-      body.logo = {
-        fileName: uploadedPublicId.split("/").pop(),
-        publicId: uploadedPublicId,
-        fileType: file.mimetype,
-        size: Math.round(file.size / 1024),
-      };
+    if (file) {
+      const uploadedFile = await uploadToCloudinary(file, {
+        folder: "organizationLogo",
+      });
+
+      uploadedFilePublicId = uploadedFile.publicId;
+      body.logo = uploadedFile;
     }
 
     await ORGANIZATION.create(body);
 
-    return successResponse(res, 200, "Organization added successfully", {
-      organizationName: body.organizationName,
-    });
+    return successResponse(res, 200, "Organization added successfully");
   } catch (error) {
-    if (uploadedPublicId) {
-      await cloudinary.uploader.destroy(uploadedPublicId);
-    }
+    await deleteFromCloudinary(uploadedFilePublicId);
+    cleanupLocalFile(req.file?.path);
 
     next(error);
   }
@@ -118,15 +115,11 @@ exports.getOrganizationById = async (req, res, next) => {
 };
 
 exports.updateOrganization = async (req, res, next) => {
-  let uploadedPublicId = null;
+  let uploadedFilePublicId = null;
 
   try {
     const { params, body: payload, file } = req;
     const { id } = params;
-
-    if (file?.cloudinaryData?.path) {
-      uploadedPublicId = file.cloudinaryData.path;
-    }
 
     const existingOrganization = await ORGANIZATION.findOne({
       _id: id,
@@ -147,24 +140,29 @@ exports.updateOrganization = async (req, res, next) => {
       throw new AppError("Organization already exists", 409);
     }
 
-    if (uploadedPublicId) {
-      payload.logo = {
-        fileName: uploadedPublicId.split("/").pop(),
-        publicId: uploadedPublicId,
-        fileType: file.mimetype,
-        size: Math.round(file.size / 1024),
-      };
+    if (file) {
+      const uploadedFile = await uploadToCloudinary(file, {
+        folder: "organizationLogo",
+      });
+
+      uploadedFilePublicId = uploadedFile.publicId;
+      payload.logo = uploadedFile;
     }
 
     await ORGANIZATION.updateOne({ _id: id }, { $set: payload });
+
+    if (uploadedFilePublicId && existingOrganization.logo?.fileName) {
+      await deleteFromCloudinary(
+        `organizationLogo/${existingOrganization.logo.fileName}`,
+      );
+    }
 
     return successResponse(res, 200, "Organization updated successfully", {
       data: payload.organizationName,
     });
   } catch (error) {
-    if (uploadedPublicId) {
-      await cloudinary.uploader.destroy(uploadedPublicId);
-    }
+    await deleteFromCloudinary(uploadedFilePublicId);
+    cleanupLocalFile(req.file?.path);
 
     next(error);
   }
@@ -181,6 +179,12 @@ exports.deleteOrganization = async (req, res, next) => {
 
     if (!isOrganizationExists) {
       throw new AppError("Organization not found for given ID", 404);
+    }
+
+    if (isOrganizationExists.logo?.fileName) {
+      await deleteFromCloudinary(
+        `organizationLogo/${isOrganizationExists.logo.fileName}`,
+      );
     }
 
     isOrganizationExists.isDeleted = true;

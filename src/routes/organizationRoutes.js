@@ -11,7 +11,6 @@ const {
 
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
-const cloudinaryUpload = require("../middleware/cloudinaryUpload");
 const uploads = require("../middleware/uploads");
 
 const { ROLES } = require("../utils/enum");
@@ -31,9 +30,6 @@ router.post(
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
   uploads("organizationLogo").single("logo"),
-  cloudinaryUpload({
-    folder: "organizationLogo",
-  }),
   validate(addOrganizationValidation),
   addOrganization,
 );
@@ -58,9 +54,6 @@ router.put(
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
   uploads("organizationLogo").single("logo"),
-  cloudinaryUpload({
-    folder: "organizationLogo",
-  }),
   validate(updateOrganizationValidation),
   updateOrganization,
 );

@@ -11,7 +11,6 @@ const {
 
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
-const cloudinaryUpload = require("../middleware/cloudinaryUpload");
 const createUploader = require("../middleware/uploads");
 
 const {
@@ -44,10 +43,6 @@ router.post(
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
   upload.fields(documentUploadFields),
-  cloudinaryUpload({
-    folder: "userDocuments",
-    useUserFolder: true,
-  }),
   validate(addUserDocumentsValidation),
   addUserDocuments,
 );
@@ -73,10 +68,6 @@ router.put(
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
   upload.fields(documentUploadFields),
-  cloudinaryUpload({
-    folder: "userDocuments",
-    useUserFolder: true,
-  }),
   validate(updateUserDocumentsValidation),
   updateUserDocuments,
 );

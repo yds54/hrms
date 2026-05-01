@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 
 const { validate } = require("express-validation");
-const cloudinaryUpload = require("../middleware/cloudinaryUpload");
 const uploads = require("../middleware/uploads");
 const {
   authenticateJWT,
@@ -28,9 +27,6 @@ const {
 router.post(
   "/register",
   uploads("profile").single("profilePicture"),
-  cloudinaryUpload({
-    folder: "profile",
-  }),
   validate(userRegisterValidation),
   registerUser,
 );

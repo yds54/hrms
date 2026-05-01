@@ -6,22 +6,23 @@ const jwt = require("jsonwebtoken");
 const { successResponse } = require("../utils/sucess");
 const { USER, AUTH } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
+const {
+  uploadToCloudinary,
+  cleanupLocalFile,
+  deleteFromCloudinary,
+} = require("../utils/cloudinaryHelper");
 const { USER_STATUS } = require("../utils/enum");
 const { renameFile } = require("../utils/fileHandler");
 const cloudinary = require("../config/cloudinary");
 const { sendMail } = require("../utils/sendMail");
 
 exports.registerUser = async (req, res, next) => {
-  let uploadedPublicId = null;
+  let uploadedFilePublicId = null;
 
   try {
     const { body, file } = req;
 
     delete body.confirmPassword;
-
-    if (file?.cloudinaryData?.path) {
-      uploadedPublicId = file.cloudinaryData.path;
-    }
 
     const isUserExists = await USER.findOne({
       email: body.email,
@@ -54,13 +55,14 @@ exports.registerUser = async (req, res, next) => {
 
     body.employeeCode = `BS${String(nextNumber).padStart(3, "0")}`;
 
-    if (uploadedPublicId) {
-      body.profilePicture = {
-        fileName: uploadedPublicId.split("/").pop(),
-        publicId: uploadedPublicId,
-        fileType: file.mimetype,
-        size: Math.round(file.size / 1024),
-      };
+    if (file) {
+      const uploadedFile = await uploadToCloudinary(file, {
+        folder: "profile",
+      });
+
+      uploadedFilePublicId = uploadedFile.publicId;
+
+      body.profilePicture = uploadedFile;
     }
 
     await USER.create(body);
@@ -69,9 +71,9 @@ exports.registerUser = async (req, res, next) => {
       employeeCode: body.employeeCode,
     });
   } catch (error) {
-    if (uploadedPublicId) {
-      await cloudinary.uploader.destroy(uploadedPublicId);
-    }
+    await deleteFromCloudinary(uploadedFilePublicId);
+
+    cleanupLocalFile(req.file?.path);
 
     next(error);
   }

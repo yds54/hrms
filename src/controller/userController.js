@@ -5,6 +5,11 @@ const cloudinary = require("../config/cloudinary");
 const { successResponse } = require("../utils/sucess");
 const { USER } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
+const {
+  uploadToCloudinary,
+  cleanupLocalFile,
+  deleteFromCloudinary,
+} = require("../utils/cloudinaryHelper");
 const { getFileUrl } = require("../utils/fileUrl");
 const { ROLES } = require("../utils/enum");
 
@@ -117,23 +122,20 @@ exports.viewallUser = async (req, res, next) => {
   }
 };
 //================ UPDATE PROFILE ==============
+
 exports.updateUser = async (req, res, next) => {
-  let uploadedPublicId = null;
+  let uploadedFilePublicId = null;
 
   try {
     const { params, body: payload, file, user } = req;
     const { id } = params;
-
-    if (file?.cloudinaryData?.path) {
-      uploadedPublicId = file.cloudinaryData.path;
-    }
 
     const isUserExists = await USER.findOne(
       {
         _id: id,
         isDeleted: false,
       },
-      "_id isDeleted profilePicture email contactNumber",
+      "_id profilePicture email contactNumber",
     );
 
     if (!isUserExists) {
@@ -144,6 +146,7 @@ exports.updateUser = async (req, res, next) => {
 
     if (!isAdmin) {
       const allowedFields = ["profilePicture"];
+
       const invalidFields = Object.keys(payload).filter(
         (key) => !allowedFields.includes(key),
       );
@@ -172,32 +175,31 @@ exports.updateUser = async (req, res, next) => {
       }
     }
 
-    if (uploadedPublicId) {
-      payload.profilePicture = {
-        fileName: uploadedPublicId.split("/").pop(),
-        publicId: uploadedPublicId,
-        fileType: file.mimetype,
-        size: Math.round(file.size / 1024),
-      };
+    if (file) {
+      const uploadedFile = await uploadToCloudinary(file, {
+        folder: "profile",
+      });
+
+      uploadedFilePublicId = uploadedFile.publicId;
+
+      payload.profilePicture = uploadedFile;
     }
 
-    await USER.updateOne(
-      {
-        _id: id,
-        isDeleted: false,
-      },
-      {
-        $set: payload,
-      },
-    );
+    await USER.updateOne({ _id: id, isDeleted: false }, { $set: payload });
+
+    if (uploadedFilePublicId && isUserExists.profilePicture?.fileName) {
+      await deleteFromCloudinary(
+        `profile/${isUserExists.profilePicture.fileName}`,
+      );
+    }
 
     return successResponse(res, 200, "User changed successfully", {
       data: payload,
     });
   } catch (error) {
-    if (uploadedPublicId) {
-      await cloudinary.uploader.destroy(uploadedPublicId);
-    }
+    await deleteFromCloudinary(uploadedFilePublicId);
+
+    cleanupLocalFile(req.file?.path);
 
     next(error);
   }
@@ -210,17 +212,24 @@ exports.deleteUser = async (req, res, next) => {
     const isUserExists = await USER.findOne({
       _id: userID,
       isDeleted: false,
-    }).select("_id ");
+    }).select("_id profilePicture");
 
-    if (!isUserExists || isUserExists.isDeleted)
+    if (!isUserExists) {
       throw new AppError("User not found for given ID", 404);
+    }
 
     isUserExists.isDeleted = true;
     isUserExists.deletedAt = moment().toDate();
 
     await isUserExists.save();
 
-    return successResponse(res, 200, "User deleted sucessfully");
+    if (isUserExists.profilePicture?.fileName) {
+      await deleteFromCloudinary(
+        `profile/${isUserExists.profilePicture.fileName}`,
+      );
+    }
+
+    return successResponse(res, 200, "User deleted successfully");
   } catch (error) {
     console.error("Delete user Error", error);
     next(error);
