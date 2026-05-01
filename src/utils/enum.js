@@ -56,6 +56,7 @@ exports.TICKET_STATUS = Object.freeze({
   INPROGRESS: "In Progress",
   ONHOLD: "On Hold",
   COMPLETED: "Completed",
+  REOPEN: "Reopen",
 });
 
 exports.LEAVE_REASON_TYPE = Object.freeze({

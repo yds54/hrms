@@ -464,13 +464,13 @@
             "name": "month",
             "in": "query",
             "type": "string",
-            "example": "03"
+            "description": "03"
           },
           {
             "name": "year",
             "in": "query",
             "type": "string",
-            "example": "2026"
+            "description": "2026"
           },
           {
             "name": "search",
@@ -549,13 +549,13 @@
             "name": "month",
             "in": "query",
             "type": "string",
-            "example": "04"
+            "description": "04"
           },
           {
             "name": "year",
             "in": "query",
             "type": "string",
-            "example": "2026"
+            "description": "2026"
           }
         ],
         "responses": {
@@ -634,31 +634,31 @@
             "name": "year",
             "in": "query",
             "type": "number",
-            "example": 2026
+            "description": "2026"
           },
           {
             "name": "filter",
             "in": "query",
             "type": "string",
-            "example": "Single Day / Multiple Day / Half Day / March"
+            "description": "Single Day | Multiple Day | Half Day | March ..."
           },
           {
             "name": "search",
             "in": "query",
             "type": "string",
-            "example": "sick"
+            "description": "Sick Leave | Casual Leave etc.."
           },
           {
             "name": "pmFilter",
             "in": "query",
             "type": "string",
-            "example": "Pending / Approved / Declined"
+            "description": "Pending | Approved | Declined"
           },
           {
             "name": "hrFilter",
             "in": "query",
             "type": "string",
-            "example": "Pending / Approved / Declined"
+            "description": "Pending | Approved | Declined"
           }
         ],
         "responses": {
@@ -687,8 +687,7 @@
             "name": "isPMApproved",
             "in": "formData",
             "type": "string",
-            "enum": ["Pending", "Approved", "Declined"],
-            "example": "Approved"
+            "enum": ["Pending", "Approved", "Declined"]
           },
           {
             "name": "isHRApproved",
@@ -909,13 +908,13 @@
             "name": "filter",
             "in": "query",
             "type": "string",
-            "example": "2026-03"
+            "description": "2026-03"
           },
           {
             "name": "search",
             "in": "query",
             "type": "string",
-            "example": "Holi / 2026-03-25"
+            "description": "Holi / 2026-03-25"
           }
         ],
         "responses": {
@@ -1718,13 +1717,13 @@
             "name": "dueDate",
             "in": "formData",
             "type": "string",
-            "example": "2026-05-15"
+            "description": "2026-05-15"
           },
           {
             "name": "priority",
             "in": "formData",
             "type": "string",
-            "example": "Low"
+            "enum": ["Low", "Normal", "High"]
           },
           {
             "name": "content",
@@ -1778,7 +1777,7 @@
             "in": "query",
             "type": "string",
             "example": "All",
-            "description": "all | myTickets | assignedToMe"
+            "enum": ["all", "myTickets", "assignedToMe"]
           },
           {
             "name": "search",
@@ -1815,31 +1814,34 @@
             "name": "title",
             "in": "formData",
             "type": "string",
+            "description": "update attendance",
             "example": "update attendance"
           },
           {
             "name": "dueDate",
             "in": "formData",
             "type": "string",
+            "description": "2026-05-20",
             "example": "2026-05-20"
           },
           {
             "name": "priority",
             "in": "formData",
             "type": "string",
-            "example": "High"
+            "enum": ["Low", "Normal", "High"]
           },
           {
             "name": "content",
             "in": "formData",
             "type": "string",
+            "description": "updated issue details",
             "example": "updated issue details"
           },
           {
             "name": "status",
             "in": "formData",
             "type": "string",
-            "example": "To Do"
+            "enum": ["To Do", "In Progress", "On Hold", "Completed", "Reopen"]
           },
           {
             "name": "attachFile",
@@ -1958,6 +1960,96 @@
         }
       }
     },
+    "/api/ticket/comment/{commentId}": {
+      "delete": {
+        "tags": ["Ticket Board"],
+        "description": "Delete comment of a ticket",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comment deleted successfully"
+          },
+          "403": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Comment not found"
+          }
+        }
+      }
+    },
+    "/api/ticket/user/{userId}": {
+      "get": {
+        "tags": ["Ticket Board"],
+        "description": "Get Ticket By User Id",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User tickets fetched successfully"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/ticket/update-assignee": {
+      "put": {
+        "tags": ["Ticket Board"],
+        "description": "Update Ticket Assignee",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "example": "To Do"
+                },
+                "currentAssignee": {
+                  "type": "string",
+                  "example": "69c60ceb1271716ecbac38a3"
+                },
+                "newAssignee": {
+                  "type": "string",
+                  "example": "69c60ceb1271716ecbac38a3"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket Assignee updated successfully"
+          },
+          "404": {
+            "description": "No tickets found / user not found"
+          }
+        }
+      }
+    },
 
     "/api/attendance/": {
       "post": {
@@ -1970,21 +2062,21 @@
             "in": "formData",
             "type": "string",
             "required": true,
-            "example": "2026-04-06"
+            "description": "2026-04-01"
           },
           {
             "name": "inTime",
             "in": "formData",
             "type": "string",
             "required": true,
-            "example": "09:30 AM"
+            "description": "09:30 AM"
           },
           {
             "name": "outTime",
             "in": "formData",
             "type": "string",
             "required": false,
-            "example": "06:30 PM"
+            "description": "06:30 PM"
           },
           {
             "name": "lateReason",
@@ -2063,16 +2155,14 @@
             "in": "query",
             "type": "number",
             "required": false,
-            "example": 4,
-            "description": "Month (1-12), default = current month"
+            "description": "Month (1-12)"
           },
           {
             "name": "year",
             "in": "query",
             "type": "number",
             "required": false,
-            "example": 2026,
-            "description": "Year, default = current year"
+            "description": "2026"
           },
           {
             "name": "search",
@@ -2124,23 +2214,21 @@
             "in": "query",
             "type": "number",
             "required": false,
-            "example": 4,
-            "description": "Month (1-12), default = current month"
+            "description": "Month (1-12)"
           },
           {
             "name": "year",
             "in": "query",
             "type": "number",
             "required": false,
-            "example": 2026,
-            "description": "Year, default = current year"
+            "description": "2026"
           },
           {
             "name": "search",
             "in": "query",
             "type": "string",
             "example": "half",
-            "description": "Search by date or leaveDay (Half/Full) or leaveStatus"
+            "description": "Search by date or leaveDay (Half / Full) or leaveStatus"
           }
         ],
         "responses": {

@@ -18,3 +18,10 @@ exports.getCommentValidation = {
     ticketId: Joi.string().hex().length(24).required(),
   }),
 };
+
+//================ DELETE COMMENT =================
+exports.deleteCommentValidation = {
+  params: Joi.object({
+    commentId: Joi.string().hex().length(24).required(),
+  }),
+};
