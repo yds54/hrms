@@ -7,7 +7,7 @@ const { successResponse } = require("../utils/sucess");
 const getGreeting = (name = "User") => {
   const hour = new Date().getHours();
 
-  let greeting =
+  const greeting =
     hour >= 5 && hour < 12
       ? "Good Morning"
       : hour >= 12 && hour < 17

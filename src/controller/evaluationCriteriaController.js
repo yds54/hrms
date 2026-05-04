@@ -65,7 +65,7 @@ exports.deleteCriteria = async (req, res, next) => {
     const isCriateriaExists = await EVALUATIONCRITERIA.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).select("_id");
 
     if (!isCriateriaExists) {
       throw new AppError("Evaluation Criteria not found with given ID", 404);
