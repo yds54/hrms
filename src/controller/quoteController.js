@@ -1,5 +1,8 @@
 const crypto = require("crypto");
-const { QUOTE } = require("../model/modelIndex");
+const moment = require("moment-timezone");
+const { TIMEZONES } = require("../utils/enum");
+const { getMonthRange, formatDate } = require("../utils/dateFormat");
+const { QUOTE, ATTENDANCE, HOLIDAY } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 
@@ -52,9 +55,70 @@ exports.getDailyQuote = async (req, res, next) => {
     // different quotes per user Pick quote index
     const index = (dayOfYear + userHash) % quotes.length;
 
+    // current month continues absent count
+    // if 3 ore more than 3 day continues absent apply note
+    const now = moment.tz(TIMEZONES.INDIA).subtract(1, "day");
+    const { startOfMonth, endOfMonth } = getMonthRange(
+      now.year(),
+      now.month() + 1,
+    );
+    const loopEnd = endOfMonth > now.toDate() ? now.toDate() : endOfMonth;
+
+    const [attendanceData, holidays] = await Promise.all([
+      ATTENDANCE.find({
+        userId,
+        isDeleted: false,
+        date: { $gte: startOfMonth, $lte: loopEnd },
+      })
+        .select("date")
+        .lean(),
+
+      HOLIDAY.find({
+        isDeleted: false,
+        holidayDate: { $gte: startOfMonth, $lte: loopEnd },
+      })
+        .select("holidayDate")
+        .lean(),
+    ]);
+
+    const attendanceSet = new Set(
+      attendanceData.map((item) => formatDate(item.date)),
+    );
+    const holidaySet = new Set(
+      holidays.map((item) => formatDate(item.holidayDate)),
+    );
+
+    let absentStreak = 0;
+    let longestAbsentStreak = 0;
+    let current = moment(startOfMonth);
+
+    while (current.toDate() <= loopEnd) {
+      const key = formatDate(current.toDate());
+      const isSunday = current.day() === 0;
+      const isHoliday = holidaySet.has(key);
+      const hasAttendance = attendanceSet.has(key);
+
+      // skip sunday and holiday
+      if (isSunday || isHoliday) {
+        current.add(1, "day");
+        continue;
+      }
+
+      if (!hasAttendance) {
+        absentStreak++;
+        if (absentStreak > longestAbsentStreak) {
+          longestAbsentStreak = absentStreak;
+        }
+      } else {
+        absentStreak = 0;
+      }
+      current.add(1, "day");
+    }
+
     return successResponse(res, 200, "Quote fetched", {
       greeting: getGreeting(firstName),
       quote: quotes[index].text,
+      note: longestAbsentStreak >= 3 ? "You are irregular nowadays" : "",
     });
   } catch (err) {
     next(err);
