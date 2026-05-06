@@ -17,7 +17,7 @@ const documentSchema = new mongoose.Schema(
     remark: {
       type: String,
       trim: true,
-      default: "",
+      default: null,
     },
   },
   { _id: false },
@@ -45,7 +45,7 @@ const otherDocumentSchema = new mongoose.Schema(
     remark: {
       type: String,
       trim: true,
-      default: "",
+      default: null,
     },
   },
   { _id: false },
@@ -92,6 +92,7 @@ const userDocumentSchema = new mongoose.Schema(
     },
     panCard: {
       type: {
+        _id: false,
         fileName: {
           type: String,
           default: null,
@@ -111,7 +112,7 @@ const userDocumentSchema = new mongoose.Schema(
         remark: {
           type: String,
           trim: true,
-          default: "",
+          default: null,
         },
       },
       default: {},

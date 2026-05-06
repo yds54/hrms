@@ -88,28 +88,27 @@ exports.addUserDocuments = async (req, res, next) => {
 
     for (const field in uploadedFiles) {
       for (const file of uploadedFiles[field]) {
-        if (file?.publicId) uploadedFilesPublicIds.push(file.publicId);
+        if (file.publicId) uploadedFilesPublicIds.push(file.publicId);
       }
     }
 
     for (const field of documentFields) {
-      if (uploadedFiles?.[field]?.[0]) {
+      if (uploadedFiles[field][0]) {
         body[field] = {
           ...uploadedFiles[field][0],
-          remark: body?.[field]?.remark || "",
+          remark: body?.[field]?.remark,
         };
       }
     }
 
-    if (uploadedFiles?.panCard?.[0]) {
+    if (uploadedFiles.panCard?.[0]) {
       body.panCard = {
         ...uploadedFiles.panCard[0],
-        remark: body?.panCard?.remark || "",
-        panNumber: body?.panCard?.panNumber || "",
+        ...body?.panCard,
       };
     }
 
-    if (uploadedFiles?.otherDocuments?.length && otherDocs) {
+    if (uploadedFiles.otherDocuments.length && otherDocs) {
       body.otherDocuments = otherDocs.map((doc, index) => ({
         ...doc,
         ...uploadedFiles.otherDocuments[index],
@@ -297,9 +296,7 @@ exports.updateUserDocuments = async (req, res, next) => {
         payload[field] = {
           ...uploadedFiles[field][0],
           remark:
-            payload?.[field]?.remark ||
-            isUserDocumentsExists?.[field]?.remark ||
-            "",
+            payload?.[field]?.remark || isUserDocumentsExists?.[field]?.remark,
         };
       }
     }
@@ -314,13 +311,10 @@ exports.updateUserDocuments = async (req, res, next) => {
       payload.panCard = {
         ...uploadedFiles.panCard[0],
         remark:
-          payload?.panCard?.remark ||
-          isUserDocumentsExists?.panCard?.remark ||
-          "",
+          payload?.panCard?.remark || isUserDocumentsExists?.panCard?.remark,
         panNumber:
           payload?.panCard?.panNumber ||
-          isUserDocumentsExists?.panCard?.panNumber ||
-          "",
+          isUserDocumentsExists?.panCard?.panNumber,
       };
     }
 
