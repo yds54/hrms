@@ -6,15 +6,24 @@ const jwt = require("jsonwebtoken");
 const { successResponse } = require("../utils/sucess");
 const { USER, AUTH } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
+const {
+  uploadToCloudinary,
+  cleanupLocalFile,
+  deleteFromCloudinary,
+} = require("../utils/cloudinaryHelper");
 const { USER_STATUS } = require("../utils/enum");
 const { renameFile } = require("../utils/fileHandler");
+const cloudinary = require("../config/cloudinary");
 const { sendMail } = require("../utils/sendMail");
 
 exports.registerUser = async (req, res, next) => {
+  let uploadedFilePublicId = null;
+
   try {
     const { body, file } = req;
 
     delete body.confirmPassword;
+
     const isUserExists = await USER.findOne({
       email: body.email,
       contactNumber: body.contactNumber,
@@ -39,33 +48,37 @@ exports.registerUser = async (req, res, next) => {
 
     let nextNumber = 1;
 
-    if (lastUser && lastUser.employeeCode) {
+    if (lastUser?.employeeCode) {
       const num = parseInt(lastUser.employeeCode.replace("BS", ""));
       nextNumber = num + 1;
     }
 
     body.employeeCode = `BS${String(nextNumber).padStart(3, "0")}`;
 
-    const createdUser = await USER.create(body);
+    if (file) {
+      const uploadedFile = await uploadToCloudinary(file, {
+        folder: "profile",
+      });
 
-    const profilePath = await renameFile(file, body.employeeCode, "profile");
+      uploadedFilePublicId = uploadedFile.publicId;
 
-    if (profilePath) {
-      await USER.updateOne(
-        { _id: createdUser._id },
-        { $set: { profilePicture: profilePath } },
-      );
+      body.profilePicture = uploadedFile;
     }
+
+    await USER.create(body);
 
     return successResponse(res, 200, "User Registered Successfully", {
       employeeCode: body.employeeCode,
     });
   } catch (error) {
+    await deleteFromCloudinary(uploadedFilePublicId);
+
+    cleanupLocalFile(req.file?.path);
+
     next(error);
   }
 };
 
-//================= LOGIN ======================================
 exports.loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;

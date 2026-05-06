@@ -1,21 +1,29 @@
 require("dotenv").config();
 const moment = require("moment");
 const { paginate } = require("../utils/pagination");
+const cloudinary = require("../config/cloudinary");
 const { successResponse } = require("../utils/sucess");
 const { USER } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
+const {
+  uploadToCloudinary,
+  cleanupLocalFile,
+  deleteFromCloudinary,
+} = require("../utils/cloudinaryHelper");
+const { getFileUrl } = require("../utils/fileUrl");
 const { ROLES } = require("../utils/enum");
 
 //============= DISPLAY USERS =================
 exports.viewallUser = async (req, res, next) => {
   try {
     const { user, query } = req;
+
     const {
       page,
       limit,
       gender,
       designation,
-      organizationType,
+      organizationId,
       attendanceType,
       id,
       search,
@@ -24,21 +32,23 @@ exports.viewallUser = async (req, res, next) => {
 
     const _whereCondition = {
       isDeleted: false,
-      // role: "user",
       isLeft: false,
     };
 
-    if (user.role !== "admin") {
+    if (user.role !== ROLES.ADMIN) {
       _whereCondition._id = user.id;
-    } else {
-      if (id) _whereCondition._id = id;
+    } else if (id) {
+      _whereCondition._id = id;
     }
 
     if (gender) _whereCondition.gender = gender;
-    if (designation) _whereCondition.designation = designation;
-    if (organizationType) _whereCondition.organizationType = organizationType;
+    if (designation) _whereCondition.designationId = designation;
+    if (organizationId) _whereCondition.organizationId = organizationId;
     if (attendanceType) _whereCondition.attendanceType = attendanceType;
-    if (Left === "true") _whereCondition.isLeft = true;
+
+    if (Left === "true") {
+      _whereCondition.isLeft = true;
+    }
 
     if (search) {
       const fields = [
@@ -53,7 +63,10 @@ exports.viewallUser = async (req, res, next) => {
       ];
 
       _whereCondition.$or = fields.map((field) => ({
-        [field]: { $regex: search, $options: "i" },
+        [field]: {
+          $regex: search,
+          $options: "i",
+        },
       }));
     }
 
@@ -87,47 +100,62 @@ exports.viewallUser = async (req, res, next) => {
       sort: { createdAt: -1 },
     });
 
+    const formattedData = data.map((item) => {
+      const userObj = item.toObject ? item.toJSON() : { ...item };
+
+      if (userObj.profilePicture?.fileName) {
+        userObj.profilePicture = {
+          ...userObj.profilePicture,
+          url: getFileUrl(`profile/${userObj.profilePicture.fileName} `),
+        };
+      }
+
+      return userObj;
+    });
+
     return successResponse(res, 200, "User fetched successfully", {
-      data,
+      data: formattedData,
       pagination,
     });
   } catch (error) {
     next(error);
   }
 };
-
 //================ UPDATE PROFILE ==============
+
 exports.updateUser = async (req, res, next) => {
+  let uploadedFilePublicId = null;
+
   try {
     const { params, body: payload, file, user } = req;
     const { id } = params;
 
     const isUserExists = await USER.findOne(
-      { _id: id, isDeleted: false },
-      "_id isDeleted",
+      {
+        _id: id,
+        isDeleted: false,
+      },
+      "_id profilePicture email contactNumber",
     );
 
     if (!isUserExists) {
       throw new AppError("User not found with ID", 404);
     }
 
-    // if not admin only profile pic update
     const isAdmin = user?.role === ROLES.ADMIN;
+
     if (!isAdmin) {
       const allowedFields = ["profilePicture"];
+
       const invalidFields = Object.keys(payload).filter(
         (key) => !allowedFields.includes(key),
       );
-      if (invalidFields.length > 0) {
+
+      if (invalidFields.length) {
         throw new AppError("You can only update profile picture", 403);
       }
     }
 
-    if (file) {
-      isUserExist.profilePicture = `/uploads/${file.filename}`;
-    }
-
-    //check if email already exists and mobile number already exists
     if (
       isAdmin &&
       (payload.email !== isUserExists.email ||
@@ -148,26 +176,31 @@ exports.updateUser = async (req, res, next) => {
     }
 
     if (file) {
-      const profilePath = await renameFile(
-        file,
-        isUserExists.employeeCode,
-        "profile",
-      );
+      const uploadedFile = await uploadToCloudinary(file, {
+        folder: "profile",
+      });
 
-      if (profilePath) {
-        payload.profilePicture = profilePath;
-      }
+      uploadedFilePublicId = uploadedFile.publicId;
+
+      payload.profilePicture = uploadedFile;
     }
 
-    await USER.updateOne(
-      { _id: id, isDeleted: false },
-      { $set: { ...payload } },
-    );
+    await USER.updateOne({ _id: id, isDeleted: false }, { $set: payload });
+
+    if (uploadedFilePublicId && isUserExists.profilePicture?.fileName) {
+      await deleteFromCloudinary(
+        `profile/${isUserExists.profilePicture.fileName}`,
+      );
+    }
 
     return successResponse(res, 200, "User changed successfully", {
       data: payload,
     });
   } catch (error) {
+    await deleteFromCloudinary(uploadedFilePublicId);
+
+    cleanupLocalFile(req.file?.path);
+
     next(error);
   }
 };
@@ -179,17 +212,24 @@ exports.deleteUser = async (req, res, next) => {
     const isUserExists = await USER.findOne({
       _id: userID,
       isDeleted: false,
-    }).select("_id ");
+    }).select("_id profilePicture");
 
-    if (!isUserExists || isUserExists.isDeleted)
+    if (!isUserExists) {
       throw new AppError("User not found for given ID", 404);
+    }
 
     isUserExists.isDeleted = true;
     isUserExists.deletedAt = moment().toDate();
 
     await isUserExists.save();
 
-    return successResponse(res, 200, "User deleted sucessfully");
+    if (isUserExists.profilePicture?.fileName) {
+      await deleteFromCloudinary(
+        `profile/${isUserExists.profilePicture.fileName}`,
+      );
+    }
+
+    return successResponse(res, 200, "User deleted successfully");
   } catch (error) {
     console.error("Delete user Error", error);
     next(error);
@@ -204,14 +244,44 @@ exports.getUserById = async (req, res, next) => {
     const isUserExists = await USER.findOne({
       _id: id,
       isDeleted: false,
-    });
+    }).populate([
+      {
+        path: "departmentId",
+        select: "departmentName",
+        match: { isDeleted: false },
+      },
+      {
+        path: "designationId",
+        select: "designationName",
+        match: { isDeleted: false },
+      },
+      {
+        path: "organizationId",
+        select: "organizationName",
+        match: { isDeleted: false },
+      },
+      {
+        path: "bankDetails.bankId",
+        select: "bankName",
+        match: { isDeleted: false },
+      },
+    ]);
 
     if (!isUserExists) {
       throw new AppError("User not found for given ID", 404);
     }
 
+    const formattedUser = isUserExists.toJSON();
+
+    if (formattedUser.profilePicture?.fileName) {
+      formattedUser.profilePicture.url = getFileUrl(
+        `profile/${formattedUser.profilePicture.fileName}`,
+        formattedUser.profilePicture.fileName,
+      );
+    }
+
     return successResponse(res, 200, "User fetched successfully", {
-      data: isUserExists,
+      data: formattedUser,
     });
   } catch (error) {
     next(error);

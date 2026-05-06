@@ -18,8 +18,19 @@ const organizationSchema = new mongoose.Schema(
       trim: true,
     },
     logo: {
-      type: String,
-      default: null,
+      fileName: {
+        type: String,
+        default: null,
+      },
+      fileType: {
+        type: String,
+        default: null,
+      },
+
+      size: {
+        type: Number,
+        default: null,
+      },
     },
     organizationAccountNumber: {
       type: String,

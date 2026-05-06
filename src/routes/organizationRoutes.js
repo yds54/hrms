@@ -27,13 +27,12 @@ const { validate } = require("express-validation");
 
 router.post(
   "/",
-  uploads("organizationLogo").single("logo"),
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
+  uploads("organizationLogo").single("logo"),
   validate(addOrganizationValidation),
   addOrganization,
 );
-
 router.get(
   "/",
   authenticateJWT,
@@ -52,9 +51,9 @@ router.get(
 
 router.put(
   "/:id",
-  uploads("organizationLogo").single("logo"),
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
+  uploads("organizationLogo").single("logo"),
   validate(updateOrganizationValidation),
   updateOrganization,
 );

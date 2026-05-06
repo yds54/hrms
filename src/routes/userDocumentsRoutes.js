@@ -18,14 +18,15 @@ const {
   getUserDocumentsValidation,
   deleteUserDocumentsValidation,
   updateUserDocumentsValidation,
-  getUserDocumentsByIdValidation
+  getUserDocumentsByIdValidation,
 } = require("../validation/userDocumentsValidation");
 
 const { validate } = require("express-validation");
 const { ROLES } = require("../utils/enum");
 
-const upload = createUploader("userDocuments");
-
+const upload = createUploader("userDocuments", {
+  useUserFolder: true,
+});
 const documentUploadFields = [
   { name: "offerLetter", maxCount: 1 },
   { name: "appointmentLetter", maxCount: 1 },

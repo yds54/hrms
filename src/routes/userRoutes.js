@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { validate } = require("express-validation");
+//const cloudinaryUpload = require("../middleware/cloudinaryUpload");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
 const upload = require("../middleware/uploads");

@@ -2,14 +2,22 @@ const mongoose = require("mongoose");
 
 const documentSchema = new mongoose.Schema(
   {
-    documentUrl: {
+    fileName: {
       type: String,
-      required: false,
+      default: null,
+    },
+    fileType: {
+      type: String,
+      default: null,
+    },
+    size: {
+      type: Number,
+      default: null,
     },
     remark: {
       type: String,
       trim: true,
-      default: "",
+      default: null,
     },
   },
   { _id: false },
@@ -22,14 +30,22 @@ const otherDocumentSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    documentUrl: {
+    fileName: {
       type: String,
-      required: true,
+      default: null,
+    },
+    path: {
+      type: String,
+      default: null,
+    },
+    fileType: {
+      type: String,
+      default: null,
     },
     remark: {
       type: String,
       trim: true,
-      default: "",
+      default: null,
     },
   },
   { _id: false },
@@ -76,8 +92,18 @@ const userDocumentSchema = new mongoose.Schema(
     },
     panCard: {
       type: {
-        documentUrl: {
+        _id: false,
+        fileName: {
           type: String,
+          default: null,
+        },
+        path: {
+          type: String,
+          default: null,
+        },
+        fileType: {
+          type: String,
+          default: null,
         },
         panNumber: {
           type: String,
@@ -86,20 +112,24 @@ const userDocumentSchema = new mongoose.Schema(
         remark: {
           type: String,
           trim: true,
-          default: "",
+          default: null,
         },
       },
       default: {},
     },
+
     otherDocuments: {
       type: [otherDocumentSchema],
       default: [],
     },
+
     isDeleted: {
       type: Boolean,
       default: false,
     },
-    deletedAt: { type: Date },
+    deletedAt: {
+      type: Date,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
@@ -109,11 +139,13 @@ const userDocumentSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-userDocumentSchema.set("toJSON", {
+
+userDocumentSchema.set("toObject", {
   transform: function (doc, ret) {
     ret.User = ret.userId;
     delete ret.userId;
     return ret;
   },
 });
+
 module.exports = mongoose.model("userDocument", userDocumentSchema);
