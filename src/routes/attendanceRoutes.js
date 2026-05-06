@@ -9,11 +9,13 @@ const upload = require("../middleware/uploads");
 const {
   createAttendance,
   getAttendance,
+  getAttendanceHistory,
 } = require("../controller/attendanceController");
 
 const {
   createAttendanceValidation,
   getAttendanceValidation,
+  getAttendanceHistoryValidation,
 } = require("../validation/attendanceValidation");
 
 //------------------ CREATE ATTENDANCE ---------------------------
@@ -32,13 +34,22 @@ router.post(
   createAttendance,
 );
 
-//----------- DISPLAY ATTENDANCE -----------------
+//--------------- DISPLAY ATTENDANCE ------------------------
 router.get(
   "/",
   authenticateJWT,
   authorizeRoles(ROLES.USER, ROLES.ADMIN),
   validate(getAttendanceValidation),
   getAttendance,
+);
+
+//-------------- DISPLAY ATTENDANCE LEAVE HISTORY -----------------
+router.get(
+  "/history",
+  authenticateJWT,
+  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  validate(getAttendanceHistoryValidation),
+  getAttendanceHistory,
 );
 
 module.exports = router;

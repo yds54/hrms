@@ -20,6 +20,9 @@ const incrementRoutes = require("./incrementRoutes");
 const attendanceRoutes = require("./attendanceRoutes");
 const ticketCommentRoutes = require("./ticketCommentRoutes");
 const userDocumentsRoutes = require("./userDocumentsRoutes");
+const evaluationCriteriaRoutes = require("./evaluationCriteriaRoutes");
+const drsFactorRoutes = require("./drsFactorRoutes");
+const quoteRoutes = require("./quoteRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -40,5 +43,8 @@ router.use("/increments", incrementRoutes);
 router.use("/attendance", attendanceRoutes);
 router.use("/ticket", ticketCommentRoutes);
 router.use("/userDocuments", userDocumentsRoutes);
+router.use("/evaluationCriteria", evaluationCriteriaRoutes);
+router.use("/drsfactor", drsFactorRoutes);
+router.use("/quotes", quoteRoutes);
 
 module.exports = router;

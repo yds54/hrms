@@ -16,9 +16,22 @@ exports.createAttendanceValidation = {
 //--------------- DISPLAY ATTENDANCE VALIDATION -------------------
 exports.getAttendanceValidation = {
   query: Joi.object({
-    page: Joi.number().min(1).optional().required(),
-    limit: Joi.number().min(1).optional().required(),
+    page: Joi.number().min(1).required(),
+    limit: Joi.number().min(1).required(),
     month: Joi.number().min(1).max(12).optional(),
     year: Joi.number().min(2000).max(2100).optional(),
+    search: Joi.string().optional(),
+    userId: Joi.string().hex().length(24).optional(),
+  }),
+};
+
+//--------------- DISPLAY ATTENDANCE LEAVE HISTORY -------------------
+exports.getAttendanceHistoryValidation = {
+  query: Joi.object({
+    page: Joi.number().min(1).required(),
+    limit: Joi.number().min(1).required(),
+    month: Joi.number().min(1).max(12).optional(),
+    year: Joi.number().min(2000).max(2100).optional(),
+    search: Joi.string().optional(),
   }),
 };

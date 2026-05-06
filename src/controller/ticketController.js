@@ -1,4 +1,10 @@
-const { USER, TICKET, TICKETACTIVITY } = require("../model/modelIndex");
+const mongoose = require("mongoose");
+const {
+  USER,
+  TICKET,
+  TICKETACTIVITY,
+  TICKETCOMMENT,
+} = require("../model/modelIndex");
 const { ROLES, TICKET_FILTER, TICKET_STATUS } = require("../utils/enum");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
@@ -7,6 +13,7 @@ const { getDayRange, dateSearchQuery } = require("../utils/dateFormat");
 
 const ALLOWED_ROLES = [
   ROLES.ADMIN,
+  ROLES.USER,
   ROLES.HR,
   ROLES.HR_RECRUITER,
   ROLES.PROJECT_MANAGER,
@@ -16,7 +23,7 @@ const ALLOWED_ROLES = [
 //========================== CREATE TICKET ==========================
 exports.createTicket = async (req, res, next) => {
   try {
-    const { _id: createdBy } = req.user;
+    const { _id: createdBy, role } = req.user;
     const { assignedTo } = req.body;
 
     const isAssigneeExists = await USER.findOne(
@@ -24,13 +31,24 @@ exports.createTicket = async (req, res, next) => {
       { role: 1 },
     );
 
-    if (!isAssigneeExists || !ALLOWED_ROLES.includes(isAssigneeExists.role)) {
-      throw new AppError(
-        !isAssigneeExists
-          ? "Assigned user not found"
-          : "You cannot assign ticket to this role",
-        !isAssigneeExists ? 404 : 400,
-      );
+    if (!isAssigneeExists) {
+      throw new AppError("Assigned user not found", 404);
+    }
+
+    const isPrivileged = [ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER].includes(
+      role,
+    );
+
+    // check login user's role
+    if (!isPrivileged) {
+      // check assigned user's role
+      if (![ROLES.HR].includes(isAssigneeExists.role)) {
+        throw new AppError("You can assign ticket only to HR", 403);
+      }
+    } else {
+      if (!ALLOWED_ROLES.includes(isAssigneeExists.role)) {
+        throw new AppError("You cannot assign ticket to this role", 400);
+      }
     }
 
     const files =
@@ -59,16 +77,27 @@ exports.createTicket = async (req, res, next) => {
 //========================== DISPLAY TICKET ==========================
 exports.getTickets = async (req, res, next) => {
   try {
-    const { _id: userId } = req.user;
+    const { _id: userId, role } = req.user;
     let { startDate, endDate, isArchived, filter = "All", search } = req.query;
     const _where = { isDeleted: false, isArchived: isArchived };
 
+    const roleConditions = {
+      [ROLES.ADMIN]: {}, // admin - all
+      [ROLES.HR]: { assignedTo: userId }, // HR - assigned only
+      default: {
+        $or: [{ createdBy: userId }, { assignedTo: userId }],
+      },
+    };
+    Object.assign(_where, roleConditions[role] || roleConditions.default);
+
     if (filter === TICKET_FILTER.MY_TICKETS) {
       _where.createdBy = userId;
+      delete _where.assignedTo;
+      delete _where.$or;
     } else if (filter === TICKET_FILTER.ASSIGNED_TO_ME) {
       _where.assignedTo = userId;
-    } else {
-      _where.$or = [{ createdBy: userId }, { assignedTo: userId }];
+      delete _where.createdBy;
+      delete _where.$or;
     }
 
     if (startDate && endDate) {
@@ -114,34 +143,86 @@ exports.getTickets = async (req, res, next) => {
 //========================== EDIT TICKET ==========================
 exports.updateTicket = async (req, res, next) => {
   try {
-    const { _id: userId } = req.user;
+    const { _id: userId, role } = req.user;
     const { id } = req.params;
     const payload = { ...req.body };
 
     const isTicketExists = await TICKET.findOne({ _id: id, isDeleted: false });
-
     if (!isTicketExists) {
       throw new AppError("Ticket not found with given id", 404);
     }
 
-    if (isTicketExists.createdBy.toString() !== userId.toString()) {
-      throw new AppError("Unauthorized", 403);
+    const isOwner = isTicketExists.createdBy.toString() === userId.toString();
+    const isAdmin = role === ROLES.ADMIN;
+    const isAssignee =
+      isTicketExists.assignedTo?.toString() === userId.toString();
+
+    if (!isAdmin && !isOwner && !isAssignee) {
+      throw new AppError("Not Authorize to Update Ticket", 403);
     }
 
-    // status update
-    if (payload.status) {
-      if (
-        isTicketExists.status === TICKET_STATUS.COMPLETED &&
-        payload.status !== TICKET_STATUS.TODO
+    const status = isTicketExists.status;
+    let allowedFields = [];
+
+    // role and status update rule
+    if (isAdmin || isAssignee) {
+      if (status === TICKET_STATUS.TODO || status === TICKET_STATUS.REOPEN) {
+        allowedFields = null; // full access
+      } else if (
+        [TICKET_STATUS.INPROGRESS, TICKET_STATUS.ONHOLD].includes(status)
       ) {
-        throw new AppError("You can only Reopen Ticket", 400);
+        allowedFields = ["assignedTo", "priority", "status"];
+      } else if (status === TICKET_STATUS.COMPLETED) {
+        allowedFields = ["status"];
+
+        if (
+          payload.status &&
+          ![TICKET_STATUS.COMPLETED, TICKET_STATUS.REOPEN].includes(
+            payload.status,
+          )
+        ) {
+          throw new AppError("Invalid status update for completed ticket", 400);
+        }
       }
-      if (
-        isTicketExists.status === TICKET_STATUS.TODO &&
-        payload.status !== TICKET_STATUS.TODO
+    } else if (isOwner) {
+      if (status === TICKET_STATUS.TODO || status === TICKET_STATUS.REOPEN) {
+        allowedFields = [
+          "title",
+          "dueDate",
+          "priority",
+          "content",
+          "attachFile",
+        ];
+      } else if (
+        [TICKET_STATUS.INPROGRESS, TICKET_STATUS.ONHOLD].includes(status)
       ) {
-        throw new AppError("Cannot change To Do status", 400);
+        allowedFields = ["priority"];
+      } else if (status === TICKET_STATUS.COMPLETED) {
+        allowedFields = ["status"];
+
+        if (payload.status !== TICKET_STATUS.REOPEN) {
+          throw new AppError("You can only reopen the ticket", 400);
+        }
       }
+    }
+
+    // update isArchived
+    if (
+      [TICKET_STATUS.TODO, TICKET_STATUS.ONHOLD, TICKET_STATUS.REOPEN].includes(
+        status,
+      )
+    ) {
+      if (allowedFields !== null && !allowedFields.includes("isArchived")) {
+        allowedFields.push("isArchived");
+      }
+    }
+
+    if (allowedFields !== null) {
+      Object.keys(payload).forEach((key) => {
+        if (!allowedFields.includes(key)) {
+          delete payload[key];
+        }
+      });
     }
 
     if (req.files?.length) {
@@ -226,23 +307,152 @@ exports.getTicketActivity = async (req, res, next) => {
 //========================== DELETE TICKET ==========================
 exports.deleteTicket = async (req, res, next) => {
   try {
+    const { _id: userId, role } = req.user;
     const { id } = req.params;
 
     const isTicketExists = await TICKET.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id");
+    });
 
-    if (!isTicketExists) {
-      throw new AppError("Ticket not found with given Id", 404);
+    if (!isTicketExists || isTicketExists.isArchived) {
+      throw new AppError(
+        !isTicketExists
+          ? "Ticket not found with given Id"
+          : "Archived ticket cannot be deleted",
+        !isTicketExists ? 404 : 400,
+      );
     }
 
-    await TICKET.updateOne(
-      { _id: id },
-      { $set: { isDeleted: true, deletedAt: new Date() } },
-    );
+    // owner , assignee , admin allowed
+    const isRoleAllowed =
+      isTicketExists.createdBy.toString() === userId.toString() ||
+      isTicketExists.assignedTo.toString() === userId.toString() ||
+      role === ROLES.ADMIN;
+
+    if (!isRoleAllowed) {
+      throw new AppError("Not authorized to delete ticket", 403);
+    }
+
+    if (
+      ![TICKET_STATUS.TODO, TICKET_STATUS.REOPEN].includes(
+        isTicketExists.status,
+      )
+    ) {
+      throw new AppError("Only ToDo or Reopen tickets can be deleted", 400);
+    }
+
+    //soft delete ticket related comment and it's activity
+    await Promise.all([
+      TICKET.updateOne(
+        { _id: id },
+        { $set: { isDeleted: true, deletedAt: new Date() } },
+      ),
+      TICKETCOMMENT.updateMany(
+        { ticketId: id, isDeleted: false },
+        { $set: { isDeleted: true, deletedAt: new Date() } },
+      ),
+      TICKETACTIVITY.updateMany(
+        { ticketId: id, isDeleted: false },
+        { $set: { isDeleted: true, deletedAt: new Date() } },
+      ),
+    ]);
 
     return successResponse(res, 200, "Ticket deleted successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+
+//========================== GET TICKET BY USER ID ==========================
+exports.getTicketByUserId = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const isUserExists = await USER.findOne({
+      _id: userId,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isUserExists) {
+      throw new AppError("User not found with given Id", 404);
+    }
+
+    const data = await TICKET.find({
+      isDeleted: false,
+      isArchived: false,
+      createdBy: userId,
+    })
+      .sort({ createdAt: -1 })
+      .populate([
+        { path: "assignedTo", select: "name", match: { isDeleted: false } },
+        { path: "createdBy", select: "name", match: { isDeleted: false } },
+      ])
+      .lean();
+
+    return successResponse(res, 200, "User tickets fetched", { data });
+  } catch (err) {
+    next(err);
+  }
+};
+
+//========================== UPDATE ASSIGNEE ==========================
+exports.updateAssignee = async (req, res, next) => {
+  try {
+    const { _id: userId } = req.user;
+    const { status, currentAssignee, newAssignee } = req.body;
+
+    // check current assignee exists
+    const isCurrentUserExists = await USER.findOne({
+      _id: currentAssignee,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isCurrentUserExists) {
+      throw new AppError("Current assignee not found", 404);
+    }
+
+    // check new assignee exists
+    const isNewUserExists = await USER.findOne({
+      _id: newAssignee,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isNewUserExists) {
+      throw new AppError("New assignee not found", 404);
+    }
+
+    // find tickets
+    const tickets = await TICKET.find({
+      status,
+      assignedTo: currentAssignee,
+      isDeleted: false,
+    }).select("_id assignedTo");
+
+    if (!tickets.length) {
+      throw new AppError("No tickets found for given criteria", 404);
+    }
+
+    const ticketIds = tickets.map((t) => t._id);
+
+    // update tickets
+    await TICKET.updateMany(
+      { _id: { $in: ticketIds } },
+      { $set: { assignedTo: newAssignee } },
+    );
+
+    // activity log
+    const activities = ticketIds.map((id) => ({
+      ticketId: id,
+      field: "assignedTo",
+      oldValue: currentAssignee,
+      newValue: newAssignee,
+      changedBy: userId,
+    }));
+
+    await TICKETACTIVITY.insertMany(activities);
+
+    return successResponse(res, 200, "Assignee updated successfully");
   } catch (err) {
     next(err);
   }
