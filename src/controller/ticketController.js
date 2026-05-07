@@ -38,7 +38,7 @@ exports.createTicket = async (req, res, next) => {
 
     // user - auto assign all HRs
     if (role === ROLES.USER) {
-      if (assignedTo) {
+      if (assignedTo.length) {
         throw new AppError("Not allowed to assign ticket manually", 403);
       }
       const hrUsers = await USER.find({
