@@ -11,6 +11,7 @@ const {
   getDrs,
   updateDrs,
   getNotFilledDrs,
+  getTeamNotFilledDrs,
 } = require("../controller/drsController");
 
 const {
@@ -18,6 +19,7 @@ const {
   getDrsValidation,
   updateDrsValidation,
   notFilledDrsValidation,
+  teamNotFilledDrsValidation,
 } = require("../validation/drsValidation");
 
 //==================== ADD DRS ===============================
@@ -56,6 +58,15 @@ router.get(
   authorizeRoles(ROLES.USER, ROLES.ADMIN),
   validate(notFilledDrsValidation),
   getNotFilledDrs,
+);
+
+//============== TEAM NOT FILLED DRS ROUTES ====================
+router.get(
+  "/team-not-filled",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
+  validate(teamNotFilledDrsValidation),
+  getTeamNotFilledDrs,
 );
 
 module.exports = router;

@@ -1,10 +1,10 @@
 const moment = require("moment-timezone");
-const { DRS, HOLIDAY } = require("../model/modelIndex");
+const { DRS, HOLIDAY, DRSFACTOR, TEAMS, USER } = require("../model/modelIndex");
 const { successResponse } = require("../utils/sucess");
-const { paginate } = require("../utils/pagination");
+const { paginate, paginateArray } = require("../utils/pagination");
 const { AppError } = require("../utils/error");
 const { getProjection } = require("../utils/projection");
-const { TIMEZONES } = require("../utils/enum");
+const { TIMEZONES, ROLES } = require("../utils/enum");
 const {
   getDayRange,
   getMonthRange,
@@ -12,11 +12,39 @@ const {
   formatDate,
 } = require("../utils/dateFormat");
 
+//================ TEAM MEMBER MAP HELPER =================
+const addTeamMembers = (teams, memberMap) => {
+  teams.forEach(({ members = [], projectManagers = [] }) => {
+    const pmIds = new Set(projectManagers.map((pm) => pm._id.toString()));
+
+    members.forEach((member) => {
+      const memberId = member._id.toString();
+      const existing = memberMap.get(memberId);
+      if (!existing) {
+        memberMap.set(memberId, {
+          member,
+          projectManagers: [...projectManagers],
+          pmIds,
+        });
+        return;
+      }
+
+      projectManagers.forEach((pm) => {
+        const pmId = pm._id.toString();
+        if (!existing.pmIds.has(pmId)) {
+          existing.pmIds.add(pmId);
+          existing.projectManagers.push(pm);
+        }
+      });
+    });
+  });
+};
+
 //======================= ADD DRS =================================
 exports.addDrs = async (req, res, next) => {
   try {
     const { _id: userId } = req.user;
-    const { date, onLeave, done, inProgress } = req.body;
+    const { date, onLeave, done, inProgress, factors = {} } = req.body;
 
     const { startOfDay } = getDayRange(date);
 
@@ -33,8 +61,25 @@ exports.addDrs = async (req, res, next) => {
       throw new AppError("Either 'done' or 'inProgress' is required", 400);
     }
 
+    // validate factors
+    const allowedFactors = await DRSFACTOR.find({
+      isDeleted: false,
+    }).select("criteria");
+
+    const allowedFactorSet = new Set(
+      allowedFactors.map((item) => item.criteria),
+    );
+
+    // can only send factors that admin created
+    for (const key of Object.keys(factors)) {
+      if (!allowedFactorSet.has(key)) {
+        throw new AppError(`${key} is not valid factor`, 400);
+      }
+    }
+
     const drs = await DRS.create({
       ...req.body,
+      factors,
       date: startOfDay,
       user: userId,
       createdBy: userId,
@@ -80,20 +125,24 @@ exports.getDrs = async (req, res, next) => {
         { inProgress: { $regex: search, $options: "i" } },
         { nextPlan: { $regex: search, $options: "i" } },
       ];
-      // number search
+      // number search from factor
       if (!isNaN(search)) {
         const num = Number(search);
-        searchConditions.push(
-          { billableHours: num },
-          { nonBillableHours: num },
-          { projectsWorkedOn: num },
-          { estimationsGiven: num },
-          { interviewsGiven: num },
-          { interviewsCracked: num },
-          { bugSolvingHours: num },
-          { meetingsAttended: num },
-        );
+        searchConditions.push({
+          $expr: {
+            $in: [
+              num,
+              {
+                $map: {
+                  input: { $objectToArray: "$factors" },
+                  in: "$$this.v",
+                },
+              },
+            ],
+          },
+        });
       }
+
       // date search (YYYY-MM-DD)
       const dateQuery = dateSearchQuery("date", search);
       if (dateQuery) {
@@ -203,6 +252,185 @@ exports.getNotFilledDrs = async (req, res, next) => {
 
     return successResponse(res, 200, "Not filled DRS fetched", {
       data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//================ TEAM NOT FILLED DRS =================
+exports.getTeamNotFilledDrs = async (req, res, next) => {
+  try {
+    const { page, limit, month, year } = req.query;
+    const { _id: userId, role } = req.user;
+
+    const now = moment.tz(TIMEZONES.INDIA).subtract(1, "day");
+    const selectedMonth = Number(month) || now.month() + 1;
+    const selectedYear = Number(year) || now.year();
+    const { startOfMonth, endOfMonth } = getMonthRange(
+      selectedYear,
+      selectedMonth,
+    );
+    const endDate = endOfMonth > now.toDate() ? now.toDate() : endOfMonth;
+    const memberMap = new Map();
+
+    //================ TEAM PIPELINE =================
+    const teamMatch = { isDeleted: false };
+
+    if (role === ROLES.PROJECT_MANAGER) {
+      teamMatch.projectManagers = userId;
+    }
+    if (role === ROLES.TEAM_LEAD) {
+      teamMatch.teamLeaders = userId;
+    }
+
+    const teamPipeline = [
+      { $match: teamMatch },
+      {
+        $lookup: {
+          from: "users",
+          localField: "members",
+          foreignField: "_id",
+          pipeline: [
+            {
+              $match: {
+                isDeleted: false,
+                status: "active",
+                isLeft: false,
+                drsRequired: true,
+                role: ROLES.USER,
+              },
+            },
+            {
+              $project: {
+                name: 1,
+                profilePicture: 1,
+              },
+            },
+          ],
+          as: "members",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "projectManagers",
+          foreignField: "_id",
+          pipeline: [
+            {
+              $project: {
+                name: 1,
+              },
+            },
+          ],
+          as: "projectManagers",
+        },
+      },
+    ];
+
+    const teams = await TEAMS.aggregate(teamPipeline);
+
+    //================ IF ADMIN LOGIN  =================
+    if (role === ROLES.ADMIN) {
+      const employees = await USER.find({
+        isDeleted: false,
+        status: "active",
+        isLeft: false,
+        drsRequired: true,
+        role: {
+          $in: [ROLES.USER, ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD],
+        },
+      })
+        .select("name profilePicture")
+        .lean();
+
+      employees.forEach((member) => {
+        memberMap.set(member._id.toString(), {
+          member,
+          projectManagers: [],
+          pmIds: new Set(),
+        });
+      });
+    }
+
+    if (teams.length) {
+      addTeamMembers(teams, memberMap);
+    }
+
+    const memberIds = [...memberMap.keys()];
+
+    if (!memberIds.length) {
+      return successResponse(res, 200, "No employee found");
+    }
+
+    // MISSING DRS
+    const [drsList, holidays] = await Promise.all([
+      DRS.find({
+        user: { $in: memberIds },
+        isDeleted: false,
+        date: { $gte: startOfMonth, $lte: endDate },
+      }).lean(),
+
+      HOLIDAY.find({
+        isDeleted: false,
+        holidayDate: { $gte: startOfMonth, $lte: endDate },
+      }).lean(),
+    ]);
+
+    const holidaySet = new Set(
+      holidays.map((holiday) => formatDate(holiday.holidayDate)),
+    );
+
+    const drsMap = new Map();
+    drsList.forEach((drs) => {
+      const memberId = drs.user.toString();
+      if (!drsMap.has(memberId)) {
+        drsMap.set(memberId, new Map());
+      }
+      drsMap.get(memberId).set(formatDate(drs.date), drs);
+    });
+
+    const result = memberIds.reduce((acc, memberId) => {
+      const { member, projectManagers = [] } = memberMap.get(memberId);
+      const userDrs = drsMap.get(memberId) || new Map();
+      const missingDates = [];
+      const current = moment(startOfMonth);
+
+      while (current.toDate() <= endDate) {
+        const date = formatDate(current.toDate());
+        if (current.day() !== 0 && !holidaySet.has(date)) {
+          const record = userDrs.get(date);
+          if (
+            !record ||
+            !(
+              record.done?.trim() ||
+              record.inProgress?.trim() ||
+              record.nextPlan?.trim()
+            )
+          ) {
+            missingDates.push(date);
+          }
+        }
+        current.add(1, "day");
+      }
+
+      if (missingDates.length) {
+        acc.push({
+          userId: member._id,
+          employeeName: member.name,
+          profileImage: member.profilePicture || "",
+          projectManagers,
+          dates: missingDates,
+          totalDays: missingDates.length,
+        });
+      }
+      return acc;
+    }, []);
+
+    const { data, pagination } = paginateArray(result, page, limit);
+    return successResponse(res, 200, "Team not filled DRS fetched", {
+      data,
+      pagination,
     });
   } catch (error) {
     next(error);

@@ -12,14 +12,11 @@ const drsSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    billableHours: { type: Number, default: 0 },
-    nonBillableHours: { type: Number, default: 0 },
-    projectsWorkedOn: { type: Number, default: 0 },
-    estimationsGiven: { type: Number, default: 0 },
-    interviewsGiven: { type: Number, default: 0 },
-    interviewsCracked: { type: Number, default: 0 },
-    bugSolvingHours: { type: Number, default: 0 },
-    meetingsAttended: { type: Number, default: 0 },
+    factors: {
+      type: Map,
+      of: Number,
+      default: {},
+    },
     notes: { type: String, default: "" },
     done: { type: String, default: "" },
     inProgress: { type: String, default: "" },
@@ -32,7 +29,6 @@ const drsSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
     },
-
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
@@ -50,24 +46,29 @@ drsSchema.set("toJSON", {
     if (ret.date) {
       ret.date = formatDate(ret.date);
     }
+    if (ret.factors instanceof Map) {
+      ret.factors = Object.fromEntries(ret.factors);
+    }
     return ret;
   },
 });
 
 drsSchema.pre("save", function () {
   if (this.onLeave) {
-    // if on leave all numbers = 0
-    this.billableHours = 0;
-    this.nonBillableHours = 0;
+    // if on leave - all factor values = 0
+    const updatedFactors = {};
+    if (this.factors) {
+      const factorEntries =
+        this.factors instanceof Map
+          ? this.factors.entries()
+          : Object.entries(this.factors);
 
-    this.interviewsGiven = 0;
-    this.interviewsCracked = 0;
+      for (const [key] of factorEntries) {
+        updatedFactors[key] = 0;
+      }
+    }
 
-    this.bugSolvingHours = 0;
-    this.meetingsAttended = 0;
-
-    this.projectsWorkedOn = 0;
-    this.estimationsGiven = 0;
+    this.factors = updatedFactors;
 
     // all strings - on leave
     this.notes = "On Leave";

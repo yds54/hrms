@@ -32,20 +32,11 @@ exports.drsValidation = {
         "string.pattern.base": "Date must be in YYYY-MM-DD format",
       }),
 
-    billableHours: Joi.number().min(0).max(24).default(0),
-    nonBillableHours: Joi.number().min(0).max(24).default(0),
-
-    projectsWorkedOn: Joi.number().min(0).default(0),
-    estimationsGiven: Joi.number().min(0).default(0),
-
-    interviewsGiven: Joi.number().min(0).default(0),
-    interviewsCracked: Joi.number().min(0).default(0),
-
-    bugSolvingHours: Joi.number().min(0).max(24).default(0),
-    meetingsAttended: Joi.number().min(0).default(0),
+    factors: Joi.object()
+      .pattern(Joi.string(), Joi.number().min(0))
+      .default({}),
 
     onLeave: Joi.boolean().default(false),
-
     notes: Joi.string().allow("", null),
     done: Joi.string().allow("", null),
     inProgress: Joi.string().allow("", null),
@@ -84,20 +75,8 @@ exports.updateDrsValidation = {
   }),
 
   body: Joi.object({
-    billableHours: Joi.number().min(0).max(24),
-    nonBillableHours: Joi.number().min(0).max(24),
-
-    projectsWorkedOn: Joi.number().min(0),
-    estimationsGiven: Joi.number().min(0),
-
-    interviewsGiven: Joi.number().min(0),
-    interviewsCracked: Joi.number().min(0),
-
-    bugSolvingHours: Joi.number().min(0).max(24),
-    meetingsAttended: Joi.number().min(0),
-
+    factors: Joi.object().pattern(Joi.string(), Joi.number().min(0)),
     onLeave: Joi.boolean(),
-
     notes: Joi.string().allow("", null),
     done: Joi.string().allow("", null),
     inProgress: Joi.string().allow("", null),
@@ -124,6 +103,16 @@ exports.updateDrsValidation = {
 //=================== NOT FILLED DRS VALIDATION ================
 exports.notFilledDrsValidation = {
   query: Joi.object({
+    month: Joi.number().min(1).max(12).optional(),
+    year: Joi.number().min(2000).max(2100).optional(),
+  }),
+};
+
+//=================== TEAM NOT FILLED DRS VALIDATION ================
+exports.teamNotFilledDrsValidation = {
+  query: Joi.object({
+    page: Joi.number().integer().min(1).default(1).required(),
+    limit: Joi.number().integer().min(1).max(100).default(10).required(),
     month: Joi.number().min(1).max(12).optional(),
     year: Joi.number().min(2000).max(2100).optional(),
   }),

@@ -407,14 +407,19 @@
                 "date": {
                   "example": "2026-03-01"
                 },
-                "billableHours": { "type": "number", "example": 6 },
-                "nonBillableHours": { "type": "number", "example": 2 },
-                "projectsWorkedOn": { "type": "number", "example": 1 },
-                "estimationsGiven": { "type": "number", "example": 2 },
-                "interviewsGiven": { "type": "number", "example": 1 },
-                "interviewsCracked": { "type": "number", "example": 0 },
-                "bugSolvingHours": { "type": "number", "example": 2 },
-                "meetingsAttended": { "type": "number", "example": 3 },
+                "factors": {
+                  "type": "object",
+                  "example": {
+                    "billableHours": 4,
+                    "nonBillableHours": 1,
+                    "projectsWorkedOn": 1,
+                    "estimationsGiven": 2,
+                    "interviewsGiven": 1,
+                    "interviewsCracked": 0,
+                    "bugSolvingHours": 2,
+                    "meetingsAttended": 2
+                  }
+                },
                 "onLeave": {
                   "example": "false"
                 },
@@ -504,14 +509,19 @@
             "schema": {
               "type": "object",
               "properties": {
-                "billableHours": { "type": "number", "example": 6 },
-                "nonBillableHours": { "type": "number", "example": 2 },
-                "projectsWorkedOn": { "type": "number", "example": 1 },
-                "estimationsGiven": { "type": "number", "example": 2 },
-                "interviewsGiven": { "type": "number", "example": 1 },
-                "interviewsCracked": { "type": "number", "example": 0 },
-                "bugSolvingHours": { "type": "number", "example": 2 },
-                "meetingsAttended": { "type": "number", "example": 3 },
+                "factors": {
+                  "type": "object",
+                  "example": {
+                    "billableHours": 4,
+                    "nonBillableHours": 1,
+                    "projectsWorkedOn": 1,
+                    "estimationsGiven": 2,
+                    "interviewsGiven": 1,
+                    "interviewsCracked": 0,
+                    "bugSolvingHours": 2,
+                    "meetingsAttended": 2
+                  }
+                },
                 "notes": {
                   "type": "string",
                   "example": "Worked on API integration"
@@ -545,6 +555,41 @@
         "tags": ["Drs"],
         "description": "GET NOT FILLED DRS",
         "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "type": "string",
+            "description": "04"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "string",
+            "description": "2026"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/drs/team-not-filled": {
+      "get": {
+        "tags": ["Drs"],
+        "description": "GET TEAM NOT FILLED DRS",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
           {
             "name": "month",
             "in": "query",
@@ -1710,8 +1755,12 @@
           {
             "name": "assignedTo",
             "in": "formData",
-            "type": "string",
-            "example": "69c60ceb1271716ecbac38a3"
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi",
+            "description": "Multiple assignee user ids"
           },
           {
             "name": "dueDate",

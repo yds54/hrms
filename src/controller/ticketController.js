@@ -24,29 +24,53 @@ const ALLOWED_ROLES = [
 exports.createTicket = async (req, res, next) => {
   try {
     const { _id: createdBy, role } = req.user;
-    const { assignedTo } = req.body;
-
-    const isAssigneeExists = await USER.findOne(
-      { _id: assignedTo, isDeleted: false },
-      { role: 1 },
-    );
-
-    if (!isAssigneeExists) {
-      throw new AppError("Assigned user not found", 404);
-    }
+    let { assignedTo } = req.body;
 
     const isPrivileged = [ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER].includes(
       role,
     );
 
-    // check login user's role
+    assignedTo = Array.isArray(assignedTo)
+      ? assignedTo
+      : assignedTo
+        ? [assignedTo]
+        : [];
+
+    // user - auto assign all HRs
+    if (role === ROLES.USER) {
+      if (assignedTo) {
+        throw new AppError("Not allowed to assign ticket manually", 403);
+      }
+      const hrUsers = await USER.find({
+        role: ROLES.HR,
+        isDeleted: false,
+      }).select("_id");
+      if (!hrUsers.length) {
+        throw new AppError("No HR found", 404);
+      }
+      assignedTo = hrUsers.map((user) => user._id);
+    }
+
+    const assignees = await USER.find({
+      _id: { $in: assignedTo },
+      isDeleted: false,
+    }).select("role");
+
+    if (assignees.length !== assignedTo.length) {
+      throw new AppError("Some Assigned user not found", 404);
+    }
+
     if (!isPrivileged) {
-      // check assigned user's role
-      if (![ROLES.HR].includes(isAssigneeExists.role)) {
+      const allHr = assignees.every((user) => user.role === ROLES.HR);
+      if (!allHr) {
         throw new AppError("You can assign ticket only to HR", 403);
       }
     } else {
-      if (!ALLOWED_ROLES.includes(isAssigneeExists.role)) {
+      const validRoles = assignees.every((user) =>
+        ALLOWED_ROLES.includes(user.role),
+      );
+
+      if (!validRoles) {
         throw new AppError("You cannot assign ticket to this role", 400);
       }
     }
@@ -56,6 +80,7 @@ exports.createTicket = async (req, res, next) => {
 
     const ticket = await TICKET.create({
       ...req.body,
+      assignedTo,
       attachFile: files,
       createdBy,
     });
