@@ -1,5 +1,5 @@
 const moment = require("moment-timezone");
-const { LEAVE } = require("../model/modelIndex");
+const { LEAVE, TEAMS } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 const { paginate } = require("../utils/pagination");
@@ -241,6 +241,17 @@ exports.updateLeaveRequest = async (req, res, next) => {
       throw new AppError("You are not Authorize to Approve Leave", 403);
     }
 
+    if (role === ROLES.PROJECT_MANAGER) {
+      const isTeamMember = await TEAMS.exists({
+        isDeleted: false,
+        projectManagers: userId,
+        members: isLeaveExists.user,
+      });
+      if (!isTeamMember) {
+        throw new AppError("You can approve only your team member leave", 403);
+      }
+    }
+
     if (role === ROLES.PROJECT_MANAGER && payload.isHRApproved) {
       throw new AppError("PM have not authorize to HR approval", 403);
     }
@@ -299,6 +310,136 @@ exports.deleteLeaveRequest = async (req, res, next) => {
     );
 
     return successResponse(res, 200, "Leave Request deleted Sucessfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+//===================== TEAM LEAVE REQUESTS (PM) ============================
+exports.getTeamLeaveRequests = async (req, res, next) => {
+  try {
+    const { _id: userId, role } = req.user;
+    let { page, limit, search, pmFilter, hrFilter, year, filter } = req.query;
+
+    if (role !== ROLES.PROJECT_MANAGER) {
+      throw new AppError("Only PM can access team leave requests", 403);
+    }
+
+    // -------- get team members --------
+    const teams = await TEAMS.find({
+      isDeleted: false,
+      projectManagers: userId,
+    })
+      .select("members")
+      .lean();
+
+    const memberIdsSet = new Set();
+    for (const team of teams) {
+      for (const memberId of team.members || []) {
+        memberIdsSet.add(memberId.toString());
+      }
+    }
+    const memberIds = [...memberIdsSet];
+
+    if (!memberIds.length) {
+      return successResponse(res, 200, "No team members found");
+    }
+
+    const _where = {
+      isDeleted: false,
+      user: { $in: memberIds },
+    };
+
+    const conditions = [];
+
+    // -------- search filed --------
+    if (search) {
+      const fields = ["reasonType", "reason", "numberOfDays", "declineReason"];
+      const searchCondition = fields.map((field) => ({
+        [field]: { $regex: search, $options: "i" },
+      }));
+      const dateQuery = dateSearchQuery("date", search);
+      const fromDateQuery = dateSearchQuery("fromDate", search);
+      if (dateQuery) searchCondition.push(dateQuery);
+      if (fromDateQuery) searchCondition.push(fromDateQuery);
+      _where.$and = [{ $or: searchCondition }];
+    }
+
+    // -------- filter year --------
+    if (year) {
+      const start = new Date(`${year}-01-01T00:00:00.000Z`);
+      const end = new Date(`${year}-12-31T23:59:59.999Z`);
+      conditions.push({
+        $or: [
+          { date: { $gte: start, $lte: end } },
+          {
+            fromDate: { $lte: end },
+            toDate: { $gte: start },
+          },
+        ],
+      });
+    }
+
+    // -------- filter month  --------
+    if (filter) {
+      const monthIndex = moment(filter, "MMMM", true).month();
+      if (!isNaN(monthIndex)) {
+        const { startOfMonth, endOfMonth } = getMonthRange(
+          new Date().getFullYear(),
+          monthIndex + 1,
+        );
+        conditions.push({
+          $or: [
+            { date: { $gte: startOfMonth, $lte: endOfMonth } },
+            {
+              fromDate: { $lte: endOfMonth },
+              toDate: { $gte: startOfMonth },
+            },
+          ],
+        });
+      }
+    }
+
+    // -------- PM filter --------
+    if (pmFilter && pmFilter !== "All") {
+      conditions.push({
+        isPMApproved: pmFilter,
+      });
+    }
+
+    // -------- HR filter --------
+    if (hrFilter && hrFilter !== "All") {
+      conditions.push({
+        isHRApproved: hrFilter,
+      });
+    }
+
+    if (conditions.length) {
+      _where.$and = _where.$and ? [..._where.$and, ...conditions] : conditions;
+    }
+
+    const { data, pagination } = await paginate({
+      model: LEAVE,
+      query: _where,
+      page,
+      limit,
+      sort: { createdAt: -1 },
+      populate: [
+        {
+          path: "user",
+          select: "profilePicture employeeCode name",
+          match: {
+            isDeleted: false,
+          },
+          options: { lean: true },
+        },
+      ],
+    });
+
+    return successResponse(res, 200, "Team leave requests fetched", {
+      data,
+      pagination,
+    });
   } catch (error) {
     next(error);
   }

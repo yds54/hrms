@@ -727,6 +727,62 @@
         }
       }
     },
+    "/api/leaveRequest/team-leave-request": {
+      "get": {
+        "tags": ["Leave Request"],
+        "description": "LEAVE REQUEST HISTORY",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "number",
+            "description": "2026"
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "type": "string",
+            "description": "Single Day | Multiple Day | Half Day | March ..."
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "description": "Sick Leave | Casual Leave etc.."
+          },
+          {
+            "name": "pmFilter",
+            "in": "query",
+            "type": "string",
+            "description": "Pending | Approved | Declined"
+          },
+          {
+            "name": "hrFilter",
+            "in": "query",
+            "type": "string",
+            "description": "Pending | Approved | Declined"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leave history fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
 
     "/api/users/": {
       "get": {

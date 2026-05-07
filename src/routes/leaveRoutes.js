@@ -10,6 +10,7 @@ const {
   getLeaveHistory,
   updateLeaveRequest,
   deleteLeaveRequest,
+  getTeamLeaveRequests,
 } = require("../controller/leaveController");
 
 const {
@@ -17,6 +18,7 @@ const {
   getLeaveHistoryValidation,
   updateLeaveValidation,
   deleteLeaveValidation,
+  teamLeaveRequestValidation,
 } = require("../validation/leaveValidation");
 
 //======================= SEND LEAVE REQUEST =================================
@@ -35,6 +37,15 @@ router.get(
   authorizeRoles(ROLES.USER, ROLES.ADMIN),
   validate(getLeaveHistoryValidation),
   getLeaveHistory,
+);
+
+//===================== DISPLAY TEAM LEAVE REQUEST HISTORY ============================
+router.get(
+  "/team-leave-request",
+  authenticateJWT,
+  authorizeRoles(ROLES.PROJECT_MANAGER),
+  validate(teamLeaveRequestValidation),
+  getTeamLeaveRequests,
 );
 
 //==================== UPDATE LEAVE REQUEST ==========================
