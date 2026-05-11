@@ -318,12 +318,8 @@ exports.deleteLeaveRequest = async (req, res, next) => {
 //===================== TEAM LEAVE REQUESTS (PM) ============================
 exports.getTeamLeaveRequests = async (req, res, next) => {
   try {
-    const { _id: userId, role } = req.user;
+    const { _id: userId } = req.user;
     let { page, limit, search, pmFilter, hrFilter, year, filter } = req.query;
-
-    if (role !== ROLES.PROJECT_MANAGER) {
-      throw new AppError("Only PM can access team leave requests", 403);
-    }
 
     // -------- get team members --------
     const teams = await TEAMS.find({
