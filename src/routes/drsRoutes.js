@@ -42,24 +42,6 @@ router.get(
   getDrs,
 );
 
-//=================== DISPLAY DRS BY USER ID (ADMIN,PM) =========================
-router.get(
-  "/:userId",
-  authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.PROJECT_MANAGER),
-  validate(getDrsByUserIdValidation),
-  getDrsByUserId,
-);
-
-//======================== EDIT DRS =============================
-router.put(
-  "/:id",
-  authenticateJWT,
-  authorizeRoles(...Object.values(ROLES)),
-  validate(updateDrsValidation),
-  updateDrs,
-);
-
 //============== NOT FILLED DRS ROUTES ====================
 router.get(
   "/not-filled",
@@ -81,6 +63,24 @@ router.get(
   ),
   validate(teamNotFilledDrsValidation),
   getTeamNotFilledDrs,
+);
+
+//=================== DISPLAY DRS BY USER ID (ADMIN,PM) =========================
+router.get(
+  "/:userId",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.PROJECT_MANAGER),
+  validate(getDrsByUserIdValidation),
+  getDrsByUserId,
+);
+
+//======================== EDIT DRS =============================
+router.put(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(...Object.values(ROLES)),
+  validate(updateDrsValidation),
+  updateDrs,
 );
 
 module.exports = router;
