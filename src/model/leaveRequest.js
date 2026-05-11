@@ -56,9 +56,21 @@ const leaveRequestSchema = new mongoose.Schema(
       enum: Object.values(LEAVE_STATUS),
       default: LEAVE_STATUS.PENDING,
     },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
+    declined: {
+      type: Boolean,
+      default: false,
+    },
     declineReason: {
       type: String,
       default: "",
+    },
+    declinedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
     },
     totalDays: {
       type: Number,
@@ -68,6 +80,7 @@ const leaveRequestSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    deletedAt: { type: Date },
   },
   {
     timestamps: true,

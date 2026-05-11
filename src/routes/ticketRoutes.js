@@ -11,6 +11,8 @@ const {
   updateTicket,
   deleteTicket,
   getTicketActivity,
+  getTicketByUserId,
+  updateAssignee,
 } = require("../controller/ticketController");
 
 const {
@@ -19,13 +21,15 @@ const {
   updateTicketValidation,
   deleteTicketValidation,
   getTicketActivityValidation,
+  getTicketByUserIdValidation,
+  updateAssigneeValidation,
 } = require("../validation/ticketValidation");
 
 //========================== CREATE TICKET ==========================
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   upload("tickets").array("attachFile", 5),
   validate(createTicketValidation),
   createTicket,
@@ -35,7 +39,7 @@ router.post(
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   validate(getTicketValidation),
   getTickets,
 );
@@ -44,16 +48,25 @@ router.get(
 router.get(
   "/:ticketId/activity",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   validate(getTicketActivityValidation),
   getTicketActivity,
+);
+
+//========================== UPDATE ASSIGNEE ==========================
+router.put(
+  "/update-assignee",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  validate(updateAssigneeValidation),
+  updateAssignee,
 );
 
 //========================== EDIT TICKET ==========================
 router.put(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   upload("tickets", {
     useUserFolder: true,
     useTimestamp: true,
@@ -66,9 +79,18 @@ router.put(
 router.delete(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   validate(deleteTicketValidation),
   deleteTicket,
+);
+
+//========================== GET TICKET BY USER ID ==========================
+router.get(
+  "/user/:userId",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  validate(getTicketByUserIdValidation),
+  getTicketByUserId,
 );
 
 module.exports = router;

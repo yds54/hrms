@@ -10,18 +10,20 @@ const { ROLES } = require("../utils/enum");
 const {
   createComment,
   getComments,
+  deleteComment,
 } = require("../controller/ticketCommentController");
 
 const {
   createCommentValidation,
   getCommentValidation,
+  deleteCommentValidation,
 } = require("../validation/ticketCommentValidation");
 
 //================ CREATE COMMENT =================
 router.post(
   "/:ticketId/comment",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   upload("tickets", {
     useUserFolder: true,
     useTimestamp: true,
@@ -34,9 +36,18 @@ router.post(
 router.get(
   "/:ticketId/comments",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   validate(getCommentValidation),
   getComments,
+);
+
+//================ DELETE COMMENT =================
+router.delete(
+  "/comment/:commentId",
+  authenticateJWT,
+  authorizeRoles(...Object.values(ROLES)),
+  validate(deleteCommentValidation),
+  deleteComment,
 );
 
 module.exports = router;

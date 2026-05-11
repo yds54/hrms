@@ -8,11 +8,15 @@ const { ROLES } = require("../utils/enum");
 const {
   createLeaveRequest,
   getLeaveHistory,
+  updateLeaveRequest,
+  deleteLeaveRequest,
 } = require("../controller/leaveController");
 
 const {
   createLeaveValidation,
   getLeaveHistoryValidation,
+  updateLeaveValidation,
+  deleteLeaveValidation,
 } = require("../validation/leaveValidation");
 
 //======================= SEND LEAVE REQUEST =================================
@@ -28,9 +32,27 @@ router.post(
 router.get(
   "/history",
   authenticateJWT,
-  authorizeRoles(ROLES.USER,ROLES.ADMIN),
+  authorizeRoles(ROLES.USER, ROLES.ADMIN),
   validate(getLeaveHistoryValidation),
   getLeaveHistory,
+);
+
+//==================== UPDATE LEAVE REQUEST ==========================
+router.put(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER),
+  validate(updateLeaveValidation),
+  updateLeaveRequest,
+);
+
+//==================== DELETE LEAVE REQUEST =====================
+router.delete(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN),
+  validate(deleteLeaveValidation),
+  deleteLeaveRequest,
 );
 
 module.exports = router;

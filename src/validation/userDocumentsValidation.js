@@ -7,15 +7,15 @@ exports.addUserDocumentsValidation = {
     documentsTakenDate: Joi.date().required(),
 
     offerLetter: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     appointmentLetter: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     tenthMarksheet: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     twelfthOrDiplomaType: Joi.string()
@@ -24,20 +24,20 @@ exports.addUserDocumentsValidation = {
       .allow(null, ""),
 
     twelfthOrDiplomaMarksheet: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     bachelorsCertificate: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     mastersDegreeMarksheet: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     panCard: Joi.object({
-      panNumber: Joi.string().allow("", null),
-      remark: Joi.string().allow("", null),
+      panNumber: Joi.string().allow(null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     otherDocuments: Joi.alternatives()
@@ -45,7 +45,7 @@ exports.addUserDocumentsValidation = {
         Joi.array().items(
           Joi.object({
             documentName: Joi.string().required(),
-            remark: Joi.string().allow("", null),
+            remark: Joi.string().allow(null),
           }),
         ),
         Joi.string(),
@@ -63,15 +63,15 @@ exports.updateUserDocumentsValidation = {
     documentsTakenDate: Joi.date().optional(),
 
     offerLetter: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     appointmentLetter: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     tenthMarksheet: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     twelfthOrDiplomaType: Joi.string()
@@ -80,20 +80,20 @@ exports.updateUserDocumentsValidation = {
       .allow(null, ""),
 
     twelfthOrDiplomaMarksheet: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     bachelorsCertificate: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     mastersDegreeMarksheet: Joi.object({
-      remark: Joi.string().allow("", null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     panCard: Joi.object({
-      panNumber: Joi.string().allow("", null),
-      remark: Joi.string().allow("", null),
+      panNumber: Joi.string().allow(null),
+      remark: Joi.string().allow(null),
     }).optional(),
 
     otherDocuments: Joi.alternatives()
@@ -101,7 +101,7 @@ exports.updateUserDocumentsValidation = {
         Joi.array().items(
           Joi.object({
             documentName: Joi.string().required(),
-            remark: Joi.string().allow("", null),
+            remark: Joi.string().allow(null),
           }),
         ),
         Joi.string(),

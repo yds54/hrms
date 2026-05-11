@@ -73,4 +73,14 @@ const paginate = async ({
   };
 };
 
-module.exports = { paginate };
+const paginateArray = (data = [], page = 1, limit = 10) => {
+  const totalrecords = data.length;
+  const totalpages = Math.max(1, Math.ceil(totalrecords / limit));
+  page = Math.min(page, totalpages);
+  return {
+    data: data.slice((page - 1) * limit, page * limit),
+    pagination: { totalpages, totalrecords },
+  };
+};
+
+module.exports = { paginate, paginateArray };

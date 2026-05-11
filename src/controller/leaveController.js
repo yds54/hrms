@@ -4,7 +4,12 @@ const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 const { paginate } = require("../utils/pagination");
 const { getProjection } = require("../utils/projection");
-const { LEAVE_DAY_TYPE, LEAVE_DURATION } = require("../utils/enum");
+const {
+  LEAVE_DAY_TYPE,
+  LEAVE_DURATION,
+  ROLES,
+  LEAVE_STATUS,
+} = require("../utils/enum");
 const {
   getDayRange,
   getMonthRange,
@@ -103,9 +108,12 @@ exports.createLeaveRequest = async (req, res, next) => {
 //===================== LEAVE REQUEST HISTORY ============================
 exports.getLeaveHistory = async (req, res, next) => {
   try {
-    const { _id: userId } = req.user;
-    let { page, limit, year, filter, search } = req.query;
-    const _where = { user: userId, isDeleted: false };
+    const { _id: userId, role } = req.user;
+    let { page, limit, year, filter, search, pmFilter, hrFilter } = req.query;
+    const _where = { isDeleted: false };
+    if (![ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER].includes(role)) {
+      _where.user = userId;
+    }
     const conditions = [];
 
     //search
@@ -171,8 +179,26 @@ exports.getLeaveHistory = async (req, res, next) => {
       }
     }
 
+    //PM filter
+    if (pmFilter && [ROLES.ADMIN, ROLES.PROJECT_MANAGER].includes(role)) {
+      if (pmFilter !== "All") {
+        conditions.push({
+          isPMApproved: pmFilter,
+        });
+      }
+    }
+
+    //HR filter
+    if (hrFilter && [ROLES.ADMIN, ROLES.HR].includes(role)) {
+      if (hrFilter !== "All") {
+        conditions.push({
+          isHRApproved: hrFilter,
+        });
+      }
+    }
+
     if (conditions.length) {
-      _where.$and = conditions;
+      _where.$and = _where.$and ? [..._where.$and, ...conditions] : conditions;
     }
 
     const { data, pagination } = await paginate({
@@ -181,12 +207,98 @@ exports.getLeaveHistory = async (req, res, next) => {
       page,
       limit,
       sort: { createdAt: -1 },
+      populate: [
+        {
+          path: "user",
+          select: "profilePicture employeeCode name",
+          match: { isDeleted: false },
+          options: { lean: true },
+        },
+      ],
       select: getProjection(),
     });
     return successResponse(res, 200, "Leave history fetched", {
       data,
       pagination,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//======================== LEAVE REQUEST APPROVE ==========================
+exports.updateLeaveRequest = async (req, res, next) => {
+  try {
+    const { _id: userId, role } = req.user;
+    const { id } = req.params;
+    const payload = { ...req.body };
+
+    const isLeaveExists = await LEAVE.findOne({ _id: id, isDeleted: false });
+    if (!isLeaveExists)
+      throw new AppError("Leave not found with given Id", 404);
+
+    if (![ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER].includes(role)) {
+      throw new AppError("You are not Authorize to Approve Leave", 403);
+    }
+
+    if (role === ROLES.PROJECT_MANAGER && payload.isHRApproved) {
+      throw new AppError("PM have not authorize to HR approval", 403);
+    }
+
+    //--------------- Decline ---------------
+    // if decline reason is required
+    if (
+      payload.isPMApproved === LEAVE_STATUS.DECLINED ||
+      payload.isHRApproved === LEAVE_STATUS.DECLINED
+    ) {
+      if (!payload.declineReason) {
+        throw new AppError("Decline reason is required", 400);
+      }
+      payload.declined = true;
+      payload.declinedBy = userId;
+    }
+
+    // if pmapproved - declined , hrapproved auto - declined
+    if (payload.isPMApproved === LEAVE_STATUS.DECLINED) {
+      payload.isHRApproved = LEAVE_STATUS.DECLINED;
+    }
+
+    //--------------- Approve ----------------
+    //if hrapproved - approved , pmapproved auto - approved
+    if (
+      [ROLES.ADMIN, ROLES.HR].includes(role) &&
+      payload.isHRApproved === LEAVE_STATUS.APPROVED
+    ) {
+      payload.isPMApproved = LEAVE_STATUS.APPROVED;
+      payload.approvedBy = userId;
+    }
+
+    await LEAVE.updateOne({ _id: id }, { $set: payload });
+    return successResponse(res, 200, "Leave updated successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+
+//======================== DELETE LEAVE REQUEST ===============================
+exports.deleteLeaveRequest = async (req, res, next) => {
+  try {
+    const { id: leaveId } = req.params;
+
+    const isLeaveExists = await LEAVE.findOne({
+      _id: leaveId,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isLeaveExists)
+      throw new AppError("Leave Request not found with given Id", 404);
+
+    await LEAVE.updateOne(
+      { _id: leaveId },
+      { $set: { isDeleted: true, deletedAt: new Date() } },
+    );
+
+    return successResponse(res, 200, "Leave Request deleted Sucessfully");
   } catch (error) {
     next(error);
   }

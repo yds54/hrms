@@ -20,3 +20,6 @@ exports.TICKETACTIVITY = require("./ticketActivity");
 exports.USER_DOCUMENT = require("./userDocuments");
 exports.PROJECTS = require("./project");
 exports.TEAMS = require("./teams");
+exports.EVALUATIONCRITERIA = require("./evaluationCriteria");
+exports.DRSFACTOR = require("./drsFactor");
+exports.QUOTE = require("./quote");
