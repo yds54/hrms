@@ -25,7 +25,7 @@ const {
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.USER),
+  authorizeRoles(...Object.values(ROLES)),
   validate(createLeaveValidation),
   createLeaveRequest,
 );
@@ -34,7 +34,7 @@ router.post(
 router.get(
   "/history",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   validate(getLeaveHistoryValidation),
   getLeaveHistory,
 );
