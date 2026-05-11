@@ -95,7 +95,7 @@ exports.addDrs = async (req, res, next) => {
 //========================= SHOW DRS ===============================
 exports.getDrs = async (req, res, next) => {
   try {
-    let { page, limit, month, year, search } = req.query;
+    const { page, limit, month, year, search } = req.query;
     const { _id: userId } = req.user;
 
     const currentDate = new Date();
@@ -169,6 +169,106 @@ exports.getDrs = async (req, res, next) => {
   }
 };
 
+//=================== DISPLAY DRS BY USER ID (ADMIN,PM) =========================
+exports.getDrsByUserId = async (req, res, next) => {
+  try {
+    const { page, limit, month, year, search } = req.query;
+    const { userId } = req.params;
+    const { _id: loggedInUser, role } = req.user;
+
+    const currentDate = new Date();
+    const selectedMonth = month ? Number(month) : currentDate.getMonth() + 1;
+    const selectedYear = year ? Number(year) : currentDate.getFullYear();
+    const { startOfMonth, endOfMonth } = getMonthRange(
+      selectedYear,
+      selectedMonth,
+    );
+
+    const _where = {
+      isDeleted: false,
+      date: {
+        $gte: startOfMonth,
+        $lte: endOfMonth,
+      },
+    };
+
+    //================ ROLE =================
+    if (role === ROLES.ADMIN) {
+      if (userId) {
+        _where.user = userId;
+      }
+    } else if (role === ROLES.PROJECT_MANAGER) {
+      const teams = await TEAMS.find({
+        projectManagers: loggedInUser,
+        isDeleted: false,
+      }).select("members");
+
+      // team members
+      const memberIds = teams.flatMap((t) =>
+        t.members.map((m) => m.toString()),
+      );
+      if (!memberIds.length) {
+        throw new AppError("No team members found", 404);
+      }
+      if (!memberIds.includes(userId)) {
+        throw new AppError("Not authorize cause User not in your team", 403);
+      }
+      _where.user = userId;
+    } else {
+      throw new AppError("Not authorized to access drs", 403);
+    }
+
+    //================ SEARCH =================
+    if (search) {
+      const searchConditions = [
+        { notes: { $regex: search, $options: "i" } },
+        { done: { $regex: search, $options: "i" } },
+        { inProgress: { $regex: search, $options: "i" } },
+        { nextPlan: { $regex: search, $options: "i" } },
+      ];
+
+      if (!isNaN(search)) {
+        const num = Number(search);
+        searchConditions.push({
+          $expr: {
+            $in: [
+              num,
+              {
+                $map: {
+                  input: { $objectToArray: "$factors" },
+                  in: "$$this.v",
+                },
+              },
+            ],
+          },
+        });
+      }
+
+      const dateQuery = dateSearchQuery("date", search);
+      if (dateQuery) {
+        searchConditions.push(dateQuery);
+      }
+      _where.$and = [{ $or: searchConditions }];
+    }
+
+    const { data, pagination } = await paginate({
+      model: DRS,
+      query: _where,
+      page,
+      limit,
+      sort: { date: -1 },
+      select: getProjection(["user", "createdBy"]),
+    });
+
+    return successResponse(res, 200, "DRS fetched successfully", {
+      data,
+      pagination,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 //======================== EDIT DRS =============================
 exports.updateDrs = async (req, res, next) => {
   try {
@@ -198,7 +298,7 @@ exports.updateDrs = async (req, res, next) => {
 //=============== NOT FILLED DRS ==========================
 exports.getNotFilledDrs = async (req, res, next) => {
   try {
-    let { month, year } = req.query;
+    const { month, year } = req.query;
     const { _id: userId } = req.user;
 
     const now = moment.tz(TIMEZONES.INDIA).subtract(1, "day");

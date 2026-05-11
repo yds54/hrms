@@ -448,9 +448,7 @@
             "description": "Forbidden"
           }
         }
-      }
-    },
-    "/api/drs/show": {
+      },
       "get": {
         "tags": ["Drs"],
         "description": "SHOW DRS",
@@ -487,6 +485,62 @@
         "responses": {
           "403": {
             "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/drs/{userId}": {
+      "get": {
+        "tags": ["Drs"],
+        "description": "Get DRS by UserId (Admin & Project Manager)",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID whose DRS needs to be fetched"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "example": "1"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "example": "10"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "type": "string",
+            "example": "5"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "string",
+            "example": "2026"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "done / 2026-05-10"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DRS fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "No team members found"
           }
         }
       }
@@ -1858,6 +1912,16 @@
             "required": true,
             "type": "string",
             "example": "69c60ceb1271716ecbac38a3"
+          },
+          {
+            "name": "assignedTo",
+            "in": "formData",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi",
+            "description": "Multiple assignee user ids"
           },
           {
             "name": "title",

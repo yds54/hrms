@@ -66,6 +66,22 @@ exports.getDrsValidation = {
   }),
 };
 
+//=================== DISPLAY DRS BY USER ID (ADMIN,PM) VALIDATION =========================
+exports.getDrsByUserIdValidation = {
+  params: Joi.object({
+    userId: Joi.string().required().messages({
+      "any.required": "userId is required",
+    }),
+  }),
+  query: Joi.object({
+    page: Joi.number().integer().min(1).default(1).required(),
+    limit: Joi.number().integer().min(1).max(100).default(10).required(),
+    month: Joi.number().min(1).max(12).optional(),
+    year: Joi.number().min(2000).max(2100).optional(),
+    search: Joi.string().optional(),
+  }),
+};
+
 //===================== EDIT DRS VALIDATION ====================
 exports.updateDrsValidation = {
   params: Joi.object({

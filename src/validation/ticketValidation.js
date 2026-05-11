@@ -53,6 +53,10 @@ exports.updateTicketValidation = {
 
   body: Joi.object({
     title: Joi.string().trim().optional(),
+    assignedTo: Joi.array()
+      .items(Joi.string().hex().length(24))
+      .single()
+      .optional(),
     dueDate: Joi.date().optional(),
     priority: Joi.string()
       .valid(...Object.values(PRIORITY_STATUS))

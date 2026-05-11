@@ -179,10 +179,12 @@ exports.updateTicket = async (req, res, next) => {
 
     const isOwner = isTicketExists.createdBy.toString() === userId.toString();
     const isAdmin = role === ROLES.ADMIN;
-    const isAssignee =
-      isTicketExists.assignedTo?.toString() === userId.toString();
+    const isHR = role === ROLES.HR;
+    const isAssignee = isTicketExists.assignedTo?.some(
+      (id) => id.toString() === userId.toString(),
+    );
 
-    if (!isAdmin && !isOwner && !isAssignee) {
+    if (!isAdmin && !isOwner && !isAssignee && !isHR) {
       throw new AppError("Not Authorize to Update Ticket", 403);
     }
 
@@ -190,7 +192,7 @@ exports.updateTicket = async (req, res, next) => {
     let allowedFields = [];
 
     // role and status update rule
-    if (isAdmin || isAssignee) {
+    if (isAdmin || isAssignee || isHR) {
       if (status === TICKET_STATUS.TODO || status === TICKET_STATUS.REOPEN) {
         allowedFields = null; // full access
       } else if (
@@ -240,6 +242,12 @@ exports.updateTicket = async (req, res, next) => {
       if (allowedFields !== null && !allowedFields.includes("isArchived")) {
         allowedFields.push("isArchived");
       }
+    }
+
+    // prevent user from updating assignedTo
+    if (!isAdmin && !isHR && !isAssignee && payload.assignedTo) {
+      delete payload.assignedTo;
+      throw new AppError("You can not update assigneeTo", 400);
     }
 
     if (allowedFields !== null) {
