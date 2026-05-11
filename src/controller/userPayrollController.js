@@ -65,7 +65,7 @@ exports.getAllUsersPayrolls = async (req, res, next) => {
       populate: [
         {
           path: "userId",
-          select: "name.firstName name.lastName",
+          select: "name.firstName name.lastName employeeCode",
           match: { isDeleted: false },
           options: { lean: true },
         },

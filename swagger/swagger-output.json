@@ -688,7 +688,18 @@
             "type": "string"
           },
           {
-            "name": "organizationType",
+            "name": "department",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "type": "string",
+            "description": "pm -onlypm "
+          },
+          {
+            "name": "organizationId",
             "in": "query",
             "type": "string"
           },
@@ -772,6 +783,12 @@
             "in": "formData",
             "type": "string",
             "example": "Rahul"
+          },
+          {
+            "name": "birthDate",
+            "in": "formData",
+            "type": "string",
+            "example": "2002-02-01"
           },
           {
             "name": "name[middleName]",
@@ -3289,6 +3306,586 @@
           },
           "404": {
             "description": "User documents not found"
+          }
+        }
+      }
+    },
+
+    "/api/projects/": {
+      "post": {
+        "tags": ["project"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "projectName": {
+                  "example": "HR Management System"
+                },
+                "status": {
+                  "example": "In Progress"
+                },
+                "type": {
+                  "example": "Client"
+                },
+                "clientName": {
+                  "example": "ABC Corporation"
+                },
+                "startDate": {
+                  "example": "2026-05-05"
+                },
+                "endDate": {
+                  "example": "2026-08-30"
+                },
+                "techStack": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": ["Node.js", "React", "MongoDB"]
+                },
+                "description": {
+                  "example": "Project for internal HR and payroll management"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "get": {
+        "tags": ["project"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "projectStatus",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "projectType",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/projects/{id}": {
+      "get": {
+        "tags": ["project"],
+        "description": "Get Project by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project retrieved successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "put": {
+        "tags": ["project"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "projectName": {
+                  "example": "HR Management System Updated"
+                },
+                "status": {
+                  "example": "Completed"
+                },
+                "type": {
+                  "example": "Internal"
+                },
+                "clientName": {
+                  "example": "XYZ Ltd"
+                },
+                "startDate": {
+                  "example": "2026-05-05"
+                },
+                "endDate": {
+                  "example": "2026-10-30"
+                },
+                "techStack": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": ["Node.js", "Next.js", "PostgreSQL"]
+                },
+                "description": {
+                  "example": "Updated project description"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "delete": {
+        "tags": ["project"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/teams/": {
+      "post": {
+        "tags": ["team"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "teamName": {
+                  "example": "Backend Core Team"
+                },
+                "project": {
+                  "example": "663a1b4c8f4d8b12ab123456"
+                },
+                "projectManagers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": [
+                    "663a1b4c8f4d8b12ab111111",
+                    "663a1b4c8f4d8b12ab222222"
+                  ]
+                },
+                "teamLeaders": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": [
+                    "663a1b4c8f4d8b12ab333333",
+                    "663a1b4c8f4d8b12ab444444"
+                  ]
+                },
+                "members": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": [
+                    "663a1b4c8f4d8b12ab555555",
+                    "663a1b4c8f4d8b12ab666666"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "get": {
+        "tags": ["team"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "description": "Search by teamName ,projectName ,clientName,employee name"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/teams/{id}": {
+      "get": {
+        "tags": ["team"],
+        "description": "Get Team by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Team retrieved successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "404": {
+            "description": "Team not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "put": {
+        "tags": ["team"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "teamName": {
+                  "example": "Backend Team Updated"
+                },
+                "project": {
+                  "example": "663a1b4c8f4d8b12ab123456"
+                },
+                "projectManagers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": ["663a1b4c8f4d8b12ab111111"]
+                },
+                "teamLeaders": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": ["663a1b4c8f4d8b12ab222222"]
+                },
+                "members": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": [
+                    "663a1b4c8f4d8b12ab333333",
+                    "663a1b4c8f4d8b12ab444444"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "delete": {
+        "tags": ["team"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/teams/projectsummary": {
+      "get": {
+        "tags": ["team"],
+        "description": "Get project-wise grouped team summary. Search supported on projectName, clientName, project status, project type, startDate, and endDate. Date search formats supported: YYYY, YYYY-MM, YYYY-MM-DD.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "projectStatus",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "projectType",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "description": "Search by projectName, clientName, status, type, startDate, or endDate. Date formats: YYYY, YYYY-MM, YYYY-MM-DD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project team summary fetched successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/teams/{teamId}/member/{userId}": {
+      "delete": {
+        "tags": ["team"],
+        "description": "Remove a user from team",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member removed from team successfully"
+          },
+          "400": {
+            "description": "Cannot remove last remaining Project Manager or Member"
+          },
+          "404": {
+            "description": "Team not found or User not assigned to team"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/teams/unassigned-users": {
+      "get": {
+        "tags": ["team"],
+        "description": "Get users who are not assigned to any team. Search supported on name, employeeCode, role, designation name, and department name.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "description": "Search by name, employeeCode, role, designation name, or department name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unassigned users fetched successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/users/organization": {
+      "get": {
+        "tags": ["User"],
+        "description": "Get all users from the logged-in user's organization. Search supported on first name, middle name, last name, and employee code.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Search by first name, middle name, last name, or employee code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization users fetched successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+
+    "/api/users/randomusers": {
+      "get": {
+        "tags": ["User"],
+        "description": "Get random active users from the logged-in user's organization based on selected number of records.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Number of random users to fetch"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Random organization users fetched successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }

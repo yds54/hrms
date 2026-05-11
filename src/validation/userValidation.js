@@ -7,13 +7,15 @@ exports.getuserValidation = {
     page: Joi.number().integer().min(1).required(),
     limit: Joi.number().integer().min(1).required(),
     designation: Joi.string(),
-    organizationType: Joi.string(),
+    department: Joi.string(),
+    organizationId: Joi.string(),
     mobileNo: Joi.string().pattern(/^[0-9]{10}$/),
     id: Joi.string().hex(),
     gender: Joi.string().valid(...Object.values(GENDER)),
     attendanceType: Joi.string(),
     Left: Joi.boolean(),
     search: Joi.string(),
+    role: Joi.string(),
   }),
 };
 
@@ -100,5 +102,20 @@ exports.updateUserValidation = {
 exports.getUserByIdValidation = {
   params: Joi.object({
     id: Joi.string().hex().length(24).required(),
+  }),
+};
+
+exports.gstAllUsersByOrganizationValidation = {
+  query: Joi.object({
+    page: Joi.number().integer().min(1).required(),
+    limit: Joi.number().integer().min(1).required(),
+    search: Joi.string(),
+  }),
+};
+
+exports.getRandomUsersValidation = {
+  query: Joi.object({
+    limit: Joi.number().integer().min(1).required(),
+    page: Joi.number().integer().min(1).required(),
   }),
 };

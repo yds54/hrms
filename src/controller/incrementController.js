@@ -58,6 +58,7 @@ exports.getAllUsersIncrements = async (req, res, next) => {
           path: "userId",
           select: "name.firstName name.lastName",
           match: { isDeleted: false },
+          options: { lean: true },
         },
       ],
       sort: { createdAt: -1 },
