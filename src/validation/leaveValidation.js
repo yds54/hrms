@@ -137,3 +137,16 @@ exports.deleteLeaveValidation = {
     id: Joi.string().length(24).hex().required(),
   }),
 };
+
+//===================== DISPLAY TEAM LEAVE REQUEST VALIDATION ==========================
+exports.teamLeaveRequestValidation = {
+  query: Joi.object({
+    page: Joi.number().required(),
+    limit: Joi.number().required(),
+    search: Joi.string().allow("").optional(),
+    filter: Joi.string().allow("").optional(),
+    year: Joi.number().optional(),
+    pmFilter: Joi.string().allow("").optional(),
+    hrFilter: Joi.string().allow("").optional(),
+  }),
+};

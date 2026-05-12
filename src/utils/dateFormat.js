@@ -56,6 +56,17 @@ const dateSearchQuery = (field, search) => {
   return null;
 };
 
+const getYearRange = (year) => {
+  const start = moment
+    .tz({ year, month: 0, day: 1 }, TZ)
+    .startOf("day")
+    .toDate();
+
+  const end = moment.tz({ year, month: 11, day: 31 }, TZ).endOf("day").toDate();
+
+  return { startOfYear: start, endOfYear: end };
+};
+
 module.exports = {
   parseISTDate,
   isValidDate,
@@ -63,4 +74,5 @@ module.exports = {
   getMonthRange,
   formatDate,
   dateSearchQuery,
+  getYearRange,
 };
