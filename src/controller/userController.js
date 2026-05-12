@@ -355,30 +355,25 @@ exports.gstAllUsersByOrganization = async (req, res, next) => {
     const { data, pagination } = await paginate({
       model: USER,
       query: _whereCondition,
-
       select: {
         employeeCode: 1,
         name: 1,
         profilePicture: 1,
       },
-
-      lean: true,
-
       page: +page,
       limit: +limit,
       sort: { createdAt: -1 },
     });
 
-    const formattedData = data.map(
-      ({ employeeCode, name, profilePicture }) => ({
-        employeeCode,
-        name,
-
-        profilePictureUrl: profilePicture?.fileName
-          ? getFileUrl(`profile/${profilePicture.fileName}`)
+    const formattedData = data.map((userObj) => {
+      console.log("User Object:", { ...userObj._doc }); // Debug log to check the structure of userObj
+      return {
+        ...userObj._doc,
+        profilePictureUrl: userObj.profilePicture?.fileName
+          ? getFileUrl(`profile/${userObj.profilePicture.fileName}`)
           : null,
-      }),
-    );
+      };
+    });
 
     return successResponse(
       res,
@@ -433,16 +428,12 @@ exports.getRandomUsers = async (req, res, next) => {
       limit: +limit,
     });
 
-    const formattedData = data.map(
-      ({ employeeCode, role, name, profilePicture }) => ({
-        employeeCode,
-        role,
-        name,
-        profilePictureUrl: profilePicture?.fileName
-          ? getFileUrl(`profile/${profilePicture.fileName}`)
-          : null,
-      }),
-    );
+    const formattedData = data.map((userObj) => ({
+      ...userObj,
+      profilePictureUrl: userObj.profilePicture?.fileName
+        ? getFileUrl(`profile/${userObj.profilePicture.fileName}`)
+        : null,
+    }));
 
     return successResponse(
       res,

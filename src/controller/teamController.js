@@ -465,9 +465,7 @@ exports.getTeamById = async (req, res, next) => {
 
     ["projectManagers", "teamLeaders", "members"].forEach((field) => {
       team[field] = team[field].map((user) => ({
-        _id: user._id,
-        name: user.name,
-        designation: user.designation,
+        ...user,
         profilePicture: user.profilePicture?.fileName
           ? getFileUrl(
               `profile/${user.profilePicture.fileName}`,
@@ -927,7 +925,7 @@ exports.getUnassignedUsers = async (req, res, next) => {
         },
       },
     ];
-    
+
     const { data, pagination } = await paginate({
       model: USER,
       page: +page,
