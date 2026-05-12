@@ -73,7 +73,7 @@ exports.addDrs = async (req, res, next) => {
     // can only send factors that admin created
     for (const key of Object.keys(factors)) {
       if (!allowedFactorSet.has(key)) {
-        throw new AppError(`${key} is not valid factor`, 400);
+        throw new AppError(`${key} is not valid factor`, 500);
       }
     }
 
@@ -211,11 +211,14 @@ exports.getDrsByUserId = async (req, res, next) => {
         throw new AppError("No team members found", 404);
       }
       if (!memberIds.includes(userId)) {
-        throw new AppError("Not authorize cause User not in your team", 403);
+        throw new AppError(
+          "You are not authorized to access as they are not part of your team",
+          403,
+        );
       }
       _where.user = userId;
     } else {
-      throw new AppError("Not authorized to access drs", 403);
+      throw new AppError("You are not authorized user to access drs", 403);
     }
 
     //================ SEARCH =================
@@ -317,13 +320,18 @@ exports.getNotFilledDrs = async (req, res, next) => {
       $lte: loopEnd,
     };
 
-    const [drsData, holidays] = await Promise.all([
+    const [drsData, holidays, userData] = await Promise.all([
       DRS.find({ user: userId, isDeleted: false, date: dateFilter }).lean(),
       HOLIDAY.find({
         isDeleted: false,
         holidayDate: dateFilter,
       }).lean(),
+      USER.findOne({ _id: userId }).select("drsRequired").lean(),
     ]);
+
+    if (!userData?.drsRequired) {
+      return successResponse(res, 200, "DRS not required", { data: [] });
+    }
 
     const holidaySet = new Set(holidays.map((h) => formatDate(h.holidayDate)));
     const drsMap = new Map(drsData.map((d) => [formatDate(d.date), d]));

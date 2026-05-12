@@ -71,7 +71,10 @@ exports.createTicket = async (req, res, next) => {
       );
 
       if (!validRoles) {
-        throw new AppError("You cannot assign ticket to this role", 400);
+        throw new AppError(
+          "Ticket cannot be assigned to the selected role",
+          403,
+        );
       }
     }
 
@@ -185,7 +188,10 @@ exports.updateTicket = async (req, res, next) => {
     );
 
     if (!isAdmin && !isOwner && !isAssignee && !isHR) {
-      throw new AppError("Not Authorize to Update Ticket", 403);
+      throw new AppError(
+        "You are not Authorize user to update the Ticket.",
+        403,
+      );
     }
 
     const status = isTicketExists.status;
@@ -247,7 +253,7 @@ exports.updateTicket = async (req, res, next) => {
     // prevent user from updating assignedTo
     if (!isAdmin && !isHR && !isAssignee && payload.assignedTo) {
       delete payload.assignedTo;
-      throw new AppError("You can not update assigneeTo", 400);
+      throw new AppError("You can't update assigned user", 400);
     }
 
     if (allowedFields !== null) {
