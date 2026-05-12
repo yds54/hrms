@@ -245,7 +245,7 @@ exports.updateTicket = async (req, res, next) => {
         status,
       )
     ) {
-      if (allowedFields !== null && !allowedFields.includes("isArchived")) {
+      if (allowedFields && !allowedFields.includes("isArchived")) {
         allowedFields.push("isArchived");
       }
     }
@@ -256,7 +256,7 @@ exports.updateTicket = async (req, res, next) => {
       throw new AppError("You can't update assigned user", 400);
     }
 
-    if (allowedFields !== null) {
+    if (allowedFields?.length) {
       Object.keys(payload).forEach((key) => {
         if (!allowedFields.includes(key)) {
           delete payload[key];
