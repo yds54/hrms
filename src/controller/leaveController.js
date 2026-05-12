@@ -9,11 +9,13 @@ const {
   LEAVE_DURATION,
   ROLES,
   LEAVE_STATUS,
+  TIMEZONES,
 } = require("../utils/enum");
 const {
   getDayRange,
   getMonthRange,
   dateSearchQuery,
+  getYearRange,
 } = require("../utils/dateFormat");
 
 //======================= SEND LEAVE REQUEST =================================
@@ -338,7 +340,9 @@ exports.getTeamLeaveRequests = async (req, res, next) => {
     const memberIds = [...memberIdsSet];
 
     if (!memberIds.length) {
-      return successResponse(res, 200, "No team members found");
+      return successResponse(res, 200, "No team member assigned to you", {
+        data: [],
+      });
     }
 
     const _where = {
@@ -363,14 +367,13 @@ exports.getTeamLeaveRequests = async (req, res, next) => {
 
     // -------- filter year --------
     if (year) {
-      const start = new Date(`${year}-01-01T00:00:00.000Z`);
-      const end = new Date(`${year}-12-31T23:59:59.999Z`);
+      const { startOfYear, endOfYear } = getYearRange(Number(year));
       conditions.push({
         $or: [
-          { date: { $gte: start, $lte: end } },
+          { date: { $gte: startOfYear, $lte: endOfYear } },
           {
-            fromDate: { $lte: end },
-            toDate: { $gte: start },
+            fromDate: { $lte: endOfYear },
+            toDate: { $gte: startOfYear },
           },
         ],
       });
@@ -379,9 +382,10 @@ exports.getTeamLeaveRequests = async (req, res, next) => {
     // -------- filter month  --------
     if (filter) {
       const monthIndex = moment(filter, "MMMM", true).month();
+      const currentYear = moment.tz(TIMEZONES.INDIA).year();
       if (!isNaN(monthIndex)) {
         const { startOfMonth, endOfMonth } = getMonthRange(
-          new Date().getFullYear(),
+          currentYear,
           monthIndex + 1,
         );
         conditions.push({
