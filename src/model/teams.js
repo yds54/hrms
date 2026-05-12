@@ -29,7 +29,6 @@ const teamSchema = new mongoose.Schema(
         ref: "user",
       },
     ],
-
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
@@ -39,7 +38,6 @@ const teamSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-
     deletedAt: {
       type: Date,
       default: null,

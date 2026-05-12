@@ -2,7 +2,7 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
-const { PROJECTS } = require("../model/modelIndex");
+const { PROJECTS, TEAMS } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { dateSearchQuery } = require("../utils/dateFormat");
 
@@ -64,20 +64,39 @@ exports.updateProject = async (req, res, next) => {
 exports.deleteProject = async (req, res, next) => {
   try {
     const { id } = req.params;
+
     const isProjectExists = await PROJECTS.findOne({
       _id: id,
       isDeleted: false,
     }).select("_id");
 
     if (!isProjectExists) {
-      throw new AppError("Project not found for given Id", 404);
+      throw new AppError("Project not found for given ID", 404);
     }
 
-    isProjectExists.isDeleted = true;
-    isProjectExists.deletedAt = new Date();
-    isProjectExists.save();
+    const deletedAt = moment().toDate();
 
-    return successResponse(res, 200, "Project deleted sucessfully");
+    isProjectExists.isDeleted = true;
+    isProjectExists.deletedAt = deletedAt;
+
+    await Promise.all([
+      isProjectExists.save(),
+
+      TEAMS.updateMany(
+        {
+          projectId: id,
+          isDeleted: false,
+        },
+        {
+          $set: {
+            isDeleted: true,
+            deletedAt,
+          },
+        },
+      ),
+    ]);
+
+    return successResponse(res, 200, "Project deleted successfully");
   } catch (error) {
     next(error);
   }
@@ -123,7 +142,6 @@ exports.getProjectById = async (req, res, next) => {
           isDeleted: false,
         },
       },
-
       {
         $lookup: {
           from: "teams",
@@ -143,7 +161,6 @@ exports.getProjectById = async (req, res, next) => {
           as: "teams",
         },
       },
-
       {
         $lookup: {
           from: "users",
@@ -173,7 +190,6 @@ exports.getProjectById = async (req, res, next) => {
           as: "projectManagers",
         },
       },
-
       {
         $lookup: {
           from: "users",
@@ -203,7 +219,6 @@ exports.getProjectById = async (req, res, next) => {
           as: "teamLeaders",
         },
       },
-
       {
         $lookup: {
           from: "users",
@@ -233,7 +248,6 @@ exports.getProjectById = async (req, res, next) => {
           as: "members",
         },
       },
-
       {
         $project: {
           projectName: 1,

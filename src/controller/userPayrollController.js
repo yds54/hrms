@@ -89,7 +89,7 @@ exports.getUserPayrollById = async (req, res, next) => {
     const { id } = req.params;
 
     const isUserExists = await USERPAYROLL.findOne({
-      _id: id,
+      userId: id,
       isDeleted: false,
     });
 

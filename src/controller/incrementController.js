@@ -20,7 +20,7 @@ exports.addIncrement = async (req, res, next) => {
 
     await Promise.all([
       USERPAYROLL.updateOne(
-        { _id: payroll._id, isDeleted: false },
+        { _id: isPayrollExists._id, isDeleted: false },
         {
           $set: {
             salaryAmount: body.totalSalary,
@@ -77,10 +77,12 @@ exports.getIncrementById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const isIncrementExists = await INCREMENT.findOne({
-      _id: id,
+    const isIncrementExists = await INCREMENT.find({
+      userId: id,
       isDeleted: false,
-    }).select("_id userId incrementAmount incrementType effectiveDate");
+    }).select(
+      "incrementAmount incrementPercentage effectiveFrom incrementMethod totalSalary updatedAt previousSalary",
+    );
     if (!isIncrementExists) {
       throw new AppError("Increment not found for given userId", 404);
     }

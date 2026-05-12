@@ -57,10 +57,9 @@ exports.addTeam = async (req, res, next) => {
     ) {
       throw new AppError(
         "Only users with the project_manager role can be assigned as Project Manager",
-        400,
+        403,
       );
     }
-
     if (
       teamLeaders.some(
         (id) =>
@@ -69,7 +68,7 @@ exports.addTeam = async (req, res, next) => {
     ) {
       throw new AppError(
         "Only project_manager or team_lead can be assigned as Team Leader",
-        400,
+        403,
       );
     }
 
@@ -174,14 +173,12 @@ exports.getAllTeams = async (req, res, next) => {
           as: "project",
         },
       },
-
       {
         $unwind: {
           path: "$project",
           preserveNullAndEmptyArrays: true,
         },
       },
-
       {
         $lookup: {
           from: "users",
@@ -190,7 +187,6 @@ exports.getAllTeams = async (req, res, next) => {
           as: "projectManagers",
         },
       },
-
       {
         $lookup: {
           from: "users",
@@ -199,7 +195,6 @@ exports.getAllTeams = async (req, res, next) => {
           as: "teamLeaders",
         },
       },
-
       {
         $lookup: {
           from: "users",
@@ -259,7 +254,6 @@ exports.getAllTeams = async (req, res, next) => {
             projectName: "$project.projectName",
             clientName: "$project.clientName",
           },
-
           projectManagers: {
             $map: {
               input: "$projectManagers",
@@ -270,7 +264,6 @@ exports.getAllTeams = async (req, res, next) => {
               },
             },
           },
-
           teamLeaders: {
             $map: {
               input: "$teamLeaders",
@@ -281,7 +274,6 @@ exports.getAllTeams = async (req, res, next) => {
               },
             },
           },
-
           members: {
             $map: {
               input: "$members",
@@ -340,7 +332,6 @@ exports.getTeamById = async (req, res, next) => {
           preserveNullAndEmptyArrays: true,
         },
       },
-
       {
         $lookup: {
           from: "users",
@@ -378,7 +369,6 @@ exports.getTeamById = async (req, res, next) => {
           as: "projectManagers",
         },
       },
-
       {
         $lookup: {
           from: "users",
@@ -416,7 +406,6 @@ exports.getTeamById = async (req, res, next) => {
           as: "teamLeaders",
         },
       },
-
       {
         $lookup: {
           from: "users",
@@ -454,7 +443,6 @@ exports.getTeamById = async (req, res, next) => {
           as: "members",
         },
       },
-
       {
         $project: {
           teamName: 1,
@@ -500,7 +488,6 @@ exports.getTeamById = async (req, res, next) => {
 exports.getProjectTeamSummary = async (req, res, next) => {
   try {
     const { page, limit, projectStatus, projectType, search } = req.query;
-
     const { user } = req;
 
     const teamMatch = {
@@ -520,11 +507,9 @@ exports.getProjectTeamSummary = async (req, res, next) => {
     };
 
     if (projectStatus) projectMatch.status = projectStatus;
-
     if (projectType) projectMatch.type = projectType;
 
     const startDateSearch = dateSearchQuery("project.startDate", search);
-
     const endDateSearch = dateSearchQuery("project.endDate", search);
 
     const pipeline = [
@@ -536,11 +521,9 @@ exports.getProjectTeamSummary = async (req, res, next) => {
           as: "project",
         },
       },
-
       {
         $unwind: "$project",
       },
-
       {
         $lookup: {
           from: "users",
@@ -554,7 +537,6 @@ exports.getProjectTeamSummary = async (req, res, next) => {
                 },
               },
             },
-
             {
               $project: {
                 _id: 0,
@@ -562,11 +544,9 @@ exports.getProjectTeamSummary = async (req, res, next) => {
               },
             },
           ],
-
           as: "projectManagers",
         },
       },
-
       {
         $lookup: {
           from: "users",
@@ -580,7 +560,6 @@ exports.getProjectTeamSummary = async (req, res, next) => {
                 },
               },
             },
-
             {
               $project: {
                 _id: 0,
@@ -588,11 +567,9 @@ exports.getProjectTeamSummary = async (req, res, next) => {
               },
             },
           ],
-
           as: "teamLeaders",
         },
       },
-
       {
         $lookup: {
           from: "users",
@@ -606,7 +583,6 @@ exports.getProjectTeamSummary = async (req, res, next) => {
                 },
               },
             },
-
             {
               $project: {
                 _id: 0,
@@ -614,11 +590,9 @@ exports.getProjectTeamSummary = async (req, res, next) => {
               },
             },
           ],
-
           as: "members",
         },
       },
-
       {
         $match: {
           "project.isDeleted": false,
@@ -627,7 +601,6 @@ exports.getProjectTeamSummary = async (req, res, next) => {
             acc[`project.${key}`] = value;
             return acc;
           }, {}),
-
           ...(search
             ? (() => {
                 const fields = [
@@ -663,7 +636,6 @@ exports.getProjectTeamSummary = async (req, res, next) => {
                         })),
 
                         ...(startDateSearch ? [startDateSearch] : []),
-
                         ...(endDateSearch ? [endDateSearch] : []),
                       ],
                     })),
@@ -677,45 +649,35 @@ exports.getProjectTeamSummary = async (req, res, next) => {
       {
         $group: {
           _id: "$project._id",
-
           projectName: {
             $first: "$project.projectName",
           },
-
           clientName: {
             $first: "$project.clientName",
           },
-
           startDate: {
             $first: "$project.startDate",
           },
-
           endDate: {
             $first: "$project.endDate",
           },
-
           status: {
             $first: "$project.status",
           },
-
           type: {
             $first: "$project.type",
           },
-
           projectManagers: {
             $push: "$projectManagers",
           },
-
           teamLeaders: {
             $push: "$teamLeaders",
           },
-
           members: {
             $push: "$members",
           },
         },
       },
-
       {
         $project: {
           projectName: 1,
@@ -734,7 +696,6 @@ exports.getProjectTeamSummary = async (req, res, next) => {
               },
             },
           },
-
           teamLeaders: {
             $reduce: {
               input: "$teamLeaders",
@@ -744,7 +705,6 @@ exports.getProjectTeamSummary = async (req, res, next) => {
               },
             },
           },
-
           members: {
             $reduce: {
               input: "$members",
@@ -794,22 +754,18 @@ exports.removeTeamMember = async (req, res, next) => {
     }
 
     const isPM = team.projectManagers.some((id) => id.toString() === userId);
-
     const isTL = team.teamLeaders.some((id) => id.toString() === userId);
-
     const isMember = team.members.some((id) => id.toString() === userId);
 
     if (!isPM && !isTL && !isMember) {
       throw new AppError("User is not assigned to this team", 404);
     }
-
     if (isPM && team.projectManagers.length === 1) {
       throw new AppError(
         "Cannot remove the last remaining Project Manager from the team",
         400,
       );
     }
-
     if (isMember && team.members.length === 1) {
       throw new AppError(
         "Cannot remove the last remaining Team Member from the team",
@@ -848,7 +804,6 @@ exports.getUnassignedUsers = async (req, res, next) => {
                 isDeleted: false,
               },
             },
-
             {
               $project: {
                 assignedUsers: {
@@ -856,11 +811,9 @@ exports.getUnassignedUsers = async (req, res, next) => {
                 },
               },
             },
-
             {
               $unwind: "$assignedUsers",
             },
-
             {
               $group: {
                 _id: null,
@@ -873,7 +826,6 @@ exports.getUnassignedUsers = async (req, res, next) => {
           as: "assignedData",
         },
       },
-
       {
         $match: {
           isDeleted: false,
@@ -896,7 +848,6 @@ exports.getUnassignedUsers = async (req, res, next) => {
           },
         },
       },
-
       {
         $lookup: {
           from: "designations",
@@ -905,14 +856,12 @@ exports.getUnassignedUsers = async (req, res, next) => {
           as: "designation",
         },
       },
-
       {
         $unwind: {
           path: "$designation",
           preserveNullAndEmptyArrays: true,
         },
       },
-
       {
         $lookup: {
           from: "departments",
@@ -921,7 +870,6 @@ exports.getUnassignedUsers = async (req, res, next) => {
           as: "department",
         },
       },
-
       {
         $unwind: {
           path: "$department",
@@ -942,7 +890,6 @@ exports.getUnassignedUsers = async (req, res, next) => {
             ];
 
             const searchWords = search.trim().split(/\s+/);
-
             return [
               {
                 $match: {
@@ -966,16 +913,13 @@ exports.getUnassignedUsers = async (req, res, next) => {
           name: 1,
           role: 1,
           isLeft: 1,
-
           profilePicture: {
             fileName: "$profilePicture.fileName",
           },
-
           designation: {
             _id: "$designation._id",
             designationName: "$designation.designationName",
           },
-
           department: {
             _id: "$department._id",
             departmentName: "$department.departmentName",
@@ -983,7 +927,7 @@ exports.getUnassignedUsers = async (req, res, next) => {
         },
       },
     ];
-
+    
     const { data, pagination } = await paginate({
       model: USER,
       page: +page,

@@ -309,7 +309,6 @@ exports.getUserById = async (req, res, next) => {
 exports.gstAllUsersByOrganization = async (req, res, next) => {
   try {
     const { user, query } = req;
-
     const { page, limit, search } = query;
 
     const _whereCondition = {
@@ -370,14 +369,16 @@ exports.gstAllUsersByOrganization = async (req, res, next) => {
       sort: { createdAt: -1 },
     });
 
-    const formattedData = data.map((userObj) => ({
-      employeeCode: userObj.employeeCode,
-      name: userObj.name,
+    const formattedData = data.map(
+      ({ employeeCode, name, profilePicture }) => ({
+        employeeCode,
+        name,
 
-      profilePictureUrl: userObj.profilePicture?.fileName
-        ? getFileUrl(`profile/${userObj.profilePicture.fileName}`)
-        : null,
-    }));
+        profilePictureUrl: profilePicture?.fileName
+          ? getFileUrl(`profile/${profilePicture.fileName}`)
+          : null,
+      }),
+    );
 
     return successResponse(
       res,
@@ -410,13 +411,11 @@ exports.getRandomUsers = async (req, res, next) => {
       {
         $match: _whereCondition,
       },
-
       {
         $sample: {
           size: +limit,
         },
       },
-
       {
         $project: {
           employeeCode: 1,
@@ -430,20 +429,20 @@ exports.getRandomUsers = async (req, res, next) => {
     const { data, pagination } = await paginate({
       model: USER,
       pipeline,
-
       page: +page,
       limit: +limit,
     });
 
-    const formattedData = data.map((userObj) => ({
-      employeeCode: userObj.employeeCode,
-      role: userObj.role,
-      name: userObj.name,
-
-      profilePictureUrl: userObj.profilePicture?.fileName
-        ? getFileUrl(`profile/${userObj.profilePicture.fileName}`)
-        : null,
-    }));
+    const formattedData = data.map(
+      ({ employeeCode, role, name, profilePicture }) => ({
+        employeeCode,
+        role,
+        name,
+        profilePictureUrl: profilePicture?.fileName
+          ? getFileUrl(`profile/${profilePicture.fileName}`)
+          : null,
+      }),
+    );
 
     return successResponse(
       res,
