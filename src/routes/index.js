@@ -25,6 +25,8 @@ const teamsRoutes = require("./teamsRoutes");
 const evaluationCriteriaRoutes = require("./evaluationCriteriaRoutes");
 const drsFactorRoutes = require("./drsFactorRoutes");
 const quoteRoutes = require("./quoteRoutes");
+const letterheadTypeRoutes = require("./letterheadTypeRoutes");
+const assignLetterheadRoutes = require("./assignLetterheadRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -50,5 +52,7 @@ router.use("/teams", teamsRoutes);
 router.use("/evaluationCriteria", evaluationCriteriaRoutes);
 router.use("/drsfactor", drsFactorRoutes);
 router.use("/quotes", quoteRoutes);
+router.use("/letterheadType", letterheadTypeRoutes);
+router.use("/assignLetterhead", assignLetterheadRoutes);
 
 module.exports = router;
