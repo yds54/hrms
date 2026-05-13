@@ -24,10 +24,12 @@ exports.viewallUser = async (req, res, next) => {
       gender,
       designation,
       organizationId,
+      department,
       attendanceType,
       id,
       search,
       Left,
+      role,
     } = query;
 
     const _whereCondition = {
@@ -45,6 +47,18 @@ exports.viewallUser = async (req, res, next) => {
     if (designation) _whereCondition.designationId = designation;
     if (organizationId) _whereCondition.organizationId = organizationId;
     if (attendanceType) _whereCondition.attendanceType = attendanceType;
+    if (department) _whereCondition.departmentId = department;
+    if (role === "tl") {
+      _whereCondition.role = {
+        $in: [ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD],
+      };
+    } else if (role === "all") {
+      _whereCondition.role = {
+        $nin: [ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER],
+      };
+    } else if (role) {
+      _whereCondition.role = role;
+    }
 
     if (Left === "true") {
       _whereCondition.isLeft = true;
@@ -62,11 +76,15 @@ exports.viewallUser = async (req, res, next) => {
         "role",
       ];
 
-      _whereCondition.$or = fields.map((field) => ({
-        [field]: {
-          $regex: search,
-          $options: "i",
-        },
+      const searchWords = search.trim().split(/\s+/);
+
+      _whereCondition.$and = searchWords.map((word) => ({
+        $or: fields.map((field) => ({
+          [field]: {
+            $regex: word,
+            $options: "i",
+          },
+        })),
       }));
     }
 
@@ -283,6 +301,149 @@ exports.getUserById = async (req, res, next) => {
     return successResponse(res, 200, "User fetched successfully", {
       data: formattedUser,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.gstAllUsersByOrganization = async (req, res, next) => {
+  try {
+    const { user, query } = req;
+    const { page, limit, search } = query;
+
+    const _whereCondition = {
+      _id: { $ne: user.id },
+      isDeleted: false,
+      isLeft: false,
+      status: "active",
+      organizationId: user.organizationId,
+    };
+
+    if (search) {
+      const searchWords = search.trim().split(/\s+/);
+
+      _whereCondition.$and = searchWords.map((word) => ({
+        $or: [
+          {
+            "name.firstName": {
+              $regex: word,
+              $options: "i",
+            },
+          },
+          {
+            "name.middleName": {
+              $regex: word,
+              $options: "i",
+            },
+          },
+          {
+            "name.lastName": {
+              $regex: word,
+              $options: "i",
+            },
+          },
+          {
+            employeeCode: {
+              $regex: word,
+              $options: "i",
+            },
+          },
+        ],
+      }));
+    }
+
+    const { data, pagination } = await paginate({
+      model: USER,
+      query: _whereCondition,
+      select: {
+        employeeCode: 1,
+        name: 1,
+        profilePicture: 1,
+      },
+      page: +page,
+      limit: +limit,
+      sort: { createdAt: -1 },
+    });
+
+    const formattedData = data.map((userObj) => {
+      console.log("User Object:", { ...userObj._doc }); // Debug log to check the structure of userObj
+      return {
+        ...userObj._doc,
+        profilePictureUrl: userObj.profilePicture?.fileName
+          ? getFileUrl(`profile/${userObj.profilePicture.fileName}`)
+          : null,
+      };
+    });
+
+    return successResponse(
+      res,
+      200,
+      "Organization users fetched successfully",
+      {
+        data: formattedData,
+        pagination,
+      },
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getRandomUsers = async (req, res, next) => {
+  try {
+    const { user, query } = req;
+
+    const { page, limit } = query;
+
+    const _whereCondition = {
+      _id: { $ne: user.id },
+      isDeleted: false,
+      isLeft: false,
+      status: "active",
+    };
+
+    const pipeline = [
+      {
+        $match: _whereCondition,
+      },
+      {
+        $sample: {
+          size: +limit,
+        },
+      },
+      {
+        $project: {
+          employeeCode: 1,
+          role: 1,
+          name: 1,
+          profilePicture: 1,
+        },
+      },
+    ];
+
+    const { data, pagination } = await paginate({
+      model: USER,
+      pipeline,
+      page: +page,
+      limit: +limit,
+    });
+
+    const formattedData = data.map((userObj) => ({
+      ...userObj,
+      profilePictureUrl: userObj.profilePicture?.fileName
+        ? getFileUrl(`profile/${userObj.profilePicture.fileName}`)
+        : null,
+    }));
+
+    return successResponse(
+      res,
+      200,
+      "Random organization users fetched successfully",
+      {
+        data: formattedData,
+        pagination,
+      },
+    );
   } catch (error) {
     next(error);
   }

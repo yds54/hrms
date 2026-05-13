@@ -93,7 +93,7 @@ exports.addUserDocuments = async (req, res, next) => {
     }
 
     for (const field of documentFields) {
-      if (uploadedFiles[field][0]) {
+      if (uploadedFiles?.[field]?.[0]) {
         body[field] = {
           ...uploadedFiles[field][0],
           remark: body?.[field]?.remark,
@@ -108,7 +108,7 @@ exports.addUserDocuments = async (req, res, next) => {
       };
     }
 
-    if (uploadedFiles.otherDocuments.length && otherDocs) {
+    if (uploadedFiles.otherDocuments?.length && otherDocs) {
       body.otherDocuments = otherDocs.map((doc, index) => ({
         ...doc,
         ...uploadedFiles.otherDocuments[index],
@@ -190,7 +190,7 @@ exports.getUserDocumentsById = async (req, res, next) => {
     const { id } = req.params;
 
     const isUserDocumentsExists = await USER_DOCUMENT.findOne({
-      _id: id,
+      userId: id,
       isDeleted: false,
     }).lean();
 

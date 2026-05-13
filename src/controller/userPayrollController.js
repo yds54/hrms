@@ -65,7 +65,7 @@ exports.getAllUsersPayrolls = async (req, res, next) => {
       populate: [
         {
           path: "userId",
-          select: "name.firstName name.lastName",
+          select: "name.firstName name.lastName employeeCode",
           match: { isDeleted: false },
           options: { lean: true },
         },
@@ -89,7 +89,7 @@ exports.getUserPayrollById = async (req, res, next) => {
     const { id } = req.params;
 
     const isUserExists = await USERPAYROLL.findOne({
-      _id: id,
+      userId: id,
       isDeleted: false,
     });
 
