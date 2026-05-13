@@ -24,30 +24,57 @@ const ALLOWED_ROLES = [
 exports.createTicket = async (req, res, next) => {
   try {
     const { _id: createdBy, role } = req.user;
-    const { assignedTo } = req.body;
-
-    const isAssigneeExists = await USER.findOne(
-      { _id: assignedTo, isDeleted: false },
-      { role: 1 },
-    );
-
-    if (!isAssigneeExists) {
-      throw new AppError("Assigned user not found", 404);
-    }
+    let { assignedTo } = req.body;
 
     const isPrivileged = [ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER].includes(
       role,
     );
 
-    // check login user's role
+    assignedTo = Array.isArray(assignedTo)
+      ? assignedTo
+      : assignedTo
+        ? [assignedTo]
+        : [];
+
+    // user - auto assign all HRs
+    if (role === ROLES.USER) {
+      if (assignedTo.length) {
+        throw new AppError("Not allowed to assign ticket manually", 403);
+      }
+      const hrUsers = await USER.find({
+        role: ROLES.HR,
+        isDeleted: false,
+      }).select("_id");
+      if (!hrUsers.length) {
+        throw new AppError("No HR found", 404);
+      }
+      assignedTo = hrUsers.map((user) => user._id);
+    }
+
+    const assignees = await USER.find({
+      _id: { $in: assignedTo },
+      isDeleted: false,
+    }).select("role");
+
+    if (assignees.length !== assignedTo.length) {
+      throw new AppError("Some Assigned user not found", 404);
+    }
+
     if (!isPrivileged) {
-      // check assigned user's role
-      if (![ROLES.HR].includes(isAssigneeExists.role)) {
+      const allHr = assignees.every((user) => user.role === ROLES.HR);
+      if (!allHr) {
         throw new AppError("You can assign ticket only to HR", 403);
       }
     } else {
-      if (!ALLOWED_ROLES.includes(isAssigneeExists.role)) {
-        throw new AppError("You cannot assign ticket to this role", 400);
+      const validRoles = assignees.every((user) =>
+        ALLOWED_ROLES.includes(user.role),
+      );
+
+      if (!validRoles) {
+        throw new AppError(
+          "Ticket cannot be assigned to the selected role",
+          403,
+        );
       }
     }
 
@@ -56,6 +83,7 @@ exports.createTicket = async (req, res, next) => {
 
     const ticket = await TICKET.create({
       ...req.body,
+      assignedTo,
       attachFile: files,
       createdBy,
     });
@@ -154,18 +182,23 @@ exports.updateTicket = async (req, res, next) => {
 
     const isOwner = isTicketExists.createdBy.toString() === userId.toString();
     const isAdmin = role === ROLES.ADMIN;
-    const isAssignee =
-      isTicketExists.assignedTo?.toString() === userId.toString();
+    const isHR = role === ROLES.HR;
+    const isAssignee = isTicketExists.assignedTo?.some(
+      (id) => id.toString() === userId.toString(),
+    );
 
-    if (!isAdmin && !isOwner && !isAssignee) {
-      throw new AppError("Not Authorize to Update Ticket", 403);
+    if (!isAdmin && !isOwner && !isAssignee && !isHR) {
+      throw new AppError(
+        "You are not Authorize user to update the Ticket.",
+        403,
+      );
     }
 
     const status = isTicketExists.status;
     let allowedFields = [];
 
     // role and status update rule
-    if (isAdmin || isAssignee) {
+    if (isAdmin || isAssignee || isHR) {
       if (status === TICKET_STATUS.TODO || status === TICKET_STATUS.REOPEN) {
         allowedFields = null; // full access
       } else if (
@@ -212,12 +245,18 @@ exports.updateTicket = async (req, res, next) => {
         status,
       )
     ) {
-      if (allowedFields !== null && !allowedFields.includes("isArchived")) {
+      if (allowedFields && !allowedFields.includes("isArchived")) {
         allowedFields.push("isArchived");
       }
     }
 
-    if (allowedFields !== null) {
+    // prevent user from updating assignedTo
+    if (!isAdmin && !isHR && !isAssignee && payload.assignedTo) {
+      delete payload.assignedTo;
+      throw new AppError("You can't update assigned user", 400);
+    }
+
+    if (allowedFields?.length) {
       Object.keys(payload).forEach((key) => {
         if (!allowedFields.includes(key)) {
           delete payload[key];

@@ -8,11 +8,13 @@ const ticketSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    assignedTo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
-      required: true,
-    },
+    assignedTo: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+        required: true,
+      },
+    ],
     dueDate: {
       type: Date,
       required: true,

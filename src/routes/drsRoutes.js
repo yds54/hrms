@@ -11,6 +11,8 @@ const {
   getDrs,
   updateDrs,
   getNotFilledDrs,
+  getTeamNotFilledDrs,
+  getDrsByUserId,
 } = require("../controller/drsController");
 
 const {
@@ -18,44 +20,67 @@ const {
   getDrsValidation,
   updateDrsValidation,
   notFilledDrsValidation,
+  teamNotFilledDrsValidation,
+  getDrsByUserIdValidation,
 } = require("../validation/drsValidation");
 
 //==================== ADD DRS ===============================
-
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.USER),
+  authorizeRoles(...Object.values(ROLES)),
   validate(drsValidation),
   addDrs,
 );
 
 //==================== SHOW DRS ===============================
-
 router.get(
-  "/show",
+  "/",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   validate(getDrsValidation),
   getDrs,
-);
-
-//======================== EDIT DRS =============================
-router.put(
-  "/:id",
-  authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
-  validate(updateDrsValidation),
-  updateDrs,
 );
 
 //============== NOT FILLED DRS ROUTES ====================
 router.get(
   "/not-filled",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   validate(notFilledDrsValidation),
   getNotFilledDrs,
+);
+
+//============== TEAM NOT FILLED DRS ROUTES ====================
+router.get(
+  "/team-not-filled",
+  authenticateJWT,
+  authorizeRoles(
+    ROLES.ADMIN,
+    ROLES.PROJECT_MANAGER,
+    ROLES.HR_RECRUITER,
+    ROLES.TEAM_LEAD,
+  ),
+  validate(teamNotFilledDrsValidation),
+  getTeamNotFilledDrs,
+);
+
+//=================== DISPLAY DRS BY USER ID (ADMIN,PM) =========================
+router.get(
+  "/:userId",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.PROJECT_MANAGER),
+  validate(getDrsByUserIdValidation),
+  getDrsByUserId,
+);
+
+//======================== EDIT DRS =============================
+router.put(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(...Object.values(ROLES)),
+  validate(updateDrsValidation),
+  updateDrs,
 );
 
 module.exports = router;

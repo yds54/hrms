@@ -9,7 +9,10 @@ const {
 exports.createTicketValidation = {
   body: Joi.object({
     title: Joi.string().trim().required(),
-    assignedTo: Joi.string().hex().length(24).required(),
+    assignedTo: Joi.array()
+      .items(Joi.string().hex().length(24))
+      .single()
+      .optional(),
     dueDate: Joi.date().required(),
     priority: Joi.string()
       .valid(...Object.values(PRIORITY_STATUS))
@@ -50,6 +53,10 @@ exports.updateTicketValidation = {
 
   body: Joi.object({
     title: Joi.string().trim().optional(),
+    assignedTo: Joi.array()
+      .items(Joi.string().hex().length(24))
+      .single()
+      .optional(),
     dueDate: Joi.date().optional(),
     priority: Joi.string()
       .valid(...Object.values(PRIORITY_STATUS))
