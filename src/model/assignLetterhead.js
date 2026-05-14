@@ -30,7 +30,18 @@ const assignLetterheadSchema = new mongoose.Schema(
       default: null,
     },
     uploadDocument: {
-      type: String,
+      fileName: {
+        type: String,
+        default: null,
+      },
+      fileType: {
+        type: String,
+        default: null,
+      },
+      size: {
+        type: Number,
+        default: null,
+      },
     },
     note: {
       type: String,
@@ -48,17 +59,5 @@ const assignLetterheadSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-
-assignLetterheadSchema.pre("save", async function () {
-  if (!this.letterheadNumber) {
-    const last = await this.constructor
-      .findOne({ isDeleted: false })
-      .sort({ letterheadNumber: -1 })
-      .select("letterheadNumber")
-      .lean();
-
-    this.letterheadNumber = last ? last.letterheadNumber + 1 : 1;
-  }
-});
 
 module.exports = mongoose.model("assignLetterhead", assignLetterheadSchema);

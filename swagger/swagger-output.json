@@ -4696,7 +4696,7 @@
             "example": "Updated note"
           },
           {
-            "name": "document",
+            "name": "uploadDocument",
             "in": "formData",
             "type": "file"
           }

@@ -9,9 +9,16 @@ const { successResponse } = require("../utils/sucess");
 const { paginate } = require("../utils/pagination");
 const { dateSearchQuery } = require("../utils/dateFormat");
 const { TIMEZONES } = require("../utils/enum");
+const {
+  uploadToCloudinary,
+  cleanupLocalFile,
+  deleteFromCloudinary,
+} = require("../utils/cloudinaryHelper");
+const { getFileUrl } = require("../utils/fileUrl");
 
 //================ CREATE ASSIGN LETTERHEAD =================
 exports.createAssignLetterhead = async (req, res, next) => {
+  let uploadedFilePublicId = null;
   try {
     const { _id: userId } = req.user;
     const { issueTo, letterheadType } = req.body;
@@ -20,33 +27,51 @@ exports.createAssignLetterhead = async (req, res, next) => {
       _id: issueTo,
       isDeleted: false,
     }).select("_id");
+    if (!isUserExists) {
+      throw new AppError("Issue user not found with given Id", 404);
+    }
 
     const isLetterheadTypeExists = await LETTERHEADTYPE.findOne({
       _id: letterheadType,
       isDeleted: false,
     }).select("_id");
+    if (!isLetterheadTypeExists) {
+      throw new AppError("Letterhead type not found with given Id", 404);
+    }
 
-    if (!isUserExists || !isLetterheadTypeExists) {
-      throw new AppError(
-        !isUserExists
-          ? "Issue User not found with given Id"
-          : "Letterhead type not found with given Id",
-        404,
-      );
+    // Auto Increment Letterhead Number
+    const last = await ASSIGNLETTERHEAD.findOne({
+      letterheadNumber: { $exists: true },
+    })
+      .sort({ letterheadNumber: -1 })
+      .select("letterheadNumber")
+      .lean();
+    let nextNumber = 1;
+    if (last?.letterheadNumber) {
+      nextNumber = last.letterheadNumber + 1;
     }
 
     const payload = {
       ...req.body,
       issuerName: userId,
+      letterheadNumber: nextNumber,
     };
 
     if (req.file) {
-      payload.uploadDocument = req.file.filename;
+      const uploadedFile = await uploadToCloudinary(req.file, {
+        folder: "letterhead",
+      });
+      uploadedFilePublicId = uploadedFile.publicId;
+      payload.uploadDocument = uploadedFile;
     }
 
     await ASSIGNLETTERHEAD.create(payload);
-    return successResponse(res, 201, "Letterhead assigned");
+    return successResponse(res, 201, "Letterhead assigned", {
+      letterheadNumber: nextNumber,
+    });
   } catch (error) {
+    await deleteFromCloudinary(uploadedFilePublicId);
+    cleanupLocalFile(req.file?.path);
     next(error);
   }
 };
@@ -94,56 +119,71 @@ exports.getAssignLetterhead = async (req, res, next) => {
       },
       // ---------- SEARCH ----------
       ...(search
-        ? [
-            {
-              $match: {
-                $or: [
-                  { reason: { $regex: search, $options: "i" } },
-                  { note: { $regex: search, $options: "i" } },
-
-                  {
-                    "issueTo.name.firstName": { $regex: search, $options: "i" },
-                  },
-                  {
-                    "issueTo.name.middleName": {
-                      $regex: search,
-                      $options: "i",
-                    },
-                  },
-                  {
-                    "issueTo.name.lastName": { $regex: search, $options: "i" },
-                  },
-                  {
-                    "issuerName.name.firstName": {
-                      $regex: search,
-                      $options: "i",
-                    },
-                  },
-                  {
-                    "issuerName.name.middleName": {
-                      $regex: search,
-                      $options: "i",
-                    },
-                  },
-                  {
-                    "issuerName.name.lastName": {
-                      $regex: search,
-                      $options: "i",
-                    },
-                  },
-                  { "letterheadType.type": { $regex: search, $options: "i" } },
-                  // number search
-                  ...(isNaN(search)
-                    ? []
-                    : [{ letterheadNumber: Number(search) }]),
-                  // date search
-                  ...(dateSearchQuery("issueDate", search)
-                    ? [dateSearchQuery("issueDate", search)]
-                    : []),
-                ],
+        ? (() => {
+            const searchWords = search.trim().split(/\s+/);
+            return [
+              {
+                $match: {
+                  $and: searchWords.map((word) => ({
+                    $or: [
+                      { reason: { $regex: word, $options: "i" } },
+                      { note: { $regex: word, $options: "i" } },
+                      // issueTo name
+                      {
+                        "issueTo.name.firstName": {
+                          $regex: word,
+                          $options: "i",
+                        },
+                      },
+                      {
+                        "issueTo.name.middleName": {
+                          $regex: word,
+                          $options: "i",
+                        },
+                      },
+                      {
+                        "issueTo.name.lastName": {
+                          $regex: word,
+                          $options: "i",
+                        },
+                      },
+                      // issuerName
+                      {
+                        "issuerName.name.firstName": {
+                          $regex: word,
+                          $options: "i",
+                        },
+                      },
+                      {
+                        "issuerName.name.middleName": {
+                          $regex: word,
+                          $options: "i",
+                        },
+                      },
+                      {
+                        "issuerName.name.lastName": {
+                          $regex: word,
+                          $options: "i",
+                        },
+                      },
+                      // --- letterhead type
+                      {
+                        "letterheadType.type": { $regex: word, $options: "i" },
+                      },
+                      // number search
+                      ...(isNaN(word)
+                        ? []
+                        : [{ letterheadNumber: Number(word) }]),
+                    ],
+                  })),
+                },
               },
-            },
-          ]
+              // DATE SEARCH
+              ...(dateSearchQuery("issueDate", search)
+                ? [{ $match: dateSearchQuery("issueDate", search) }]
+                : []),
+            ];
+          })()
         : []),
       {
         $project: {
@@ -177,8 +217,18 @@ exports.getAssignLetterhead = async (req, res, next) => {
       sort: { createdAt: -1 },
     });
 
+    const formattedData = data.map((item) => {
+      const obj = item;
+      if (obj.uploadDocument?.fileName) {
+        obj.uploadDocument.url = getFileUrl(
+          `letterhead/${obj.uploadDocument.fileName}`,
+        );
+      }
+      return obj;
+    });
+
     return successResponse(res, 200, "Assigned letterheads fetched", {
-      data,
+      data: formattedData,
       pagination,
     });
   } catch (error) {
@@ -188,6 +238,7 @@ exports.getAssignLetterhead = async (req, res, next) => {
 
 //================ UPDATE ASSIGN LETTERHEAD =================
 exports.updateAssignLetterhead = async (req, res, next) => {
+  let uploadedFilePublicId = null;
   try {
     const { id } = req.params;
     const { issueTo, letterheadType } = req.body;
@@ -225,15 +276,27 @@ exports.updateAssignLetterhead = async (req, res, next) => {
 
     const payload = { ...req.body };
     if (req.file) {
-      payload.uploadDocument = req.file.filename;
+      const uploadedFile = await uploadToCloudinary(req.file, {
+        folder: "letterhead",
+      });
+      uploadedFilePublicId = uploadedFile.publicId;
+      payload.uploadDocument = uploadedFile;
     }
-
     await ASSIGNLETTERHEAD.updateOne(
       { _id: id, isDeleted: false },
       { $set: payload },
     );
+
+    // DELETE OLD FILE
+    if (uploadedFilePublicId && existing.uploadDocument?.fileName) {
+      await deleteFromCloudinary(
+        `letterhead/${existing.uploadDocument.fileName}`,
+      );
+    }
     return successResponse(res, 200, "Letterhead updated");
   } catch (error) {
+    await deleteFromCloudinary(uploadedFilePublicId);
+    cleanupLocalFile(req.file?.path);
     next(error);
   }
 };
@@ -246,9 +309,16 @@ exports.deleteAssignLetterhead = async (req, res, next) => {
     const isAssignLetterheadExists = await ASSIGNLETTERHEAD.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id");
+    }).select("_id uploadDocument");
     if (!isAssignLetterheadExists) {
       throw new AppError("Letterhead not found with given Id", 404);
+    }
+
+    // DELETE FILE
+    if (isAssignLetterheadExists.uploadDocument?.fileName) {
+      await deleteFromCloudinary(
+        `letterhead/${isAssignLetterheadExists.uploadDocument.fileName}`,
+      );
     }
 
     await ASSIGNLETTERHEAD.updateOne(
