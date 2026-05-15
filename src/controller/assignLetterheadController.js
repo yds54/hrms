@@ -15,6 +15,7 @@ const {
   deleteFromCloudinary,
 } = require("../utils/cloudinaryHelper");
 const { getFileUrl } = require("../utils/fileUrl");
+const { searchConditions } = require("../utils/searchHelper");
 
 //================ CREATE ASSIGN LETTERHEAD =================
 exports.createAssignLetterhead = async (req, res, next) => {
@@ -120,62 +121,29 @@ exports.getAssignLetterhead = async (req, res, next) => {
       // ---------- SEARCH ----------
       ...(search
         ? (() => {
-            const searchWords = search.trim().split(/\s+/);
             return [
               {
                 $match: {
-                  $and: searchWords.map((word) => ({
-                    $or: [
-                      { reason: { $regex: word, $options: "i" } },
-                      { note: { $regex: word, $options: "i" } },
-                      // issueTo name
-                      {
-                        "issueTo.name.firstName": {
-                          $regex: word,
-                          $options: "i",
-                        },
+                  $or: [
+                    // issueTo name search
+                    searchConditions(search, "issueTo.fullName"),
+                    // issuerName search
+                    searchConditions(search, "issuerName.fullName"),
+                    // reason and note search
+                    { reason: { $regex: search, $options: "i" } },
+                    { note: { $regex: search, $options: "i" } },
+                    // --- letterhead type
+                    {
+                      "letterheadType.type": {
+                        $regex: search,
+                        $options: "i",
                       },
-                      {
-                        "issueTo.name.middleName": {
-                          $regex: word,
-                          $options: "i",
-                        },
-                      },
-                      {
-                        "issueTo.name.lastName": {
-                          $regex: word,
-                          $options: "i",
-                        },
-                      },
-                      // issuerName
-                      {
-                        "issuerName.name.firstName": {
-                          $regex: word,
-                          $options: "i",
-                        },
-                      },
-                      {
-                        "issuerName.name.middleName": {
-                          $regex: word,
-                          $options: "i",
-                        },
-                      },
-                      {
-                        "issuerName.name.lastName": {
-                          $regex: word,
-                          $options: "i",
-                        },
-                      },
-                      // --- letterhead type
-                      {
-                        "letterheadType.type": { $regex: word, $options: "i" },
-                      },
-                      // number search
-                      ...(isNaN(word)
-                        ? []
-                        : [{ letterheadNumber: Number(word) }]),
-                    ],
-                  })),
+                    },
+                    // number search
+                    ...(isNaN(search)
+                      ? []
+                      : [{ letterheadNumber: Number(search) }]),
+                  ],
                 },
               },
               // DATE SEARCH
