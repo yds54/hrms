@@ -3782,6 +3782,214 @@
       }
     },
 
+    "/api/evaluationReport": {
+      "post": {
+        "tags": ["Evaluation Report"],
+        "summary": "Add Evaluation Marks",
+        "description": "Create Evaluation Report",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["userId", "fromDate", "toDate", "criteria"],
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "example": "69e08c6bbe446554694365fc"
+                },
+                "fromDate": {
+                  "type": "string",
+                  "example": "2026-05-01"
+                },
+                "toDate": {
+                  "type": "string",
+                  "example": "2026-05-06"
+                },
+                "criteria": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "criteriaId": {
+                        "type": "string",
+                        "example": "69f2f71d7ad86f646571ffb3"
+                      },
+                      "score": {
+                        "type": "number",
+                        "example": 8
+                      }
+                    }
+                  },
+                  "example": [
+                    {
+                      "criteriaId": "69f2f71d7ad86f646571ffb3",
+                      "score": 7.5
+                    },
+                    {
+                      "criteriaId": "69f2f73e7ad86f646571ffbb",
+                      "score": 6
+                    },
+                    {
+                      "criteriaId": "69f2f7507ad86f646571ffc3",
+                      "score": 8
+                    },
+                    {
+                      "criteriaId": "69f2f7587ad86f646571ffc7",
+                      "score": 7.5
+                    },
+                    {
+                      "criteriaId": "69f2f7627ad86f646571ffcb",
+                      "score": 6.5
+                    }
+                  ]
+                },
+                "weeklyAverage": {
+                  "type": "number",
+                  "example": 7.5
+                },
+                "publicNote": {
+                  "type": "string",
+                  "example": "Good performance"
+                },
+                "privateNote": {
+                  "type": "string",
+                  "example": "Needs improvement in communication"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Evaluation created successfully"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Evaluation Report"],
+        "summary": "Display Evaluation Marks",
+        "description": "Get Evaluation Report",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "type": "number",
+            "example": 5
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "number",
+            "example": 2026
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evaluation fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/evaluationReport/{id}": {
+      "put": {
+        "tags": ["Evaluation Report"],
+        "summary": "Update Evaluation Marks",
+        "description": "Update Evaluation Report",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "fromDate": {
+                  "type": "string",
+                  "example": "2026-05-01"
+                },
+                "toDate": {
+                  "type": "string",
+                  "example": "2026-05-07"
+                },
+                "criteria": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "criteriaId": {
+                        "type": "string",
+                        "example": "69f2f71d7ad86f646571ffb3"
+                      },
+                      "score": {
+                        "type": "number",
+                        "example": 8
+                      }
+                    }
+                  },
+                  "example": [
+                    {
+                      "criteriaId": "69f2f71d7ad86f646571ffb3",
+                      "score": 7.5
+                    },
+                    {
+                      "criteriaId": "69f2f73e7ad86f646571ffbb",
+                      "score": 6
+                    },
+                    {
+                      "criteriaId": "69f2f7507ad86f646571ffc3",
+                      "score": 8
+                    },
+                    {
+                      "criteriaId": "69f2f7587ad86f646571ffc7",
+                      "score": 7.5
+                    },
+                    {
+                      "criteriaId": "69f2f7627ad86f646571ffcb",
+                      "score": 6.5
+                    }
+                  ]
+                },
+                "weeklyAverage": {
+                  "type": "number",
+                  "example": 7.5
+                },
+                "publicNote": {
+                  "type": "string",
+                  "example": "Updated performance"
+                },
+                "privateNote": {
+                  "type": "string",
+                  "example": "Confidential feedback"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evaluation updated successfully"
+          }
+        }
+      }
+    },
+
     "/api/drsfactor": {
       "post": {
         "tags": ["DRS Factor"],
