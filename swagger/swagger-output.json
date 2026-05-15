@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.42:5000",
+  "host": "192.168.0.158:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -4448,6 +4448,284 @@
           },
           "500": {
             "description": "Internal server error"
+          }
+        }
+      }
+    },
+
+    "/api/letterheadType": {
+      "post": {
+        "tags": ["Letterhead Type"],
+        "summary": "Add LetterHead Type",
+        "description": "Create Letterhead Type",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "Salary Certificate"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Letterhead type created successfully"
+          },
+          "409": {
+            "description": "Letterhead type already exists"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Letterhead Type"],
+        "summary": "Display LetterHead Type",
+        "description": "Get Letterhead Type List",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number",
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number",
+            "example": 10
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "Salary"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Letterhead type fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/letterheadType/{id}": {
+      "put": {
+        "tags": ["Letterhead Type"],
+        "summary": "Update LetterHead Type",
+        "description": "Update Letterhead Type",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          },
+          {
+            "name": "type",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "Experience Letter"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Letterhead type updated successfully"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Letterhead Type"],
+        "summary": "Delete LetterHead Type",
+        "description": "Delete Letterhead Type",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Letterhead type deleted successfully"
+          },
+          "404": {
+            "description": "Letterhead type not found"
+          }
+        }
+      }
+    },
+
+    "/api/assignLetterhead": {
+      "post": {
+        "tags": ["Assign Letterhead"],
+        "summary": "Add Assign LetterHead",
+        "description": "Create Assign Letterhead",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "issueTo",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "issueDate",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "letterheadType",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "reason",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "note",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "uploadDocument",
+            "in": "formData",
+            "type": "file",
+            "required": false
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Letterhead assigned successfully"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Assign Letterhead"],
+        "summary": "Display Assign LetterHead",
+        "description": "Get Assign Letterhead List",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number",
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number",
+            "example": 10
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "salary"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assign letterhead fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/assignLetterhead/{id}": {
+      "put": {
+        "tags": ["Assign Letterhead"],
+        "summary": "Update Assign LetterHead",
+        "description": "Update Assign Letterhead",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          },
+          {
+            "name": "issueTo",
+            "in": "formData",
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          },
+          {
+            "name": "issueDate",
+            "in": "formData",
+            "type": "string",
+            "example": "2026-05-07"
+          },
+          {
+            "name": "letterheadType",
+            "in": "formData",
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd2"
+          },
+          {
+            "name": "reason",
+            "in": "formData",
+            "type": "string",
+            "example": "For visa process"
+          },
+          {
+            "name": "note",
+            "in": "formData",
+            "type": "string",
+            "example": "Updated note"
+          },
+          {
+            "name": "uploadDocument",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assign letterhead updated successfully"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Assign Letterhead"],
+        "summary": "Delete Assign LetterHead",
+        "description": "Delete Assign Letterhead",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assign letterhead deleted successfully"
+          },
+          "404": {
+            "description": "Assign letterhead not found"
           }
         }
       }

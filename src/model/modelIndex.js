@@ -23,3 +23,5 @@ exports.TEAMS = require("./teams");
 exports.EVALUATIONCRITERIA = require("./evaluationCriteria");
 exports.DRSFACTOR = require("./drsFactor");
 exports.QUOTE = require("./quote");
+exports.LETTERHEADTYPE = require("./letterheadType");
+exports.ASSIGNLETTERHEAD = require("./assignLetterhead");
