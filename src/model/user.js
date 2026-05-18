@@ -124,6 +124,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    fullName: {
+      type: String,
+      index: true,
+    },
     isLeft: { type: Boolean, default: false },
     marriageDate: { type: Date },
     deletedAt: { type: Date },
@@ -136,12 +140,6 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-
-userSchema.virtual("fullName").get(function () {
-  return [this.name?.firstName, this.name?.middleName, this.name?.lastName]
-    .filter(Boolean)
-    .join(" ");
-});
 
 userSchema.set("toJSON", {
   transform: function (doc, ret) {

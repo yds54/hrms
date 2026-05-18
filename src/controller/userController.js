@@ -2,6 +2,7 @@ require("dotenv").config();
 const moment = require("moment");
 const { paginate } = require("../utils/pagination");
 const cloudinary = require("../config/cloudinary");
+const { searchConditions } = require("../utils/searchHelper");
 const { successResponse } = require("../utils/sucess");
 const { USER } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
@@ -37,7 +38,8 @@ exports.viewallUser = async (req, res, next) => {
       isLeft: false,
     };
 
-    if (user.role !== ROLES.ADMIN) {
+    const allowedRoles = [ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER];
+    if (!allowedRoles.includes(user.role)) {
       _whereCondition._id = user.id;
     } else if (id) {
       _whereCondition._id = id;
@@ -65,27 +67,15 @@ exports.viewallUser = async (req, res, next) => {
     }
 
     if (search) {
-      const fields = [
-        "name.firstName",
-        "name.middleName",
-        "name.lastName",
-        "email",
-        "employeeCode",
-        "gender",
-        "contactNumber",
-        "role",
+      _whereCondition.$or = [
+        searchConditions(search, "fullName"),
+
+        { email: { $regex: search, $options: "i" } },
+        { employeeCode: { $regex: search, $options: "i" } },
+        { gender: { $regex: search, $options: "i" } },
+        { contactNumber: { $regex: search, $options: "i" } },
+        { role: { $regex: search, $options: "i" } },
       ];
-
-      const searchWords = search.trim().split(/\s+/);
-
-      _whereCondition.$and = searchWords.map((word) => ({
-        $or: fields.map((field) => ({
-          [field]: {
-            $regex: word,
-            $options: "i",
-          },
-        })),
-      }));
     }
 
     const { data, pagination } = await paginate({
@@ -201,6 +191,17 @@ exports.updateUser = async (req, res, next) => {
       uploadedFilePublicId = uploadedFile.publicId;
 
       payload.profilePicture = uploadedFile;
+    }
+    if (payload.name) {
+      const name = {
+        ...isUserExists.name?.toObject?.(),
+        ...payload.name,
+      };
+
+      payload.fullName = Object.values(name)
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
     }
 
     await USER.updateOne({ _id: id, isDeleted: false }, { $set: payload });
@@ -366,7 +367,6 @@ exports.gstAllUsersByOrganization = async (req, res, next) => {
     });
 
     const formattedData = data.map((userObj) => {
-      console.log("User Object:", { ...userObj._doc }); // Debug log to check the structure of userObj
       return {
         ...userObj._doc,
         profilePictureUrl: userObj.profilePicture?.fileName
