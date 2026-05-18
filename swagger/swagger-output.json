@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.158:5000",
+  "host": "192.168.0.42:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -20,6 +20,7 @@
     "/api/auth/register": {
       "post": {
         "tags": ["Auth"],
+        "summary": "Add New User",
         "description": "Register user with profile picture upload",
         "consumes": ["multipart/form-data"],
         "parameters": [
@@ -296,6 +297,7 @@
     "/api/auth/login": {
       "post": {
         "tags": ["Auth"],
+        "summary": "Login",
         "description": "LOGIN USER",
         "parameters": [
           {
@@ -324,6 +326,7 @@
     "/api/auth/logout": {
       "post": {
         "tags": ["Auth"],
+        "summary": "Logout",
         "description": "LOGOUT USER",
         "parameters": [
           {
@@ -342,6 +345,7 @@
     "/api/auth/forgot-password": {
       "post": {
         "tags": ["Auth"],
+        "summary": "Forgot Password",
         "description": "Forgot Password",
         "parameters": [
           {
@@ -368,6 +372,7 @@
     "/api/auth/change-password": {
       "post": {
         "tags": ["Auth"],
+        "summary": "Reset Password",
         "description": "Change Password",
         "parameters": [
           {
@@ -393,9 +398,10 @@
       }
     },
 
-    "/api/drs/": {
+    "/api/drs": {
       "post": {
         "tags": ["Drs"],
+        "summary": "Add Drs",
         "description": "FILL DRS",
         "parameters": [
           {
@@ -451,7 +457,8 @@
       },
       "get": {
         "tags": ["Drs"],
-        "description": "SHOW DRS",
+        "summary": "Display Drs",
+        "description": "Display DRS",
         "parameters": [
           {
             "name": "page",
@@ -492,6 +499,7 @@
     "/api/drs/{userId}": {
       "get": {
         "tags": ["Drs"],
+        "summary": "Get DRS by UserId",
         "description": "Get DRS by UserId (Admin & Project Manager)",
         "parameters": [
           {
@@ -548,6 +556,7 @@
     "/api/drs/{id}": {
       "put": {
         "tags": ["Drs"],
+        "summary": "Update Drs",
         "description": "EDIT DRS",
         "parameters": [
           {
@@ -607,6 +616,7 @@
     "/api/drs/not-filled": {
       "get": {
         "tags": ["Drs"],
+        "summary": "Display Not Filled Drs",
         "description": "GET NOT FILLED DRS",
         "parameters": [
           {
@@ -632,6 +642,7 @@
     "/api/drs/team-not-filled": {
       "get": {
         "tags": ["Drs"],
+        "summary": "Display Team Not Filled Drs",
         "description": "GET TEAM NOT FILLED DRS",
         "parameters": [
           {
@@ -665,9 +676,10 @@
       }
     },
 
-    "/api/leaveRequest/": {
+    "/api/leaveRequest": {
       "post": {
         "tags": ["Leave Request"],
+        "summary": "Add Leave Request",
         "description": "SEND LEAVE REQUEST",
         "parameters": [
           {
@@ -717,6 +729,7 @@
     "/api/leaveRequest/history": {
       "get": {
         "tags": ["Leave Request"],
+        "summary": "Display Leave Request History ",
         "description": "LEAVE REQUEST HISTORY",
         "parameters": [
           {
@@ -773,6 +786,7 @@
     "/api/leaveRequest/{id}": {
       "put": {
         "tags": ["Leave Request"],
+        "summary": "Update Leave Request",
         "description": "Approve Leave Request by PM and HR",
         "parameters": [
           {
@@ -810,6 +824,7 @@
       },
       "delete": {
         "tags": ["Leave Request"],
+        "summary": "Delete Leave Request",
         "description": "Admin Delete Leave Request",
         "parameters": [
           {
@@ -829,6 +844,7 @@
     "/api/leaveRequest/team-leave-request": {
       "get": {
         "tags": ["Leave Request"],
+        "summary": "Display Leave Request History ",
         "description": "LEAVE REQUEST HISTORY",
         "parameters": [
           {
@@ -883,9 +899,10 @@
       }
     },
 
-    "/api/users/": {
+    "/api/users": {
       "get": {
         "tags": ["User"],
+        "summary": "Display All User",
         "description": "",
         "parameters": [
           {
@@ -919,7 +936,7 @@
             "name": "role",
             "in": "query",
             "type": "string",
-            "description": "pm -onlypm "
+            "description": "Use 'all' to get all users except HR. Use 'tl' to get PM and TL users. Or pass a specific role like 'project_manager'."
           },
           {
             "name": "organizationId",
@@ -957,6 +974,7 @@
     "/api/users/{id}": {
       "get": {
         "tags": ["User"],
+        "summary": "Display User By Id",
         "description": "Get User  by ID",
         "parameters": [
           {
@@ -983,6 +1001,7 @@
       },
       "put": {
         "tags": ["User"],
+        "summary": "Update User",
         "description": "Update user with profile picture upload",
         "consumes": ["multipart/form-data"],
         "parameters": [
@@ -1111,6 +1130,7 @@
       },
       "delete": {
         "tags": ["User"],
+        "summary": "Delete User",
         "description": "",
         "parameters": [
           {
@@ -1128,9 +1148,10 @@
       }
     },
 
-    "/api/holidays/": {
+    "/api/holidays": {
       "post": {
         "tags": ["Holiday"],
+        "summary": "Add Holiday",
         "description": "",
         "parameters": [
           {
@@ -1157,6 +1178,7 @@
       },
       "get": {
         "tags": ["Holiday"],
+        "summary": "Display Holiday",
         "description": "",
         "parameters": [
           {
@@ -1192,6 +1214,7 @@
     "/api/holidays/{id}": {
       "delete": {
         "tags": ["Holiday"],
+        "summary": "Delete Holiday",
         "description": "",
         "parameters": [
           {
@@ -1209,6 +1232,7 @@
       },
       "put": {
         "tags": ["Holiday"],
+        "summary": "Update Holiday",
         "description": "",
         "parameters": [
           {
@@ -1241,9 +1265,10 @@
       }
     },
 
-    "/api/departementes/": {
+    "/api/departementes": {
       "post": {
-        "tags": ["departemente"],
+        "tags": ["Department"],
+        "summary": "Add Department",
         "description": "",
         "parameters": [
           {
@@ -1266,7 +1291,8 @@
         }
       },
       "get": {
-        "tags": ["departemente"],
+        "tags": ["Department"],
+        "summary": "Display Department",
         "description": "",
         "parameters": [
           {
@@ -1296,7 +1322,8 @@
     },
     "/api/departementes/{id}": {
       "get": {
-        "tags": ["departemente"],
+        "tags": ["Department"],
+        "summary": "Display Department By Id",
         "description": "Get Department  by ID",
         "parameters": [
           {
@@ -1322,7 +1349,8 @@
         }
       },
       "put": {
-        "tags": ["departemente"],
+        "tags": ["Department"],
+        "summary": "Update Department",
         "description": "",
         "parameters": [
           {
@@ -1351,7 +1379,8 @@
         }
       },
       "delete": {
-        "tags": ["departemente"],
+        "tags": ["Department"],
+        "summary": "Delete Department",
         "description": "",
         "parameters": [
           {
@@ -1369,9 +1398,10 @@
       }
     },
 
-    "/api/designations/": {
+    "/api/designations": {
       "post": {
-        "tags": ["designation"],
+        "tags": ["Designation"],
+        "summary": "Add Designation",
         "description": "",
         "parameters": [
           {
@@ -1397,7 +1427,8 @@
         }
       },
       "get": {
-        "tags": ["designation"],
+        "tags": ["Designation"],
+        "summary": "Display Designation",
         "description": "",
         "parameters": [
           {
@@ -1432,7 +1463,8 @@
     },
     "/api/designations/{id}": {
       "get": {
-        "tags": ["designation"],
+        "tags": ["Designation"],
+        "summary": "Display Designation By Id",
         "description": "Get Designation by ID",
         "parameters": [
           {
@@ -1458,7 +1490,8 @@
         }
       },
       "put": {
-        "tags": ["designation"],
+        "tags": ["Designation"],
+        "summary": "Update Designation",
         "description": "",
         "parameters": [
           {
@@ -1490,7 +1523,8 @@
         }
       },
       "delete": {
-        "tags": ["designation"],
+        "tags": ["Designation"],
+        "summary": "Delete Designation",
         "description": "",
         "parameters": [
           {
@@ -1508,9 +1542,10 @@
       }
     },
 
-    "/api/banks/": {
+    "/api/banks": {
       "post": {
-        "tags": ["bank"],
+        "tags": ["Bank"],
+        "summary": "Add Bank",
         "description": "",
         "parameters": [
           {
@@ -1533,7 +1568,8 @@
         }
       },
       "get": {
-        "tags": ["bank"],
+        "tags": ["Bank"],
+        "summary": "Display All BAnk",
         "description": "",
         "parameters": [
           {
@@ -1563,7 +1599,8 @@
     },
     "/api/banks/{id}": {
       "get": {
-        "tags": ["bank"],
+        "tags": ["Bank"],
+        "summary": "Display Bank By Id",
         "description": "Get Bank  by ID",
         "parameters": [
           {
@@ -1589,7 +1626,8 @@
         }
       },
       "put": {
-        "tags": ["bank"],
+        "tags": ["Bank"],
+        "summary": "Update Bank",
         "description": "",
         "parameters": [
           {
@@ -1618,7 +1656,8 @@
         }
       },
       "delete": {
-        "tags": ["bank"],
+        "tags": ["Bank"],
+        "summary": "Delete Bank",
         "description": "",
         "parameters": [
           {
@@ -1636,9 +1675,10 @@
       }
     },
 
-    "/api/criterias/": {
+    "/api/criterias": {
       "post": {
-        "tags": ["criterias"],
+        "tags": ["Criterias"],
+        "summary": "Add Offboarding Criteria",
         "description": "",
         "parameters": [
           {
@@ -1664,7 +1704,8 @@
         }
       },
       "get": {
-        "tags": ["criterias"],
+        "tags": ["Criterias"],
+        "summary": "Display All Offboarding Criteria",
         "description": "",
         "parameters": [
           {
@@ -1694,7 +1735,8 @@
     },
     "/api/criterias/{id}": {
       "get": {
-        "tags": ["criterias"],
+        "tags": ["Criterias"],
+        "summary": "Display Offboarding Criteria By Id",
         "description": "Get criteria  by ID",
         "parameters": [
           {
@@ -1720,7 +1762,8 @@
         }
       },
       "put": {
-        "tags": ["criterias"],
+        "tags": ["Criterias"],
+        "summary": "Update Offboarding Criteria",
         "description": "",
         "parameters": [
           {
@@ -1749,7 +1792,8 @@
         }
       },
       "delete": {
-        "tags": ["criterias"],
+        "tags": ["Criterias"],
+        "summary": "Delete Offboarding Criteria",
         "description": "",
         "parameters": [
           {
@@ -1767,9 +1811,9 @@
       }
     },
 
-    "/api/organizations/": {
+    "/api/organizations": {
       "post": {
-        "tags": ["organization"],
+        "tags": ["Organization"],
         "summary": "Add Organization",
         "description": "Create a new organization with logo upload",
         "consumes": ["multipart/form-data"],
@@ -1840,7 +1884,8 @@
         }
       },
       "get": {
-        "tags": ["organization"],
+        "tags": ["Organization"],
+        "summary": "Display All Organization",
         "description": "Get All Organizations",
         "parameters": [
           {
@@ -1870,7 +1915,8 @@
     },
     "/api/organizations/{id}": {
       "get": {
-        "tags": ["organization"],
+        "tags": ["Organization"],
+        "summary": "Display Organization By ID",
         "description": "Get Organization By ID",
         "parameters": [
           {
@@ -1887,7 +1933,7 @@
         }
       },
       "put": {
-        "tags": ["organization"],
+        "tags": ["Organization"],
         "summary": "Update Organization",
         "description": "Update organization with optional logo upload",
         "consumes": ["multipart/form-data"],
@@ -1961,8 +2007,8 @@
         }
       },
       "delete": {
-        "tags": ["organization"],
-        "description": "Delete Organization",
+        "tags": ["Organization"],
+        "summary": "Delete Organization",
         "parameters": [
           {
             "name": "id",
@@ -1979,9 +2025,10 @@
       }
     },
 
-    "/api/ticket/": {
+    "/api/ticket": {
       "post": {
         "tags": ["Ticket Board"],
+        "summary": "Add Ticket",
         "description": "CREATE TICKET",
         "consumes": ["multipart/form-data"],
         "parameters": [
@@ -2035,11 +2082,10 @@
             "description": "Ticket created successfully"
           }
         }
-      }
-    },
-    "/api/ticket": {
+      },
       "get": {
         "tags": ["Ticket Board"],
+        "summary": "Display All Ticket",
         "description": "DISPLAY TICKET BOARD",
         "parameters": [
           {
@@ -2088,6 +2134,7 @@
     "/api/ticket/{id}": {
       "put": {
         "tags": ["Ticket Board"],
+        "summary": "Update Ticket",
         "description": "EDIT TICKET",
         "consumes": ["multipart/form-data"],
         "parameters": [
@@ -2166,6 +2213,7 @@
       },
       "delete": {
         "tags": ["Ticket Board"],
+        "summary": "Delete Ticket",
         "description": "DELETE TICKET",
         "parameters": [
           {
@@ -2185,6 +2233,7 @@
     "/api/ticket/{ticketId}/activity": {
       "get": {
         "tags": ["Ticket Board"],
+        "summary": "Display Ticket Activity Log",
         "description": "GET TICKET ACTIVITY LOG",
         "parameters": [
           {
@@ -2205,6 +2254,7 @@
     "/api/ticket/{ticketId}/comment": {
       "post": {
         "tags": ["Ticket Board"],
+        "summary": "Add Comment On Ticket",
         "description": "ADD COMMENT ON TICKET",
         "consumes": ["multipart/form-data"],
         "parameters": [
@@ -2242,6 +2292,7 @@
     "/api/ticket/{ticketId}/comments": {
       "get": {
         "tags": ["Ticket Board"],
+        "summary": "Display All Comments Of Ticket",
         "description": "GET ALL COMMENTS OF TICKET",
         "parameters": [
           {
@@ -2261,6 +2312,7 @@
     "/api/ticket/comment/{commentId}": {
       "delete": {
         "tags": ["Ticket Board"],
+        "summary": "Delete comment of a ticket",
         "description": "Delete comment of a ticket",
         "parameters": [
           {
@@ -2286,6 +2338,7 @@
     "/api/ticket/user/{userId}": {
       "get": {
         "tags": ["Ticket Board"],
+        "summary": "Display Ticket By User Id",
         "description": "Get Ticket By User Id",
         "parameters": [
           {
@@ -2312,6 +2365,7 @@
     "/api/ticket/update-assignee": {
       "put": {
         "tags": ["Ticket Board"],
+        "summary": "Update Ticket Assignee",
         "description": "Update Ticket Assignee",
         "consumes": ["application/json"],
         "parameters": [
@@ -2349,9 +2403,10 @@
       }
     },
 
-    "/api/attendance/": {
+    "/api/attendance": {
       "post": {
         "tags": ["Attendance"],
+        "summary": "Add Attendance",
         "description": "Create attendance",
         "consumes": ["multipart/form-data"],
         "parameters": [
@@ -2427,11 +2482,10 @@
             "description": "Forbidden"
           }
         }
-      }
-    },
-    "/api/attendance": {
+      },
       "get": {
         "tags": ["Attendance"],
+        "summary": "Display All Attendance",
         "description": "Get Attendance",
         "parameters": [
           {
@@ -2491,6 +2545,7 @@
     "/api/attendance/history": {
       "get": {
         "tags": ["Attendance"],
+        "summary": "Display Attendance History",
         "description": "Get Attendance History",
         "parameters": [
           {
@@ -2540,9 +2595,10 @@
       }
     },
 
-    "/api/assetcategories/": {
+    "/api/assetcategories": {
       "post": {
-        "tags": ["asset category"],
+        "tags": ["Asset Category"],
+        "summary": "Add Asset Category",
         "description": "Add Asset Category",
         "parameters": [
           {
@@ -2565,7 +2621,8 @@
         }
       },
       "get": {
-        "tags": ["asset category"],
+        "tags": ["Asset Category"],
+        "summary": "Get All Asset Categories",
         "description": "Get All Asset Categories",
         "parameters": [
           {
@@ -2595,7 +2652,8 @@
     },
     "/api/assetcategories/{id}": {
       "put": {
-        "tags": ["asset category"],
+        "tags": ["Asset Category"],
+        "summary": "Update Asset Category",
         "description": "Update Asset Category",
         "parameters": [
           {
@@ -2624,7 +2682,8 @@
         }
       },
       "delete": {
-        "tags": ["asset category"],
+        "tags": ["Asset Category"],
+        "summary": "Delete asset category",
         "description": "Delete asset category",
         "parameters": [
           {
@@ -2642,10 +2701,11 @@
       }
     },
 
-    "/api/assets/": {
+    "/api/assets": {
       "post": {
-        "tags": ["asset"],
-        "description": "Add Asset Category",
+        "tags": ["Asset"],
+        "summary": "Add Asset ",
+        "description": "Add Asset ",
         "parameters": [
           {
             "name": "body",
@@ -2670,7 +2730,8 @@
         }
       },
       "get": {
-        "tags": ["asset"],
+        "tags": ["Asset"],
+        "summary": "Display All Asset",
         "description": "Get All Asset",
         "parameters": [
           {
@@ -2700,7 +2761,8 @@
     },
     "/api/assets/{id}": {
       "get": {
-        "tags": ["asset"],
+        "tags": ["Asset"],
+        "summary": "Get Asset  by ID",
         "description": "Get Asset  by ID",
         "parameters": [
           {
@@ -2735,7 +2797,8 @@
         }
       },
       "put": {
-        "tags": ["asset"],
+        "tags": ["Asset"],
+        "summary": "Update Asset",
         "description": "Update Asset",
         "parameters": [
           {
@@ -2767,7 +2830,8 @@
         }
       },
       "delete": {
-        "tags": ["asset"],
+        "tags": ["Asset"],
+        "summary": "Delete asset",
         "description": "Delete asset",
         "parameters": [
           {
@@ -2785,9 +2849,10 @@
       }
     },
 
-    "/api/assetmanagement/": {
+    "/api/assetmanagement": {
       "post": {
-        "tags": ["asset-management"],
+        "tags": ["Asset-Management"],
+        "summary": "Assign Asset to User",
         "description": "Assign Asset to User",
         "parameters": [
           {
@@ -2822,7 +2887,8 @@
         }
       },
       "get": {
-        "tags": ["asset-management"],
+        "tags": ["Asset-Management"],
+        "summary": "Display All Asset Assignments",
         "description": "Get All Asset Assignments",
         "parameters": [
           {
@@ -2870,7 +2936,8 @@
     },
     "/api/assetmanagement/{id}": {
       "get": {
-        "tags": ["asset-management"],
+        "tags": ["Asset-Management"],
+        "summary": "Get Asset  by ID",
         "description": "Get Asset  by ID",
         "parameters": [
           {
@@ -2905,7 +2972,8 @@
         }
       },
       "put": {
-        "tags": ["asset-management"],
+        "tags": ["Asset-Management"],
+        "summary": "Update Asset Assignment",
         "description": "Update Asset Assignment",
         "parameters": [
           {
@@ -2946,7 +3014,8 @@
         }
       },
       "delete": {
-        "tags": ["asset-management"],
+        "tags": ["Asset-Management"],
+        "summary": "Delete Asset Assignment",
         "description": "Delete Asset Assignment",
         "parameters": [
           {
@@ -2966,7 +3035,8 @@
 
     "/api/userpayroll": {
       "post": {
-        "tags": ["user-payroll"],
+        "tags": ["User-Payroll"],
+        "summary": "Add User Payroll",
         "description": "Add User Payroll",
         "parameters": [
           {
@@ -3034,7 +3104,8 @@
         }
       },
       "get": {
-        "tags": ["user-payroll"],
+        "tags": ["User-Payroll"],
+        "summary": "Get All User Payrolls",
         "description": "Get All User Payrolls",
         "parameters": [
           {
@@ -3062,7 +3133,8 @@
     },
     "/api/userpayroll/{id}": {
       "get": {
-        "tags": ["user-payroll"],
+        "tags": ["User-Payroll"],
+        "summary": "Display User Payroll by ID",
         "description": "Get User Payroll by ID",
         "parameters": [
           {
@@ -3105,7 +3177,8 @@
         }
       },
       "put": {
-        "tags": ["user-payroll"],
+        "tags": ["User-Payroll"],
+        "summary": "Update User Payroll",
         "description": "Update User Payroll",
         "parameters": [
           {
@@ -3146,7 +3219,8 @@
         }
       },
       "delete": {
-        "tags": ["user-payroll"],
+        "tags": ["User-Payroll"],
+        "summary": "Delete User Payroll",
         "description": "Delete User Payroll",
         "parameters": [
           {
@@ -3172,7 +3246,8 @@
 
     "/api/increments": {
       "post": {
-        "tags": ["increment"],
+        "tags": ["Increment"],
+        "summary": "Add Increment",
         "description": "Add Increment",
         "parameters": [
           {
@@ -3226,7 +3301,8 @@
         }
       },
       "get": {
-        "tags": ["increment"],
+        "tags": ["Increment"],
+        "summary": "Get All User's Increments",
         "description": "Get All Increments",
         "parameters": [
           {
@@ -3256,7 +3332,8 @@
     },
     "/api/increments/{id}": {
       "get": {
-        "tags": ["increment"],
+        "tags": ["Increment"],
+        "summary": "Get Increment By UserID",
         "description": "Get Increment By ID",
         "parameters": [
           {
@@ -3315,7 +3392,8 @@
         }
       },
       "delete": {
-        "tags": ["increment"],
+        "tags": ["Increment"],
+        "summary": "Delete User's Increment",
         "description": "Delete Increment",
         "parameters": [
           {
@@ -3338,9 +3416,9 @@
         }
       }
     },
-    "/api/userDocuments/": {
+    "/api/userDocuments": {
       "post": {
-        "tags": ["user-documents"],
+        "tags": ["User-Documents"],
         "summary": "Add User Documents",
         "description": "Upload user documents with remarks and other documents",
         "consumes": ["multipart/form-data"],
@@ -3478,7 +3556,8 @@
       },
 
       "get": {
-        "tags": ["user-documents"],
+        "tags": ["User-Documents"],
+        "summary": "Display all user documents",
         "description": "Get all user documents",
         "parameters": [
           {
@@ -3508,7 +3587,8 @@
     },
     "/api/userDocuments/{id}": {
       "get": {
-        "tags": ["user-documents"],
+        "tags": ["User-Documents"],
+        "summary": "Display User's Documents By ID",
         "description": "Get User Documents By ID",
         "parameters": [
           {
@@ -3535,7 +3615,7 @@
         }
       },
       "put": {
-        "tags": ["user-documents"],
+        "tags": ["User-Documents"],
         "summary": "Update User Documents",
         "description": "Update user documents with file uploads, remarks and other documents",
         "consumes": ["multipart/form-data"],
@@ -3675,7 +3755,7 @@
         }
       },
       "delete": {
-        "tags": ["user-documents"],
+        "tags": ["User-Documents"],
         "summary": "Delete User Documents",
         "description": "Soft delete user documents by ID",
         "produces": ["application/json"],
@@ -3705,6 +3785,7 @@
     "/api/evaluationCriteria": {
       "post": {
         "tags": ["Evaluation Criteria"],
+        "summary": "Add Evaluation Criteria",
         "description": "Create Evaluation Criteria",
         "parameters": [
           {
@@ -3730,6 +3811,7 @@
       },
       "get": {
         "tags": ["Evaluation Criteria"],
+        "summary": "Display Evaluation Criteria List",
         "description": "Get Evaluation Criteria List",
         "parameters": [
           {
@@ -3761,6 +3843,7 @@
     "/api/evaluationCriteria/{id}": {
       "delete": {
         "tags": ["Evaluation Criteria"],
+        "summary": "Delete Evaluation Criteria",
         "description": "Delete Evaluation Criteria",
         "parameters": [
           {
@@ -3993,6 +4076,7 @@
     "/api/drsfactor": {
       "post": {
         "tags": ["DRS Factor"],
+        "summary": "Add DRS Factor",
         "description": "Create DRS Factor",
         "parameters": [
           {
@@ -4018,6 +4102,7 @@
       },
       "get": {
         "tags": ["DRS Factor"],
+        "summary": "Display DRS Factor List",
         "description": "Get DRS Factor List",
         "parameters": [
           {
@@ -4049,6 +4134,7 @@
     "/api/drsfactor/{id}": {
       "delete": {
         "tags": ["DRS Factor"],
+        "summary": "Delete DRS Factor",
         "description": "Delete DRS Factor",
         "parameters": [
           {
@@ -4070,9 +4156,10 @@
       }
     },
 
-    "/api/quotes/": {
+    "/api/quotes": {
       "get": {
         "tags": ["Quotes"],
+        "summary": "Display daily quote (different per user)",
         "description": "Get daily quote (different per user)",
         "responses": {
           "200": {
@@ -4085,9 +4172,10 @@
       }
     },
 
-    "/api/projects/": {
+    "/api/projects": {
       "post": {
-        "tags": ["project"],
+        "tags": ["Project"],
+        "summary": "Add Project",
         "description": "",
         "parameters": [
           {
@@ -4135,7 +4223,8 @@
         }
       },
       "get": {
-        "tags": ["project"],
+        "tags": ["Project"],
+        "summary": "Display All Project",
         "description": "",
         "parameters": [
           {
@@ -4170,7 +4259,8 @@
     },
     "/api/projects/{id}": {
       "get": {
-        "tags": ["project"],
+        "tags": ["Project"],
+        "summary": "Display Project By Id",
         "description": "Get Project by ID",
         "parameters": [
           {
@@ -4196,7 +4286,8 @@
         }
       },
       "put": {
-        "tags": ["project"],
+        "tags": ["Project"],
+        "summary": "Update Project",
         "description": "",
         "parameters": [
           {
@@ -4250,7 +4341,8 @@
         }
       },
       "delete": {
-        "tags": ["project"],
+        "tags": ["Project"],
+        "summary": "Delete Project",
         "description": "",
         "parameters": [
           {
@@ -4267,9 +4359,10 @@
         }
       }
     },
-    "/api/teams/": {
+    "/api/teams": {
       "post": {
-        "tags": ["team"],
+        "tags": ["Team"],
+        "summary": "Add Team",
         "description": "",
         "parameters": [
           {
@@ -4325,7 +4418,8 @@
         }
       },
       "get": {
-        "tags": ["team"],
+        "tags": ["Team"],
+        "summary": "Display All Teams",
         "description": "",
         "parameters": [
           {
@@ -4356,7 +4450,8 @@
     },
     "/api/teams/{id}": {
       "get": {
-        "tags": ["team"],
+        "tags": ["Team"],
+        "summary": "Display Team By Id",
         "description": "Get Team by ID",
         "parameters": [
           {
@@ -4382,7 +4477,8 @@
         }
       },
       "put": {
-        "tags": ["team"],
+        "tags": ["Team"],
+        "summary": "Update Team",
         "description": "",
         "parameters": [
           {
@@ -4438,7 +4534,8 @@
         }
       },
       "delete": {
-        "tags": ["team"],
+        "tags": ["Team"],
+        "summary": "Delete Team",
         "description": "",
         "parameters": [
           {
@@ -4458,7 +4555,8 @@
 
     "/api/teams/projectsummary": {
       "get": {
-        "tags": ["team"],
+        "tags": ["Team"],
+        "summary": "Display project-wise teams summary",
         "description": "Get project-wise grouped team summary. Search supported on projectName, clientName, project status, project type, startDate, and endDate. Date search formats supported: YYYY, YYYY-MM, YYYY-MM-DD.",
         "parameters": [
           {
@@ -4506,7 +4604,8 @@
 
     "/api/teams/{teamId}/member/{userId}": {
       "delete": {
-        "tags": ["team"],
+        "tags": ["Team"],
+        "summary": "Delete Team Member From Team",
         "description": "Remove a user from team",
         "parameters": [
           {
@@ -4541,7 +4640,8 @@
 
     "/api/teams/unassigned-users": {
       "get": {
-        "tags": ["team"],
+        "tags": ["Team"],
+        "summary": "Display users who are not assigned to any team.",
         "description": "Get users who are not assigned to any team. Search supported on name, employeeCode, role, designation name, and department name.",
         "parameters": [
           {
@@ -4580,6 +4680,7 @@
     "/api/users/organization": {
       "get": {
         "tags": ["User"],
+        "summary": "Display all users from the logged-in user's organization.",
         "description": "Get all users from the logged-in user's organization. Search supported on first name, middle name, last name, and employee code.",
         "parameters": [
           {
@@ -4625,6 +4726,7 @@
     "/api/users/randomusers": {
       "get": {
         "tags": ["User"],
+        "summary": "Display Random User",
         "description": "Get random active users from the logged-in user's organization based on selected number of records.",
         "parameters": [
           {
@@ -4934,6 +5036,278 @@
           },
           "404": {
             "description": "Assign letterhead not found"
+          }
+        }
+      }
+    },
+
+    "/api/interviews": {
+      "post": {
+        "tags": ["Interview"],
+        "summary": "Add Interview",
+        "description": "",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "example": "Rahul Patel"
+          },
+          {
+            "name": "address",
+            "in": "formData",
+            "type": "string",
+            "example": "Surat, Gujarat"
+          },
+          {
+            "name": "previousCompanyName",
+            "in": "formData",
+            "type": "string",
+            "example": "ABC Tech"
+          },
+          {
+            "name": "qualification",
+            "in": "formData",
+            "type": "string",
+            "example": "B.Tech IT"
+          },
+          {
+            "name": "technology",
+            "in": "formData",
+            "type": "string",
+            "example": "Node.js"
+          },
+          {
+            "name": "contactNumber",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "example": "9876543210"
+          },
+          {
+            "name": "dateOfBirth",
+            "in": "formData",
+            "type": "string",
+            "example": "2000-05-20"
+          },
+          {
+            "name": "email",
+            "in": "formData",
+            "type": "string",
+            "example": "rahul@gmail.com"
+          },
+          {
+            "name": "interviewMode",
+            "in": "formData",
+            "type": "string",
+            "example": "Online"
+          },
+          {
+            "name": "yearOfExperience",
+            "in": "formData",
+            "type": "number",
+            "example": 2
+          },
+          {
+            "name": "currentSalary",
+            "in": "formData",
+            "type": "number",
+            "example": 35000
+          },
+          {
+            "name": "expectedSalary",
+            "in": "formData",
+            "type": "number",
+            "example": 50000
+          },
+          {
+            "name": "interviewTime",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "example": "2026-05-15T10:00:00.000Z"
+          },
+          {
+            "name": "technicalRoundUser",
+            "in": "formData",
+            "type": "string",
+            "example": "68184fbc2c0f76cb3d8f5a11"
+          },
+          {
+            "name": "hrRoundUser",
+            "in": "formData",
+            "type": "string",
+            "example": "68184fbc2c0f76cb3d8f5a12"
+          },
+          {
+            "name": "referenceUser",
+            "in": "formData",
+            "type": "string",
+            "example": "68184fbc2c0f76cb3d8f5a13"
+          },
+          {
+            "name": "resume",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "remark",
+            "in": "formData",
+            "type": "string",
+            "example": "Good communication skills"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Interview"],
+        "summary": "Display All Interviews",
+        "description": "Searchable fields: name, email, contactNumber",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "technology",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "interviewStatus",
+            "in": "query",
+            "type": "boolean"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/interviews/{id}": {
+      "get": {
+        "tags": ["Interview"],
+        "summary": "Display Interview By Id",
+        "description": "Get Interview by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Interview retrieved successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "404": {
+            "description": "Interview not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Interview"],
+        "summary": "Update Interview",
+        "description": "",
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "formData",
+            "type": "string",
+            "example": "Rahul Patel"
+          },
+          {
+            "name": "technology",
+            "in": "formData",
+            "type": "string",
+            "example": "React.js"
+          },
+          {
+            "name": "contactNumber",
+            "in": "formData",
+            "type": "string",
+            "example": "9876543210"
+          },
+          {
+            "name": "email",
+            "in": "formData",
+            "type": "string",
+            "example": "rahul@gmail.com"
+          },
+          {
+            "name": "interviewStatus",
+            "in": "formData",
+            "type": "boolean",
+            "example": true
+          },
+          {
+            "name": "resume",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "remark",
+            "in": "formData",
+            "type": "string",
+            "example": "Selected for next round"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Interview"],
+        "summary": "Delete Interview",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
           }
         }
       }

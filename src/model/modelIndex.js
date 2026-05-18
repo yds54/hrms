@@ -26,3 +26,4 @@ exports.QUOTE = require("./quote");
 exports.LETTERHEADTYPE = require("./letterheadType");
 exports.ASSIGNLETTERHEAD = require("./assignLetterhead");
 exports.EVALUATIONREPORT = require("./evaluationReport");
+exports.INTERVIEW = require("./interview");

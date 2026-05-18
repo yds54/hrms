@@ -64,6 +64,12 @@ exports.registerUser = async (req, res, next) => {
 
       body.profilePicture = uploadedFile;
     }
+    if (body.name) {
+      body.fullName = Object.values(body.name)
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+    }
 
     await USER.create(body);
 
