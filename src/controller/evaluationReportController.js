@@ -226,12 +226,11 @@ exports.updateEvaluationReport = async (req, res, next) => {
         isDeleted: false,
       });
       if (validCriteriaCount !== criteria.length) {
-        throw new AppError("Invalid criteria", 400);
+        throw new AppError("Invalid criteria", 500);
       }
     }
 
-    const payload = { ...req.body };
-    payload.evaluatedBy = evaluatedBy;
+    const payload = { ...req.body, evaluatedBy };
     await EVALUATIONREPORT.updateOne({ _id: id }, { $set: payload });
     return successResponse(res, 200, "Evaluation updated");
   } catch (err) {
