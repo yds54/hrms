@@ -2,7 +2,8 @@ const moment = require("moment");
 const { INTERVIEW } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { paginate } = require("../utils/pagination");
-const {searchConditions} = require("../utils/searchHelper")
+const { searchConditions } = require("../utils/searchHelper");
+const { ROLES } = require("../utils/enum");
 const { successResponse } = require("../utils/sucess");
 const {
   uploadToCloudinary,
@@ -56,11 +57,19 @@ exports.addInterview = async (req, res, next) => {
 
 exports.getAllInterviews = async (req, res, next) => {
   try {
-    const { page, limit, interviewStatus, search } = req.query;
+    const { user, query } = req;
+    const { page, limit, interviewStatus, search } = query;
 
     const _whereCondition = {
       isDeleted: false,
     };
+
+    if (user.role !== ROLES.ADMIN) {
+      _whereCondition.$or = [
+        { technicalRoundUser: user._id },
+        { hrRoundUser: user._id },
+      ];
+    }
 
     if (interviewStatus !== undefined) {
       _whereCondition.interviewStatus = interviewStatus === "true";
@@ -95,23 +104,23 @@ exports.getAllInterviews = async (req, res, next) => {
           preserveNullAndEmptyArrays: true,
         },
       },
-    ...(search
-  ? [
-      {
-        $match: {
-          $or: [
-            { name: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } },
-            { contactNumber: { $regex: search, $options: "i" } },
-            { technology: { $regex: search, $options: "i" } },
+      ...(search
+        ? [
+            {
+              $match: {
+                $or: [
+                  { name: { $regex: search, $options: "i" } },
+                  { email: { $regex: search, $options: "i" } },
+                  { contactNumber: { $regex: search, $options: "i" } },
+                  { technology: { $regex: search, $options: "i" } },
 
-            searchConditions(search, "technicalRoundUser.fullName"),
-            searchConditions(search, "hrRoundUser.fullName"),
-          ],
-        },
-      },
-    ]
-  : []),
+                  searchConditions(search, "technicalRoundUser.fullName"),
+                  searchConditions(search, "hrRoundUser.fullName"),
+                ],
+              },
+            },
+          ]
+        : []),
       {
         $project: {
           name: 1,

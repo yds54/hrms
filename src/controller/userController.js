@@ -38,11 +38,8 @@ exports.viewallUser = async (req, res, next) => {
       isLeft: false,
     };
 
-    if (
-      user.role !== ROLES.ADMIN &&
-      user.role !== ROLES.HR &&
-      user.role !== ROLES.HR_RECRUITER
-    ) {
+    const allowedRoles = [ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER];
+    if (!allowedRoles.includes(user.role)) {
       _whereCondition._id = user.id;
     } else if (id) {
       _whereCondition._id = id;

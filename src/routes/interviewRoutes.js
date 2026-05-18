@@ -24,7 +24,7 @@ const {
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(...Object.values(ROLES)),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   uploads("interviewResume").single("resume"),
   validate(addInterviewValidation),
   addInterview,
