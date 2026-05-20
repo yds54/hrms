@@ -156,7 +156,6 @@ exports.deleteHoliday = async (req, res, next) => {
 
     return successResponse(res, 200, "Holiday deleted sucessfully");
   } catch (error) {
-    console.error("Delete holiday Error", error);
     next(error);
   }
 };
