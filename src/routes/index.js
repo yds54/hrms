@@ -27,6 +27,7 @@ const drsFactorRoutes = require("./drsFactorRoutes");
 const quoteRoutes = require("./quoteRoutes");
 const letterheadTypeRoutes = require("./letterheadTypeRoutes");
 const assignLetterheadRoutes = require("./assignLetterheadRoutes");
+const appreciatedUserRoutes = require("./appreciatedUserRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -54,5 +55,6 @@ router.use("/drsfactor", drsFactorRoutes);
 router.use("/quotes", quoteRoutes);
 router.use("/letterheadType", letterheadTypeRoutes);
 router.use("/assignLetterhead", assignLetterheadRoutes);
+router.use("/appreciation", appreciatedUserRoutes);
 
 module.exports = router;

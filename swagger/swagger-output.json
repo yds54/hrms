@@ -4729,6 +4729,157 @@
           }
         }
       }
+    },
+
+    "/api/appreciation": {
+      "post": {
+        "tags": ["Appreciation"],
+        "summary": "Add Appreciated User",
+        "description": "Create Appreciated User",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["userId", "date", "title"],
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "example": "64f1c9e2a1234567890abcd1"
+                },
+                "designationId": {
+                  "type": "string",
+                  "example": "64f1c9e2a1234567890abcd2"
+                },
+                "projectId": {
+                  "type": "string",
+                  "example": "64f1c9e2a1234567890abcd3"
+                },
+                "date": {
+                  "type": "string",
+                  "example": "2026-05-14"
+                },
+                "title": {
+                  "type": "string",
+                  "example": "Employee of the Month"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Appreciation created successfully"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Appreciation"],
+        "summary": "Display Appreciated Users",
+        "description": "Get Appreciated Users List",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number",
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number",
+            "example": 10
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "developer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Appreciated users fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/appreciation/{id}": {
+      "put": {
+        "tags": ["Appreciation"],
+        "summary": "Update Appreciated User",
+        "description": "Update Appreciated User",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "example": "64f1c9e2a1234567890abcd1"
+                },
+                "designationId": {
+                  "type": "string",
+                  "example": "64f1c9e2a1234567890abcd2"
+                },
+                "projectId": {
+                  "type": "string",
+                  "example": "64f1c9e2a1234567890abcd3"
+                },
+                "date": {
+                  "type": "string",
+                  "example": "2026-05-20"
+                },
+                "title": {
+                  "type": "string",
+                  "example": "Top Performer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Appreciation updated successfully"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Appreciation"],
+        "summary": "Delete Appreciated User",
+        "description": "Delete Appreciated User",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Appreciation deleted successfully"
+          },
+          "404": {
+            "description": "Appreciation not found"
+          }
+        }
+      }
     }
   },
 
