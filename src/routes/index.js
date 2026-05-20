@@ -27,12 +27,9 @@ const drsFactorRoutes = require("./drsFactorRoutes");
 const quoteRoutes = require("./quoteRoutes");
 const letterheadTypeRoutes = require("./letterheadTypeRoutes");
 const assignLetterheadRoutes = require("./assignLetterheadRoutes");
-<<<<<<< HEAD
 const appreciatedUserRoutes = require("./appreciatedUserRoutes");
-=======
 const evaluationReportRoutes = require("./evaluationReportRoutes");
 const interviewRoutes = require("./interviewRoutes");
->>>>>>> main
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
