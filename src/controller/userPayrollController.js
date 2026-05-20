@@ -1,6 +1,9 @@
+const moment = require("moment");
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { USERPAYROLL } = require("../model/modelIndex");
+const { getDayRange } = require("../utils/dateFormat");
+const { getFileUrl } = require("../utils/fileUrl");
 const { AppError } = require("../utils/error");
 
 exports.addUserPayroll = async (req, res, next) => {
@@ -123,6 +126,88 @@ exports.deleteUserPayroll = async (req, res, next) => {
     await isUserPayrollExists.save();
 
     return successResponse(res, 200, "User payroll deleted successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getBondCompltedUsers = async (req, res, next) => {
+  try {
+    const { query } = req;
+    const { page, limit } = query;
+
+    const today = moment().format("YYYY-MM-DD");
+    const { endOfDay } = getDayRange(today);
+
+    const _whereCondition = {
+      isDeleted: false,
+      isBond: true,
+      bondCompletedDate: {
+        $lte: endOfDay,
+      },
+    };
+
+    const pipeline = [
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userId",
+        },
+      },
+      {
+        $unwind: {
+          path: "$userId",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          "userId.isDeleted": false,
+        },
+      },
+      {
+        $project: {
+          bondCompletedDate: 1,
+          user: {
+            _id: "$userId._id",
+            employeeCode: "$userId.employeeCode",
+            name: "$userId.fullName",
+            profilePicture: "$userId.profilePicture",
+          },
+        },
+      },
+    ];
+
+    const { data, pagination } = await paginate({
+      model: USERPAYROLL,
+      query: _whereCondition,
+      pipeline,
+      page: +page,
+      limit: +limit,
+      sort: { createdAt: -1 },
+    });
+
+    const formattedData = data.map((item) => {
+      if (item.user?.profilePicture?.fileName) {
+        item.user.profilePicture.url = getFileUrl(
+          `profile/${item.user.profilePicture.fileName}`,
+        );
+      }
+
+      return item;
+    });
+
+    return successResponse(
+      res,
+      200,
+      "Bond completed users fetched successfully",
+      {
+        data: formattedData,
+        pagination,
+      },
+    );
   } catch (error) {
     next(error);
   }

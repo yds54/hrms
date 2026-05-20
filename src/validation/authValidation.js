@@ -3,8 +3,11 @@ const { GENDER, MARITAL_STATUS, ROLES, USER_STATUS } = require("../utils/enum");
 
 exports.userRegisterValidation = {
   body: Joi.object({
-    profilePicture: Joi.string(),
-
+    profilePicture: Joi.object({
+      fileName: Joi.string().allow(null),
+      fileType: Joi.string().allow(null),
+      size: Joi.number().allow(null),
+    }).optional(),
     name: Joi.object({
       firstName: Joi.string().trim().min(2).max(30).required(),
       middleName: Joi.string().trim().min(2).max(30).allow("", null),
@@ -15,6 +18,7 @@ exports.userRegisterValidation = {
     rentalAllowance: Joi.boolean(),
     rentalAllowanceAmount: Joi.number(),
     leavecreaditType: Joi.string(),
+    leaveTotalMinutes: Joi.number(),
     email: Joi.string().email().lowercase().required(),
     password: Joi.string()
       .min(6)

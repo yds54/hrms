@@ -22,6 +22,7 @@ const {
   getUserById,
   gstAllUsersByOrganization,
   getRandomUsers,
+  userInfo,
 } = require("../controller/userController");
 
 //============ DISPLAY USERS =================
@@ -51,6 +52,13 @@ router.get(
 );
 
 router.get(
+  "/user-info",
+  authenticateJWT,
+  authorizeRoles(...Object.values(ROLES)),
+  userInfo,
+);
+
+router.get(
   "/:id",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN),
@@ -65,7 +73,7 @@ router.put(
   upload("profile", {
     useTimestamp: true,
   }).single("profilePicture"),
-  authorizeRoles(ROLES.ADMIN, ROLES.USER),
+  authorizeRoles(...Object.values(ROLES)),
   validate(updateUserValidation),
   updateUser,
 );

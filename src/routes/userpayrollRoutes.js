@@ -11,6 +11,7 @@ const {
   updatePayrollValidation,
   getPayrollValidation,
   deletePayrollValidation,
+  BondCompletedEmployeesValidation,
 } = require("../validation/userpayrollValidation");
 
 const {
@@ -19,6 +20,7 @@ const {
   updateUserPayroll,
   getAllUsersPayrolls,
   deleteUserPayroll,
+  getBondCompltedUsers,
 } = require("../controller/userPayrollController");
 
 router.post(
@@ -35,6 +37,14 @@ router.get(
   authorizeRoles(ROLES.ADMIN),
   validate(getPayrollValidation),
   getAllUsersPayrolls,
+);
+
+router.get(
+  "/bond-completed",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN),
+  validate(BondCompletedEmployeesValidation),
+  getBondCompltedUsers,
 );
 
 router.get(

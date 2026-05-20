@@ -110,6 +110,7 @@ const userSchema = new mongoose.Schema(
     rentalAllowance: { type: Boolean },
     rentalAllowanceAmount: { type: Number },
     leavecreaditType: { type: String },
+    leaveTotalMinutes: { type: Number },
     resignationDetails: {
       resignationDate: { type: Date },
       NoticePeriod: { type: Number },
