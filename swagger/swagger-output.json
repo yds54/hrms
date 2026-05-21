@@ -5312,172 +5312,153 @@
         }
       }
     },
-    "/api/userpayroll/bond-completed": {
+
+    "/api/appreciation": {
+      "post": {
+        "tags": ["Appreciation"],
+        "summary": "Add Appreciated User",
+        "description": "Create Appreciated User",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["userId", "date", "title"],
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "example": "64f1c9e2a1234567890abcd1"
+                },
+                "designationId": {
+                  "type": "string",
+                  "example": "64f1c9e2a1234567890abcd2"
+                },
+                "projectId": {
+                  "type": "string",
+                  "example": "64f1c9e2a1234567890abcd3"
+                },
+                "date": {
+                  "type": "string",
+                  "example": "2026-05-14"
+                },
+                "title": {
+                  "type": "string",
+                  "example": "Employee of the Month"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Appreciation created successfully"
+          }
+        }
+      },
       "get": {
-        "tags": ["Payroll"],
-        "summary": "Get Bond Completed Employees",
-        "description": "Fetch all employees whose bond completion date is completed till today's date",
+        "tags": ["Appreciation"],
+        "summary": "Display Appreciated Users",
+        "description": "Get Appreciated Users List",
         "parameters": [
           {
             "name": "page",
             "in": "query",
-            "required": true,
-            "type": "string",
-            "example": "1"
+            "type": "number",
+            "example": 1
           },
           {
             "name": "limit",
             "in": "query",
-            "required": true,
+            "type": "number",
+            "example": 10
+          },
+          {
+            "name": "search",
+            "in": "query",
             "type": "string",
-            "example": "10"
+            "example": "developer"
           }
         ],
         "responses": {
           "200": {
-            "description": "Bond completed users fetched successfully",
-            "schema": {
-              "type": "object"
-            }
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": "Appreciated users fetched successfully"
           }
         }
       }
     },
-    "/api/users/user-info": {
-      "get": {
-        "summary": "Get logged-in user basic information",
-        "tags": ["User"],
-        "responses": {
-          "200": {
-            "description": "User info fetched successfully",
+    "/api/appreciation/{id}": {
+      "put": {
+        "tags": ["Appreciation"],
+        "summary": "Update Appreciated User",
+        "description": "Update Appreciated User",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
             "schema": {
               "type": "object",
               "properties": {
-                "success": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "message": {
+                "userId": {
                   "type": "string",
-                  "example": "User info fetched successfully"
+                  "example": "64f1c9e2a1234567890abcd1"
                 },
-                "data": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "_id": {
-                          "type": "string",
-                          "example": "69f1f923fe3b8e0e4fd16f1d"
-                        },
-                        "fullName": {
-                          "type": "string",
-                          "example": "Krunal Bhai Kewat"
-                        },
-                        "email": {
-                          "type": "string",
-                          "example": "krunal@gmail.com"
-                        },
-                        "designationId": {
-                          "type": "object",
-                          "properties": {
-                            "_id": {
-                              "type": "string",
-                              "example": "69ca544451e27dd860867e71"
-                            },
-                            "designationName": {
-                              "type": "string",
-                              "example": "Project Manager"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
+                "designationId": {
+                  "type": "string",
+                  "example": "64f1c9e2a1234567890abcd2"
+                },
+                "projectId": {
+                  "type": "string",
+                  "example": "64f1c9e2a1234567890abcd3"
+                },
+                "date": {
+                  "type": "string",
+                  "example": "2026-05-20"
+                },
+                "title": {
+                  "type": "string",
+                  "example": "Top Performer"
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Appreciation updated successfully"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Appreciation"],
+        "summary": "Delete Appreciated User",
+        "description": "Delete Appreciated User",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Appreciation deleted successfully"
           },
           "404": {
-            "description": "User not found"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
-      }
-    },
-    "/api/events/monthly-records": {
-      "get": {
-        "summary": "Get monthly birthday, marriage anniversary and increment records",
-        "tags": ["Event"],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "year",
-            "type": "integer",
-            "required": false,
-            "description": "Year for monthly records"
-          },
-          {
-            "in": "query",
-            "name": "month",
-            "type": "integer",
-            "required": false,
-            "description": "Month number (1-12)"
-          },
-          {
-            "in": "query",
-            "name": "page",
-            "type": "integer",
-            "required": true,
-            "description": "Page number"
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "type": "integer",
-            "required": true,
-            "description": "Number of records per page"
-          },
-          {
-            "in": "query",
-            "name": "search",
-            "type": "string",
-            "required": false,
-            "description": "Search by fullName, employeeCode, email or contactNumber"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Monthly records fetched successfully",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "success": {
-                  "type": "boolean"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Month must be between 1 and 12"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Internal server error"
+            "description": "Appreciation not found"
           }
         }
       }

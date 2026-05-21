@@ -25,5 +25,6 @@ exports.DRSFACTOR = require("./drsFactor");
 exports.QUOTE = require("./quote");
 exports.LETTERHEADTYPE = require("./letterheadType");
 exports.ASSIGNLETTERHEAD = require("./assignLetterhead");
+exports.APPRECIATEDUSER = require("./appreciatedUser");
 exports.EVALUATIONREPORT = require("./evaluationReport");
 exports.INTERVIEW = require("./interview");
