@@ -448,3 +448,35 @@ exports.getRandomUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.userInfo = async (req, res, next) => {
+  try {
+    const { user } = req;
+
+    const data = await USER.findOne({
+      _id: user.id,
+      isDeleted: false,
+      isLeft: false,
+    })
+      .select("fullName email designationId")
+      .populate({
+        path: "designationId",
+        select: "designationName",
+        match: {
+          isDeleted: false,
+        },
+      });
+
+    const formattedData = {
+      userName: data.fullName,
+      userDesignation: data.designationId.designationName,
+      email: data.email,
+    };
+
+    return successResponse(res, 200, "User info fetched successfully", {
+      data: formattedData,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -5,7 +5,11 @@ exports.addOrganizationValidation = {
     organizationName: Joi.string().required(),
     headHR: Joi.string().hex().length(24).allow(null, ""),
     organizationAddress: Joi.string().required(),
-    logo: Joi.string().allow(null, ""),
+    logo: Joi.object({
+      fileName: Joi.string().allow(null),
+      fileType: Joi.string().allow(null),
+      size: Joi.number().allow(null),
+    }).optional(),
     organizationAccountNumber: Joi.string().allow("", null),
     irregularEmployeeCriteria: Joi.object({
       days: Joi.number().integer().min(0),
@@ -34,7 +38,12 @@ exports.updateOrganizationValidation = {
     organizationName: Joi.string(),
     headHR: Joi.string().hex().length(24).allow(null, ""),
     organizationAddress: Joi.string(),
-    logo: Joi.string().allow(null, ""),
+    logo: Joi.object({
+      fileName: Joi.string().allow(null),
+      fileType: Joi.string().allow(null),
+      size: Joi.number().allow(null),
+      url: Joi.string().allow(null),
+    }).optional(),
     organizationAccountNumber: Joi.string().allow("", null),
     irregularEmployeeCriteria: Joi.object({
       days: Joi.number().integer().min(0),

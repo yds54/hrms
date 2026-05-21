@@ -29,6 +29,7 @@ const letterheadTypeRoutes = require("./letterheadTypeRoutes");
 const assignLetterheadRoutes = require("./assignLetterheadRoutes");
 const evaluationReportRoutes = require("./evaluationReportRoutes");
 const interviewRoutes = require("./interviewRoutes");
+const eventRoutes = require("./eventRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -58,5 +59,6 @@ router.use("/letterheadType", letterheadTypeRoutes);
 router.use("/assignLetterhead", assignLetterheadRoutes);
 router.use("/evaluationReport", evaluationReportRoutes);
 router.use("/interviews", interviewRoutes);
+router.use("/events", eventRoutes);
 
 module.exports = router;

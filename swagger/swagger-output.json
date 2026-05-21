@@ -5311,6 +5311,176 @@
           }
         }
       }
+    },
+    "/api/userpayroll/bond-completed": {
+      "get": {
+        "tags": ["Payroll"],
+        "summary": "Get Bond Completed Employees",
+        "description": "Fetch all employees whose bond completion date is completed till today's date",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "example": "1"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "example": "10"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bond completed users fetched successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/users/user-info": {
+      "get": {
+        "summary": "Get logged-in user basic information",
+        "tags": ["User"],
+        "responses": {
+          "200": {
+            "description": "User info fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "User info fetched successfully"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "69f1f923fe3b8e0e4fd16f1d"
+                        },
+                        "fullName": {
+                          "type": "string",
+                          "example": "Krunal Bhai Kewat"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "krunal@gmail.com"
+                        },
+                        "designationId": {
+                          "type": "object",
+                          "properties": {
+                            "_id": {
+                              "type": "string",
+                              "example": "69ca544451e27dd860867e71"
+                            },
+                            "designationName": {
+                              "type": "string",
+                              "example": "Project Manager"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/events/monthly-records": {
+      "get": {
+        "summary": "Get monthly birthday, marriage anniversary and increment records",
+        "tags": ["Event"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "type": "integer",
+            "required": false,
+            "description": "Year for monthly records"
+          },
+          {
+            "in": "query",
+            "name": "month",
+            "type": "integer",
+            "required": false,
+            "description": "Month number (1-12)"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "type": "integer",
+            "required": true,
+            "description": "Page number"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "type": "integer",
+            "required": true,
+            "description": "Number of records per page"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "type": "string",
+            "required": false,
+            "description": "Search by fullName, employeeCode, email or contactNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Monthly records fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Month must be between 1 and 12"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
     }
   },
 
