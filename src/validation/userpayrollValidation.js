@@ -55,3 +55,10 @@ exports.deletePayrollValidation = {
     id: Joi.string().hex().length(24).required(),
   }),
 };
+
+exports.BondCompletedEmployeesValidation = {
+  query: Joi.object({
+    page: Joi.number().integer().min(1).required(),
+    limit: Joi.number().integer().min(1).required(),
+  }),
+};

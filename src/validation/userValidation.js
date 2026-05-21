@@ -29,7 +29,12 @@ exports.userdeleteValidation = {
 //=============== UPDATE USER PROFILE VALIDATION ===================
 exports.updateUserValidation = {
   body: Joi.object({
-    profilePicture: Joi.string(),
+    profilePicture: Joi.object({
+      fileName: Joi.string().allow(null),
+      fileType: Joi.string().allow(null),
+      size: Joi.number().allow(null),
+      url: Joi.string().allow(null),
+    }).optional(),
     name: Joi.object({
       firstName: Joi.string().trim(),
       middleName: Joi.string().trim().allow("", null),
@@ -49,6 +54,7 @@ exports.updateUserValidation = {
     rentalAllowance: Joi.boolean(),
     rentalAllowanceAmount: Joi.number(),
     leavecreaditType: Joi.string(),
+    leaveTotalMinutes: Joi.number(),
     designationId: Joi.string().hex().length(24),
     position: Joi.string(),
     departmentId: Joi.string().hex().length(24),
@@ -68,9 +74,9 @@ exports.updateUserValidation = {
     }),
 
     resignationDetails: Joi.object({
-      resignationDate: Joi.date(),
-      NoticePeriod: Joi.number(),
-      LastDate: Joi.date(),
+      resignationDate: Joi.date().allow(null),
+      NoticePeriod: Joi.number().allow(null),
+      LastDate: Joi.date().allow(null),
     }),
 
     officeTiming: Joi.object({

@@ -30,6 +30,7 @@ const assignLetterheadRoutes = require("./assignLetterheadRoutes");
 const appreciatedUserRoutes = require("./appreciatedUserRoutes");
 const evaluationReportRoutes = require("./evaluationReportRoutes");
 const interviewRoutes = require("./interviewRoutes");
+const eventRoutes = require("./eventRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -60,5 +61,6 @@ router.use("/assignLetterhead", assignLetterheadRoutes);
 router.use("/appreciation", appreciatedUserRoutes);
 router.use("/evaluationReport", evaluationReportRoutes);
 router.use("/interviews", interviewRoutes);
+router.use("/events", eventRoutes);
 
 module.exports = router;

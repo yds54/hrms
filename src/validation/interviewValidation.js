@@ -29,7 +29,11 @@ exports.addInterviewValidation = {
     sql: Joi.number().min(0).max(10).allow(null),
     adaptionPower: Joi.number().min(0).max(10).allow(null),
     remark: Joi.string().trim().allow("", null),
-    resume: Joi.string().trim(),
+    resume: Joi.object({
+      fileName: Joi.string().allow(null),
+      fileType: Joi.string().allow(null),
+      size: Joi.number().allow(null),
+    }).optional(),
   }),
 };
 
@@ -83,7 +87,12 @@ exports.updateInterviewValidation = {
     sql: Joi.number().min(0).max(10).allow(null),
     adaptionPower: Joi.number().min(0).max(10).allow(null),
     remark: Joi.string().trim().allow("", null),
-    resume: Joi.string().trim(),
+    resume: Joi.object({
+      fileName: Joi.string().allow(null),
+      fileType: Joi.string().allow(null),
+      size: Joi.number().allow(null),
+      url: Joi.string().allow(null),
+    }).optional(),
   }),
 
   params: Joi.object({
