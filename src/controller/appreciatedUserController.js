@@ -6,6 +6,7 @@ const { AppError } = require("../utils/error");
 const { dateSearchQuery } = require("../utils/dateFormat");
 const { ROLES } = require("../utils/enum");
 const { searchConditions } = require("../utils/searchHelper");
+const { getFileUrl } = require("../utils/fileUrl");
 
 // ================= CREATE APPRECIATED USER ====================
 exports.createAppreciation = async (req, res, next) => {
@@ -212,6 +213,18 @@ exports.getAppreciations = async (req, res, next) => {
       sort: { date: -1 },
       pipeline,
     });
+
+    const formattedData = result.data.map((item) => {
+      if (item.user?.profilePicture?.fileName) {
+        item.user.profilePicture = {
+          ...item.user.profilePicture,
+          url: getFileUrl(`profile/${item.user.profilePicture.fileName}`),
+        };
+      }
+      return item;
+    });
+
+    result.data = formattedData;
 
     return successResponse(res, 200, "Fetched successfully", result);
   } catch (err) {
