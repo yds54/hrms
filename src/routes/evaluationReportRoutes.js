@@ -6,24 +6,23 @@ const { authorizeRoles } = require("../middleware/roleAuthorization");
 const { ROLES } = require("../utils/enum");
 
 const {
-  createEvaluationReport,
+  upsertEvaluationReport,
   getEvaluationReport,
-  updateEvaluationReport,
+  getRemainingEvaluation,
 } = require("../controller/evaluationReportController");
 
 const {
   createEvaluationReportValidation,
   getEvaluationReportValidation,
-  updateEvaluationReportValidation,
 } = require("../validation/evaluationReportValidation");
 
-//========================= CREATE EVALIATION REPORT ==========================
+//========================= UPSERT EVALUATION REPORT ==========================
 router.post(
   "/",
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER),
   validate(createEvaluationReportValidation),
-  createEvaluationReport,
+  upsertEvaluationReport,
 );
 
 //========================= GET EVALUATION REPORT ==========================
@@ -35,13 +34,12 @@ router.get(
   getEvaluationReport,
 );
 
-//========================= UPDATE EVALUATION REPORT ==========================
-router.put(
-  "/:id",
+//========================= GET REMAINING EVALUATION ==========================
+router.get(
+  "/remaining",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER),
-  validate(updateEvaluationReportValidation),
-  updateEvaluationReport,
+  authorizeRoles(ROLES.PROJECT_MANAGER),
+  getRemainingEvaluation,
 );
 
 module.exports = router;

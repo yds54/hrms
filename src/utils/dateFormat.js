@@ -67,6 +67,24 @@ const getYearRange = (year) => {
   return { startOfYear: start, endOfYear: end };
 };
 
+const getPreviousWeekRange = () => {
+  const today = moment.tz(TZ);
+  return {
+    fromDate: today
+      .clone()
+      .subtract(1, "week")
+      .startOf("week")
+      .startOf("day")
+      .toDate(),
+    toDate: today
+      .clone()
+      .subtract(1, "week")
+      .endOf("week")
+      .endOf("day")
+      .toDate(),
+  };
+};
+
 module.exports = {
   parseISTDate,
   isValidDate,
@@ -75,4 +93,5 @@ module.exports = {
   formatDate,
   dateSearchQuery,
   getYearRange,
+  getPreviousWeekRange,
 };
