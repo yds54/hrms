@@ -45,7 +45,7 @@ exports.upsertEvaluationReport = async (req, res, next) => {
     }
 
     // criteria validation
-    if (criteria) {
+    if (criteria.length) {
       const criteriaIds = criteria.map((c) => c.criteriaId);
       const validCriteriaCount = await EVALUATIONCRITERIA.countDocuments({
         _id: { $in: criteriaIds },
