@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const moment = require("moment-timezone");
 const {
   EVALUATIONREPORT,
   EVALUATIONCRITERIA,
@@ -7,14 +8,19 @@ const {
 } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
-const { ROLES } = require("../utils/enum");
-const { getMonthRange } = require("../utils/dateFormat");
+const { ROLES, TIMEZONES } = require("../utils/enum");
+const {
+  getMonthRange,
+  getPreviousWeekRange,
+  formatDate,
+} = require("../utils/dateFormat");
+const { getWeeksOfMonth } = require("../utils/getWeeksOfMonth");
 
-//========================= CREATE EVALIATION REPORT ==========================
-exports.createEvaluationReport = async (req, res, next) => {
+//========================= UPSERT EVALUATION REPORT ==========================
+exports.upsertEvaluationReport = async (req, res, next) => {
   try {
     const { _id: evaluatedBy, role } = req.user;
-    const { userId, criteria } = req.body;
+    const { userId, fromDate, toDate, criteria } = req.body;
 
     const isUserExists = await USER.findOne({
       _id: userId,
@@ -38,20 +44,43 @@ exports.createEvaluationReport = async (req, res, next) => {
       }
     }
 
-    const criteriaIds = criteria.map((c) => c.criteriaId);
-    const validCriteriaCount = await EVALUATIONCRITERIA.countDocuments({
-      _id: { $in: criteriaIds },
-      isDeleted: false,
-    });
-    if (validCriteriaCount !== criteria.length) {
-      throw new AppError("Invalid criteria", 400);
+    // criteria validation
+    if (criteria.length) {
+      const criteriaIds = criteria.map((c) => c.criteriaId);
+      const validCriteriaCount = await EVALUATIONCRITERIA.countDocuments({
+        _id: { $in: criteriaIds },
+        isDeleted: false,
+      });
+      if (validCriteriaCount !== criteria.length) {
+        throw new AppError("Invalid criteria", 400);
+      }
     }
 
-    await EVALUATIONREPORT.create({
-      ...req.body,
-      evaluatedBy,
+    // if record exist update otherwise insert
+    const existingDoc = await EVALUATIONREPORT.findOne({
+      userId,
+      fromDate,
+      toDate,
+      isDeleted: false,
     });
-    return successResponse(res, 201, "Evaluation created");
+
+    let result;
+
+    if (existingDoc) {
+      existingDoc.set({
+        ...req.body,
+        evaluatedBy,
+      });
+      result = await existingDoc.save();
+    } else {
+      result = await EVALUATIONREPORT.create({
+        ...req.body,
+        evaluatedBy,
+      });
+    }
+    return successResponse(res, 200, "Evaluation saved successfully", {
+      data: result,
+    });
   } catch (err) {
     next(err);
   }
@@ -61,19 +90,21 @@ exports.createEvaluationReport = async (req, res, next) => {
 exports.getEvaluationReport = async (req, res, next) => {
   try {
     const { role, _id: loggedInUser } = req.user;
-    const { month, year, userId } = req.query;
-    const query = { isDeleted: false };
+    let { month, year, userId } = req.query;
 
-    if (month && year) {
-      const { startOfMonth, endOfMonth } = getMonthRange(
-        Number(year),
-        Number(month),
-      );
-      query.fromDate = {
-        $gte: startOfMonth,
-        $lte: endOfMonth,
-      };
+    if (!month || !year) {
+      const current = moment.tz(TIMEZONES.INDIA);
+      month = current.format("MM");
+      year = current.format("YYYY");
     }
+    const { startOfMonth, endOfMonth } = getMonthRange(
+      Number(year),
+      Number(month),
+    );
+    const query = {
+      isDeleted: false,
+      fromDate: { $gte: startOfMonth, $lte: endOfMonth },
+    };
 
     // ================= ROLE WISE DISPLAY =================
     if (role === ROLES.USER) {
@@ -113,7 +144,7 @@ exports.getEvaluationReport = async (req, res, next) => {
           localField: "userId",
           foreignField: "_id",
           as: "userId",
-          pipeline: [{ $project: { name: 1 } }],
+          pipeline: [{ $project: { _id: 1, name: 1 } }],
         },
       },
       { $unwind: "$userId" },
@@ -123,7 +154,7 @@ exports.getEvaluationReport = async (req, res, next) => {
           localField: "evaluatedBy",
           foreignField: "_id",
           as: "evaluatedBy",
-          pipeline: [{ $project: { name: 1 } }],
+          pipeline: [{ $project: { _id: 1, name: 1 } }],
         },
       },
       { $unwind: "$evaluatedBy" },
@@ -143,6 +174,7 @@ exports.getEvaluationReport = async (req, res, next) => {
               input: "$criteria",
               as: "c",
               in: {
+                score: "$$c.score",
                 criteria: {
                   $let: {
                     vars: {
@@ -162,7 +194,6 @@ exports.getEvaluationReport = async (req, res, next) => {
                     in: "$$match.criteria",
                   },
                 },
-                score: "$$c.score",
               },
             },
           },
@@ -171,68 +202,140 @@ exports.getEvaluationReport = async (req, res, next) => {
       {
         $project: {
           criteriaData: 0,
+          isDeleted: 0,
+          __v: 0,
         },
       },
     ]);
 
-    // Hide Private note for user
-    const result =
-      role === ROLES.USER
-        ? reports.map((r) => {
-            delete r.privateNote;
-            return r;
-          })
-        : reports;
+    const reportMap = new Map(
+      reports.map((r) => [
+        `${formatDate(r.fromDate)}-${formatDate(r.toDate)}`,
+        r,
+      ]),
+    );
 
-    return successResponse(res, 200, "Evaluation fetched", { reports: result });
+    // ================= WEEKS =================
+    const weeks = getWeeksOfMonth(Number(year), Number(month));
+
+    // ================= FINAL =================
+    const finalData = weeks.map(
+      ({ key, formattedFromDate, formattedToDate }) => {
+        const data = reportMap.get(key) || null;
+        if (role === ROLES.USER && data) {
+          delete data.privateNote;
+        }
+        return {
+          fromDate: formattedFromDate,
+          toDate: formattedToDate,
+          data,
+        };
+      },
+    );
+
+    return successResponse(res, 200, "Evaluation fetched", {
+      reports: finalData,
+    });
   } catch (err) {
     next(err);
   }
 };
 
-//========================= UPDATE EVALUATION REPORT ==========================
-exports.updateEvaluationReport = async (req, res, next) => {
+//========================= GET REMAINING EVALUATION ==========================
+exports.getRemainingEvaluation = async (req, res, next) => {
   try {
-    const { _id: evaluatedBy, role } = req.user;
-    const { id } = req.params;
-    const { criteria } = req.body;
+    const { _id: loggedInUser } = req.user;
+    const { fromDate, toDate } = getPreviousWeekRange();
 
-    const isReportExists = await EVALUATIONREPORT.findOne({
-      _id: id,
+    const teamData = await TEAMS.aggregate([
+      {
+        $match: {
+          projectManagers: new mongoose.Types.ObjectId(loggedInUser),
+          isDeleted: false,
+        },
+      },
+      // project manager lookup
+      {
+        $lookup: {
+          from: "users",
+          localField: "projectManagers",
+          foreignField: "_id",
+          as: "projectManagers",
+          pipeline: [{ $project: { _id: 1, name: 1 } }],
+        },
+      },
+      // team lead lookup
+      {
+        $lookup: {
+          from: "users",
+          localField: "teamLeaders",
+          foreignField: "_id",
+          as: "teamLeaders",
+          pipeline: [{ $project: { _id: 1, name: 1 } }],
+        },
+      },
+      // team member lookup
+      {
+        $lookup: {
+          from: "users",
+          localField: "members",
+          foreignField: "_id",
+          as: "members",
+          pipeline: [{ $project: { _id: 1, name: 1 } }],
+        },
+      },
+      { $unwind: "$members" },
+      {
+        $project: {
+          userId: "$members._id",
+          name: "$members.name",
+          teamLead: { $arrayElemAt: ["$teamLeaders.name", 0] },
+          projectManager: { $arrayElemAt: ["$projectManagers", 0] },
+        },
+      },
+      {
+        $group: {
+          _id: "$userId",
+          name: { $first: "$name" },
+          teamLead: { $first: "$teamLead" },
+          projectManager: { $first: "$projectManager" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: "$_id",
+          name: 1,
+          teamLead: 1,
+          projectManager: 1,
+        },
+      },
+    ]);
+
+    const memberIds = teamData.map((t) => t.userId);
+
+    const reports = await EVALUATIONREPORT.find({
+      userId: { $in: memberIds },
+      fromDate,
+      toDate,
       isDeleted: false,
-    }).select("_id userId");
-    if (!isReportExists) {
-      throw new AppError("Evaluation report not found with given Id", 404);
-    }
+    }).select("userId");
+    const evaluatedUserIds = new Set(reports.map((r) => r.userId.toString()));
 
-    if (role === ROLES.PROJECT_MANAGER) {
-      const isMemberExists = await TEAMS.findOne({
-        projectManagers: evaluatedBy,
-        members: isReportExists.userId,
-        isDeleted: false,
-      }).select("_id");
-      if (!isMemberExists) {
-        throw new AppError(
-          "You are not authorized, user is not part of your team.",
-          403,
-        );
-      }
-    }
+    const remaining = teamData
+      .filter((u) => !evaluatedUserIds.has(u.userId.toString()))
+      .map((u) => ({
+        userId: u.userId,
+        name: u.name,
+        projectManager: u.projectManager || null,
+        teamLead: u.teamLead || null,
+        fromDate: formatDate(fromDate),
+        toDate: formatDate(toDate),
+      }));
 
-    if (criteria) {
-      const criteriaIds = criteria.map((c) => c.criteriaId);
-      const validCriteriaCount = await EVALUATIONCRITERIA.countDocuments({
-        _id: { $in: criteriaIds },
-        isDeleted: false,
-      });
-      if (validCriteriaCount !== criteria.length) {
-        throw new AppError("Invalid criteria", 500);
-      }
-    }
-
-    const payload = { ...req.body, evaluatedBy };
-    await EVALUATIONREPORT.updateOne({ _id: id }, { $set: payload });
-    return successResponse(res, 200, "Evaluation updated");
+    return successResponse(res, 200, "Remaining evaluation fetched", {
+      data: remaining,
+    });
   } catch (err) {
     next(err);
   }
