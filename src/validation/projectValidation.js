@@ -37,10 +37,11 @@ exports.updateProjectValidation = {
     projectName: Joi.string(),
 
     status: Joi.string().valid(
-      "In Progress",
+      "inProgress",
       "Completed",
-      "On Hold",
-      "Cancelled",
+      "OnHold",
+      "Pending",
+      "Terminated",
     ),
     type: Joi.string(),
     clientName: Joi.string(),

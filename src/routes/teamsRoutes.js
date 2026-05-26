@@ -11,6 +11,8 @@ const {
   getProjectTeamSummary,
   removeTeamMember,
   getUnassignedUsers,
+  getProjectByUserId,
+  getTeamMembers,
 } = require("../controller/teamController");
 
 const { authenticateJWT } = require("../middleware/authentication");
@@ -26,6 +28,7 @@ const {
   getProjectTeamSummaryValidation,
   removeTeamMemberValidation,
   getUnassignedUsersValidation,
+  getProjectByUserIdValidation,
 } = require("../validation/teamsValidation");
 
 router.post(
@@ -60,6 +63,20 @@ router.get(
   getUnassignedUsers,
 );
 
+router.get(
+  "/user/:userId/projects",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  validate(getProjectByUserIdValidation),
+  getProjectByUserId,
+);
+
+router.get(
+  "/members",
+  authenticateJWT,
+  authorizeRoles(ROLES.PROJECT_MANAGER),
+  getTeamMembers,
+);
 router.get(
   "/:id",
   authenticateJWT,

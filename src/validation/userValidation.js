@@ -125,3 +125,29 @@ exports.getRandomUsersValidation = {
     page: Joi.number().integer().min(1).required(),
   }),
 };
+
+exports.markEmployeeAsLeftValidation = {
+  body: Joi.object({
+    resignationDetails: Joi.object({
+      leftType: Joi.string().valid("self", "company", "absconding").required(),
+      reason: Joi.string().trim().required(),
+      resignationDate: Joi.date().required(),
+      noticePeriod: Joi.number().min(0),
+      lastWorkingDate: Joi.date(),
+      offboardingCriteria: Joi.array().items(
+        Joi.object({
+          id: Joi.string().hex().length(24).required(),
+          criteria: Joi.string().trim().required(),
+          isChecked: Joi.boolean().required(),
+          notes: Joi.string().allow("", null).trim(),
+        }),
+      ),
+    }),
+  }),
+};
+
+exports.rejoinEmployeeValidation = {
+  params: Joi.object({
+    id: Joi.string().hex().length(24).required(),
+  }),
+};
