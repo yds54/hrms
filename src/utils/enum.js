@@ -80,10 +80,10 @@ exports.TIMEZONES = Object.freeze({
 
 exports.PROJECT_STATUS = Object.freeze({
   INPROGRESS: "inProgress",
-  COMPLETED: "Completed",
-  ONHOLD: "OnHold",
-  PENDING: "Pending",
-  TERMINATED: "Terminated",
+  COMPLETED: "completed",
+  ONHOLD: "onHold",
+  PENDING: "pending",
+  TERMINATED: "terminated",
 });
 
 exports.LEFT_TYPE = Object.freeze({
