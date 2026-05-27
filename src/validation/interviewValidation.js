@@ -43,6 +43,8 @@ exports.getInterviewValidation = {
     limit: Joi.number().integer().min(1).required(),
     search: Joi.string().allow("", null),
     interviewStatus: Joi.boolean().optional(),
+    month: Joi.number().integer().min(1).max(12).optional(),
+    year: Joi.number().integer().min(1900).max(2100).optional(),
   }),
 };
 

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const { USER, TEAMS } = require("../model/modelIndex");
 const { successResponse } = require("../utils/sucess");
 const { AppError } = require("../utils/error");
+const { searchConditions } = require("../utils/searchHelper");
 const { ROLES } = require("../utils/enum");
 const { dateSearchQuery } = require("../utils/dateFormat");
 const { getFileUrl } = require("../utils/fileUrl");
@@ -828,7 +829,9 @@ exports.getUnassignedUsers = async (req, res, next) => {
         $match: {
           isDeleted: false,
           isLeft: false,
-
+          role: {
+            $nin: [ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER],
+          },
           $expr: {
             $not: {
               $in: [
@@ -946,6 +949,124 @@ exports.getUnassignedUsers = async (req, res, next) => {
     return successResponse(res, 200, "Unassigned users fetched successfully", {
       data,
       pagination,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getProjectByUserId = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const teams = await TEAMS.find({
+      isDeleted: false,
+      $or: [
+        { projectManagers: userId },
+        { teamLeaders: userId },
+        { members: userId },
+      ],
+    })
+      .populate("project", "projectName")
+      .select("project");
+
+    const projects = teams.map((team) => team.project);
+
+    return successResponse(res, 200, "Projects fetched successfully", {
+      data: projects,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getTeamMembers = async (req, res, next) => {
+  try {
+    const { user, query } = req;
+    const { search } = query;
+
+    const pipeline = [
+      {
+        $match: {
+          isDeleted: false,
+          projectManagers: user._id,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: {
+            memberIds: {
+              $setUnion: ["$members", "$teamLeaders"],
+            },
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: ["$_id", "$$memberIds"],
+                },
+                isDeleted: false,
+                role: {
+                  $ne: ROLES.PROJECT_MANAGER,
+                },
+              },
+            },
+          ],
+          as: "teamMembers",
+        },
+      },
+
+      {
+        $unwind: {
+          path: "$teamMembers",
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      ...(search
+        ? (() => {
+            return [
+              {
+                $match: {
+                  $or: [
+                    searchConditions(search, "teamMembers.fullName"),
+
+                    {
+                      "teamMembers.employeeCode": {
+                        $regex: search,
+                        $options: "i",
+                      },
+                    },
+                  ],
+                },
+              },
+            ];
+          })()
+        : []),
+      {
+        $group: {
+          _id: "$teamMembers._id",
+
+          employeeCode: {
+            $first: "$teamMembers.employeeCode",
+          },
+
+          Name: {
+            $first: "$teamMembers.name",
+          },
+        },
+      },
+
+      {
+        $sort: {
+          fullName: 1,
+        },
+      },
+    ];
+    const teamMembers = await TEAMS.aggregate(pipeline);
+
+    return successResponse(res, 200, "Team members fetched successfully", {
+      data: teamMembers,
     });
   } catch (error) {
     next(error);

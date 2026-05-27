@@ -4,7 +4,8 @@ const { paginate } = require("../utils/pagination");
 const cloudinary = require("../config/cloudinary");
 const { searchConditions } = require("../utils/searchHelper");
 const { successResponse } = require("../utils/sucess");
-const { USER } = require("../model/modelIndex");
+const { USER, OFFBORADINGCRITERIA } = require("../model/modelIndex");
+const { USER_STATUS } = require("../utils/enum");
 const { AppError } = require("../utils/error");
 const {
   uploadToCloudinary,
@@ -476,6 +477,104 @@ exports.userInfo = async (req, res, next) => {
     return successResponse(res, 200, "User info fetched successfully", {
       data: formattedData,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.markEmployeeAsLeft = async (req, res, next) => {
+  try {
+    const { params, body: payload } = req;
+    const { id } = params;
+
+    const isUserExists = await USER.findOne({
+      _id: id,
+      isDeleted: false,
+    }).select("_id resignationDetails isLeft");
+
+    if (!isUserExists) {
+      throw new AppError("User not found with given ID", 404);
+    }
+
+    const resignationDetails = payload?.resignationDetails || {};
+
+    const requiredCriteria = await OFFBORADINGCRITERIA.find({
+      isDeleted: false,
+      isRequired: true,
+    }).select("_id criteria");
+
+    const submittedCriteria = resignationDetails.offboardingCriteria;
+
+    const checkedMap = {};
+
+    submittedCriteria.forEach((item) => {
+      checkedMap[item.id.toString()] = item.isChecked;
+    });
+
+    const missingCriteria = requiredCriteria.filter(
+      (item) => !checkedMap[item._id.toString()],
+    );
+
+    if (missingCriteria.length) {
+      throw new AppError(`Please enter required Offboarding Criteria`, 422);
+    }
+
+    payload.isLeft = true;
+    payload.status = "inactive";
+
+    payload.resignationDetails = {
+      ...isUserExists.resignationDetails?.toObject?.(),
+      ...resignationDetails,
+    };
+
+    await USER.updateOne(
+      {
+        _id: id,
+        isDeleted: false,
+      },
+      {
+        $set: payload,
+      },
+    );
+
+    return successResponse(res, 200, "Employee marked as left successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.rejoinEmployee = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const isUserExists = await USER.findOne({
+      _id: id,
+      isDeleted: false,
+      isLeft: true,
+    }).select("_id isLeft resignationDetails status");
+
+    if (!isUserExists) {
+      throw new AppError("User not found with given ID", 404);
+    }
+
+    await USER.updateOne(
+      {
+        _id: id,
+        isDeleted: false,
+      },
+      {
+        $set: {
+          isLeft: false,
+          status: USER_STATUS.ACTIVE,
+        },
+
+        $unset: {
+          resignationDetails: 1,
+        },
+      },
+    );
+
+    return successResponse(res, 200, "Employee rejoined successfully");
   } catch (error) {
     next(error);
   }

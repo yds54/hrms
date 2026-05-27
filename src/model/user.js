@@ -111,11 +111,6 @@ const userSchema = new mongoose.Schema(
     rentalAllowanceAmount: { type: Number },
     leavecreaditType: { type: String },
     leaveTotalMinutes: { type: Number },
-    resignationDetails: {
-      resignationDate: { type: Date },
-      NoticePeriod: { type: Number },
-      LastDate: { type: Date },
-    },
     status: {
       type: String,
       enum: Object.values(USER_STATUS),
@@ -135,6 +130,48 @@ const userSchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
+    },
+    resignationDetails: {
+      leftType: {
+        type: String,
+        enum: ["self", "company", "absconding"],
+      },
+      reason: {
+        type: String,
+        trim: true,
+      },
+      resignationDate: {
+        type: Date,
+      },
+      noticePeriod: {
+        type: Number,
+      },
+      lastWorkingDate: {
+        type: Date,
+      },
+      offboardingCriteria: [
+        {
+          criteriaId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "criteria",
+            required: true,
+          },
+          criteria: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+          isChecked: {
+            type: Boolean,
+            default: false,
+          },
+          notes: {
+            type: String,
+            default: null,
+            trim: true,
+          },
+        },
+      ],
     },
   },
   {

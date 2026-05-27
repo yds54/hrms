@@ -58,7 +58,9 @@ exports.addInterview = async (req, res, next) => {
 exports.getAllInterviews = async (req, res, next) => {
   try {
     const { user, query } = req;
-    const { page, limit, interviewStatus, search } = query;
+    const { page, limit, interviewStatus, search, month, year } = query;
+    const selectedMonth = month ? Number(month) : null;
+    const selectedYear = year ? Number(year) : null;
 
     const _whereCondition = {
       isDeleted: false,
@@ -102,6 +104,24 @@ exports.getAllInterviews = async (req, res, next) => {
         $unwind: {
           path: "$hrRoundUser",
           preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          interviewMonth: { $month: "$interviewTime" },
+          interviewYear: { $year: "$interviewTime" },
+        },
+      },
+
+      {
+        $match: {
+          ...(selectedMonth && {
+            interviewMonth: selectedMonth,
+          }),
+
+          ...(selectedYear && {
+            interviewYear: selectedYear,
+          }),
         },
       },
       ...(search

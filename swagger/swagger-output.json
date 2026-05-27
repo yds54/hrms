@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.158:5000",
+  "host": "192.168.0.42:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -4100,7 +4100,7 @@
                   "example": "HR Management System"
                 },
                 "status": {
-                  "example": "In Progress"
+                  "example": "inProgress"
                 },
                 "type": {
                   "example": "Client"
@@ -5095,9 +5095,16 @@
             "required": true
           },
           {
-            "name": "technology",
+            "name": "month",
             "in": "query",
-            "type": "string"
+            "type": "integer",
+            "description": "Filter interviews by month (1-12)"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "integer",
+            "description": "Filter interviews by year"
           },
           {
             "name": "interviewStatus",
@@ -5148,20 +5155,32 @@
       "put": {
         "tags": ["Interview"],
         "summary": "Update Interview",
-        "description": "",
+        "description": "Update interview details",
         "consumes": ["multipart/form-data"],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
           {
             "name": "name",
             "in": "formData",
             "type": "string",
             "example": "Rahul Patel"
+          },
+          {
+            "name": "address",
+            "in": "formData",
+            "type": "string",
+            "example": "Surat"
+          },
+          {
+            "name": "previousCompanyName",
+            "in": "formData",
+            "type": "string",
+            "example": "TCS"
+          },
+          {
+            "name": "qualification",
+            "in": "formData",
+            "type": "string",
+            "example": "B.Tech"
           },
           {
             "name": "technology",
@@ -5176,10 +5195,67 @@
             "example": "9876543210"
           },
           {
+            "name": "dateOfBirth",
+            "in": "formData",
+            "type": "string",
+            "format": "date",
+            "example": "2002-01-01"
+          },
+          {
             "name": "email",
             "in": "formData",
             "type": "string",
             "example": "rahul@gmail.com"
+          },
+          {
+            "name": "interviewMode",
+            "in": "formData",
+            "type": "string",
+            "enum": ["online", "offline"],
+            "example": "online"
+          },
+          {
+            "name": "yearOfExperience",
+            "in": "formData",
+            "type": "number",
+            "example": 2
+          },
+          {
+            "name": "currentSalary",
+            "in": "formData",
+            "type": "number",
+            "example": 25000
+          },
+          {
+            "name": "expectedSalary",
+            "in": "formData",
+            "type": "number",
+            "example": 35000
+          },
+          {
+            "name": "interviewTime",
+            "in": "formData",
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-06-22T11:56:00.000Z"
+          },
+          {
+            "name": "technicalRoundUser",
+            "in": "formData",
+            "type": "string",
+            "example": "6a06ff1a8241cc58776a4339"
+          },
+          {
+            "name": "hrRoundUser",
+            "in": "formData",
+            "type": "string",
+            "example": "69f1ad7a327e12b044743af9"
+          },
+          {
+            "name": "referenceUser",
+            "in": "formData",
+            "type": "string",
+            "example": "69f1ad7a327e12b044743af9"
           },
           {
             "name": "interviewStatus",
@@ -5188,20 +5264,80 @@
             "example": true
           },
           {
-            "name": "resume",
+            "name": "practicalTestStatus",
             "in": "formData",
-            "type": "file"
+            "type": "boolean",
+            "example": false
+          },
+          {
+            "name": "communicationSkill",
+            "in": "formData",
+            "type": "string",
+            "example": "out of 10"
+          },
+          {
+            "name": "confidenceOrBodyLang",
+            "in": "formData",
+            "type": "string",
+            "example": "out of 10"
+          },
+          {
+            "name": "logicalSkills",
+            "in": "formData",
+            "type": "string",
+            "example": "out of 10"
+          },
+          {
+            "name": "dataStructure",
+            "in": "formData",
+            "type": "string",
+            "example": "out of 10"
+          },
+          {
+            "name": "objectOriented",
+            "in": "formData",
+            "type": "string",
+            "example": "out of 10"
+          },
+          {
+            "name": "sql",
+            "in": "formData",
+            "type": "string",
+            "example": "out of 10"
+          },
+          {
+            "name": "adaptionPower",
+            "in": "formData",
+            "type": "string",
+            "example": "out of 10"
           },
           {
             "name": "remark",
             "in": "formData",
             "type": "string",
             "example": "Selected for next round"
+          },
+          {
+            "name": "resume",
+            "in": "formData",
+            "type": "file"
           }
         ],
         "responses": {
+          "200": {
+            "description": "Interview updated successfully"
+          },
+          "400": {
+            "description": "Validation error"
+          },
           "403": {
             "description": "Forbidden"
+          },
+          "404": {
+            "description": "Interview not found"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       },
@@ -5220,6 +5356,177 @@
         "responses": {
           "403": {
             "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/userpayroll/bond-completed": {
+      "get": {
+        "tags": ["Payroll"],
+        "summary": "Get Bond Completed Employees",
+        "description": "Fetch all employees whose bond completion date is completed till today's date",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "example": "1"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "example": "10"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bond completed users fetched successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/users/user-info": {
+      "get": {
+        "summary": "Get logged-in user basic information",
+        "tags": ["User"],
+        "responses": {
+          "200": {
+            "description": "User info fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "User info fetched successfully"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "69f1f923fe3b8e0e4fd16f1d"
+                        },
+                        "fullName": {
+                          "type": "string",
+                          "example": "Krunal Bhai Kewat"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "krunal@gmail.com"
+                        },
+                        "designationId": {
+                          "type": "object",
+                          "properties": {
+                            "_id": {
+                              "type": "string",
+                              "example": "69ca544451e27dd860867e71"
+                            },
+                            "designationName": {
+                              "type": "string",
+                              "example": "Project Manager"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/events/monthly-records": {
+      "get": {
+        "summary": "Get monthly birthday, marriage anniversary and increment records",
+        "tags": ["Event"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "year",
+            "type": "integer",
+            "required": false,
+            "description": "Year for monthly records"
+          },
+          {
+            "in": "query",
+            "name": "month",
+            "type": "integer",
+            "required": false,
+            "description": "Month number (1-12)"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "type": "integer",
+            "required": true,
+            "description": "Page number"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "type": "integer",
+            "required": true,
+            "description": "Number of records per page"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "type": "string",
+            "required": false,
+            "description": "Search by fullName, employeeCode, email or contactNumber"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Monthly records fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Month must be between 1 and 12"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }
@@ -5371,6 +5678,428 @@
           },
           "404": {
             "description": "Appreciation not found"
+          }
+        }
+      }
+    },
+
+    "/api/teams/user/{userId}/projects": {
+      "get": {
+        "tags": ["Team"],
+        "summary": "Get Projects by User ID",
+        "description": "Fetch projects associated with a specific user ID. Search supported on projectName, clientName, status, type, startDate, and endDate. Date search formats supported: YYYY, YYYY-MM, YYYY-MM-DD.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Projects fetched successfully for the user",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/teams/members": {
+      "get": {
+        "tags": ["Team"],
+        "summary": "Get Team Members For Logged-in Project Manager",
+        "description": "Fetch all team members for the logged-in Project Manager. Other Project Managers are excluded from the response.",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "search",
+            "type": "string",
+            "required": false,
+            "description": "Search by fullName, employeeCode"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Team members fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string"
+                      },
+                      "employeeId": {
+                        "type": "string"
+                      },
+                      "fullName": {
+                        "type": "string"
+                      },
+                      "role": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/left": {
+      "put": {
+        "tags": ["Left Employees"],
+        "summary": "Update employee offboarding details",
+        "description": "Update employee resignation and offboarding process details",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID"
+          },
+
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+
+              "properties": {
+                "resignationDetails": {
+                  "type": "object",
+
+                  "properties": {
+                    "leftType": {
+                      "type": "string",
+                      "enum": ["self", "company", "absconding"],
+                      "example": "self"
+                    },
+
+                    "reason": {
+                      "type": "string",
+                      "example": "Personal reason"
+                    },
+
+                    "resignationDate": {
+                      "type": "string",
+                      "format": "date",
+                      "example": "2026-05-01"
+                    },
+
+                    "noticePeriod": {
+                      "type": "number",
+                      "example": 30
+                    },
+
+                    "lastWorkingDate": {
+                      "type": "string",
+                      "format": "date",
+                      "example": "2026-05-30"
+                    },
+
+                    "relievedDate": {
+                      "type": "string",
+                      "format": "date",
+                      "example": "2026-05-30"
+                    },
+
+                    "offboardingCriteria": {
+                      "type": "array",
+
+                      "items": {
+                        "type": "object",
+
+                        "properties": {
+                          "criteriaId": {
+                            "type": "string",
+                            "example": "682f11111111111111111111"
+                          },
+
+                          "criteria": {
+                            "type": "string",
+                            "example": "Remove Mini Orange access"
+                          },
+
+                          "isChecked": {
+                            "type": "boolean",
+                            "example": true
+                          },
+
+                          "notes": {
+                            "type": "string",
+                            "example": "Completed successfully"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+
+              "example": {
+                "resignationDetails": {
+                  "leftType": "self",
+                  "reason": "Personal reason",
+                  "resignationDate": "2026-05-01",
+                  "lastWorkingDate": "2026-05-30",
+
+                  "offboardingCriteria": [
+                    {
+                      "id": "682f11111111111111111111",
+                      "criteria": "Remove Mini Orange access",
+                      "isChecked": true,
+                      "notes": "Completed successfully"
+                    },
+                    {
+                      "id": "682f22222222222222222222",
+                      "criteria": "Recover company laptop",
+                      "isChecked": false,
+                      "notes": "Pending from employee"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Offboarding details updated successfully"
+          },
+
+          "400": {
+            "description": "Validation Error"
+          },
+
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/rejoin": {
+      "put": {
+        "tags": ["Left Employees"],
+        "summary": "Rejoin employee",
+        "description": "Rejoin left employee and remove resignation details",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Employee rejoined successfully",
+
+            "schema": {
+              "type": "object",
+
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+
+                "message": {
+                  "type": "string",
+                  "example": "Employee rejoined successfully"
+                }
+              }
+            }
+          },
+
+          "400": {
+            "description": "Validation Error"
+          },
+
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/api/techStacks": {
+      "post": {
+        "tags": ["TechStack"],
+        "summary": "Add Tech Stack",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "techName": {
+                  "example": "Node.js"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "get": {
+        "tags": ["TechStack"],
+        "summary": "Display All Tech Stacks",
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "techName",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/techStacks/{id}": {
+      "get": {
+        "tags": ["TechStack"],
+        "summary": "Display Tech Stack By Id",
+        "description": "Get Tech Stack by ID",
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Tech Stack retrieved successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+
+          "404": {
+            "description": "Tech Stack not found"
+          },
+
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "put": {
+        "tags": ["TechStack"],
+        "summary": "Update Tech Stack",
+        "description": "",
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+
+              "properties": {
+                "techName": {
+                  "example": "React.js"
+                }
+              }
+            }
+          }
+        ],
+
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "delete": {
+        "tags": ["TechStack"],
+        "summary": "Delete Tech Stack",
+        "description": "",
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+
+        "responses": {
+          "403": {
+            "description": "Forbidden"
           }
         }
       }

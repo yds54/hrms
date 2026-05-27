@@ -1,4 +1,5 @@
 const { Joi } = require("express-validation");
+const { PROJECT_STATUS } = require("../utils/enum");
 
 exports.addProjectValidation = {
   body: Joi.object({
@@ -20,7 +21,7 @@ exports.getProjectValidation = {
     page: Joi.number().integer().min(1).required(),
     limit: Joi.number().integer().min(1).required(),
     projectStatus: Joi.string()
-      .valid("inProgress", "Completed", "OnHold", "Pending", "Terminated")
+      .valid(...Object.values(PROJECT_STATUS))
       .allow("", null),
     projectType: Joi.string().allow("", null),
   }),
@@ -36,12 +37,7 @@ exports.updateProjectValidation = {
   body: Joi.object({
     projectName: Joi.string(),
 
-    status: Joi.string().valid(
-      "In Progress",
-      "Completed",
-      "On Hold",
-      "Cancelled",
-    ),
+    status: Joi.string().valid(...Object.values(PROJECT_STATUS)),
     type: Joi.string(),
     clientName: Joi.string(),
     startDate: Joi.date(),

@@ -13,6 +13,8 @@ const {
   getUserByIdValidation,
   gstAllUsersByOrganizationValidation,
   getRandomUsersValidation,
+  rejoinEmployeeValidation,
+  markEmployeeAsLeftValidation,
 } = require("../validation/userValidation");
 
 const {
@@ -23,6 +25,8 @@ const {
   gstAllUsersByOrganization,
   getRandomUsers,
   userInfo,
+  markEmployeeAsLeft,
+  rejoinEmployee,
 } = require("../controller/userController");
 
 //============ DISPLAY USERS =================
@@ -64,6 +68,22 @@ router.get(
   authorizeRoles(ROLES.ADMIN),
   validate(getUserByIdValidation),
   getUserById,
+);
+
+router.put(
+  "/:id/left",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
+  validate(markEmployeeAsLeftValidation),
+  markEmployeeAsLeft,
+);
+
+router.put(
+  "/:id/rejoin",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
+  validate(rejoinEmployeeValidation),
+  rejoinEmployee,
 );
 
 //==================== UPDATE PROFILE ================
