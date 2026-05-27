@@ -77,3 +77,17 @@ exports.TICKET_FILTER = Object.freeze({
 exports.TIMEZONES = Object.freeze({
   INDIA: "Asia/Kolkata",
 });
+
+exports.PROJECT_STATUS = Object.freeze({
+  INPROGRESS: "inProgress",
+  COMPLETED: "Completed",
+  ONHOLD: "OnHold",
+  PENDING: "Pending",
+  TERMINATED: "Terminated",
+});
+
+exports.LEFT_TYPE = Object.freeze({
+  SELF: "self",
+  COMPANY: "company",
+  ABSCONDING: "absconding",
+});

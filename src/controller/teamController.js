@@ -830,7 +830,7 @@ exports.getUnassignedUsers = async (req, res, next) => {
           isDeleted: false,
           isLeft: false,
           role: {
-            $nin: ["admin", "hr", "hr_recruiter"],
+            $nin: [ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER],
           },
           $expr: {
             $not: {
@@ -877,7 +877,7 @@ exports.getUnassignedUsers = async (req, res, next) => {
           preserveNullAndEmptyArrays: true,
         },
       },
-      
+
       ...(search
         ? (() => {
             const fields = [

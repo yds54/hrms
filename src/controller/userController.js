@@ -503,7 +503,7 @@ exports.markEmployeeAsLeft = async (req, res, next) => {
       isRequired: true,
     }).select("_id criteria");
 
-    const submittedCriteria = resignationDetails.offboardingCriteria || [];
+    const submittedCriteria = resignationDetails.offboardingCriteria;
 
     const checkedMap = {};
 
@@ -512,11 +512,11 @@ exports.markEmployeeAsLeft = async (req, res, next) => {
     });
 
     const missingCriteria = requiredCriteria.filter(
-      (item) => checkedMap[item._id.toString()] !== true,
+      (item) => !checkedMap[item._id.toString()],
     );
 
     if (missingCriteria.length) {
-      throw new AppError(`Please enter required Offboarding Criteria`, 400);
+      throw new AppError(`Please enter required Offboarding Criteria`, 422);
     }
 
     payload.isLeft = true;

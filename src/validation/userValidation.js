@@ -1,5 +1,11 @@
 const { Joi } = require("express-validation");
-const { GENDER, MARITAL_STATUS, ROLES, USER_STATUS } = require("../utils/enum");
+const {
+  GENDER,
+  MARITAL_STATUS,
+  ROLES,
+  USER_STATUS,
+  LEFT_TYPE,
+} = require("../utils/enum");
 
 //================= DISPLAY USERS VALIDATION ======================
 exports.getuserValidation = {
@@ -129,7 +135,9 @@ exports.getRandomUsersValidation = {
 exports.markEmployeeAsLeftValidation = {
   body: Joi.object({
     resignationDetails: Joi.object({
-      leftType: Joi.string().valid("self", "company", "absconding").required(),
+      leftType: Joi.string()
+        .valid(...Object.values(LEFT_TYPE))
+        .required(),
       reason: Joi.string().trim().required(),
       resignationDate: Joi.date().required(),
       noticePeriod: Joi.number().min(0),

@@ -5771,7 +5771,7 @@
         }
       }
     },
-    "/api/users/{id}/offboarding": {
+    "/api/users/{id}/left": {
       "put": {
         "tags": ["Left Employees"],
         "summary": "Update employee offboarding details",
@@ -5954,6 +5954,152 @@
 
           "404": {
             "description": "User not found"
+          }
+        }
+      }
+    },
+    "/api/techStacks": {
+      "post": {
+        "tags": ["TechStack"],
+        "summary": "Add Tech Stack",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "techName": {
+                  "example": "Node.js"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "get": {
+        "tags": ["TechStack"],
+        "summary": "Display All Tech Stacks",
+        "description": "",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "techName",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/techStacks/{id}": {
+      "get": {
+        "tags": ["TechStack"],
+        "summary": "Display Tech Stack By Id",
+        "description": "Get Tech Stack by ID",
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Tech Stack retrieved successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+
+          "404": {
+            "description": "Tech Stack not found"
+          },
+
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "put": {
+        "tags": ["TechStack"],
+        "summary": "Update Tech Stack",
+        "description": "",
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+
+              "properties": {
+                "techName": {
+                  "example": "React.js"
+                }
+              }
+            }
+          }
+        ],
+
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+
+      "delete": {
+        "tags": ["TechStack"],
+        "summary": "Delete Tech Stack",
+        "description": "",
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+
+        "responses": {
+          "403": {
+            "description": "Forbidden"
           }
         }
       }
