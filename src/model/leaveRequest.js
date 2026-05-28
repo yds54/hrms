@@ -56,7 +56,11 @@ const leaveRequestSchema = new mongoose.Schema(
       enum: Object.values(LEAVE_STATUS),
       default: LEAVE_STATUS.PENDING,
     },
-    approvedBy: {
+    approvedByPM: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
+    approvedByHR: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
     },

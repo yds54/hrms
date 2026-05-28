@@ -1,9 +1,11 @@
 const moment = require("moment-timezone");
+const mongoose = require("mongoose");
 const { LEAVE, TEAMS } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 const { paginate } = require("../utils/pagination");
-const { getProjection } = require("../utils/projection");
+const { getFileUrl } = require("../utils/fileUrl");
+const { searchConditions } = require("../utils/searchHelper");
 const {
   LEAVE_DAY_TYPE,
   LEAVE_DURATION,
@@ -21,7 +23,7 @@ const {
 //======================= SEND LEAVE REQUEST =================================
 exports.createLeaveRequest = async (req, res, next) => {
   try {
-    const { _id: user } = req.user;
+    const { _id: user, officeTiming } = req.user;
     const {
       reasonType,
       reason,
@@ -68,7 +70,10 @@ exports.createLeaveRequest = async (req, res, next) => {
       payload.date = startOfDay;
       payload.isFullDay = isFullDay === true;
 
-      if (!payload.isFullDay) {
+      if (payload.isFullDay) {
+        payload.fromTime = officeTiming?.entryTime || "";
+        payload.toTime = officeTiming?.exitTime || "";
+      } else {
         if (!fromTime || !toTime) {
           throw new AppError("From Time and To Time required", 400);
         }
@@ -113,39 +118,20 @@ exports.getLeaveHistory = async (req, res, next) => {
     const { _id: userId, role } = req.user;
     let { page, limit, year, filter, search, pmFilter, hrFilter } = req.query;
     const _where = { isDeleted: false };
-    if (![ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER].includes(role)) {
+    if (![ROLES.ADMIN, ROLES.HR].includes(role)) {
       _where.user = userId;
     }
     const conditions = [];
 
-    //search
-    if (search) {
-      const fields = ["reasonType", "reason", "numberOfDays", "declineReason"];
-
-      const searchCondition = fields.map((field) => ({
-        [field]: { $regex: search, $options: "i" },
-      }));
-
-      // date search
-      const dateQuery = dateSearchQuery("date", search);
-      const fromDateQuery = dateSearchQuery("fromDate", search);
-
-      if (dateQuery) searchCondition.push(dateQuery);
-      if (fromDateQuery) searchCondition.push(fromDateQuery);
-
-      _where.$and = [{ $or: searchCondition }];
-    }
-
     // search by year
     if (year) {
-      const start = new Date(`${year}-01-01T00:00:00.000Z`);
-      const end = new Date(`${year}-12-31T23:59:59.999Z`);
+      const { startOfYear, endOfYear } = getYearRange(Number(year));
       conditions.push({
         $or: [
-          { date: { $gte: start, $lte: end } },
+          { date: { $gte: startOfYear, $lte: endOfYear } },
           {
-            fromDate: { $lte: end },
-            toDate: { $gte: start },
+            fromDate: { $lte: endOfYear },
+            toDate: { $gte: startOfYear },
           },
         ],
       });
@@ -155,7 +141,7 @@ exports.getLeaveHistory = async (req, res, next) => {
       const monthIndex = moment(filter, "MMMM", true).month();
       if (!isNaN(monthIndex)) {
         const { startOfMonth, endOfMonth } = getMonthRange(
-          new Date().getFullYear(),
+          moment().year(),
           monthIndex + 1,
         );
         conditions.push({
@@ -200,27 +186,149 @@ exports.getLeaveHistory = async (req, res, next) => {
     }
 
     if (conditions.length) {
-      _where.$and = _where.$and ? [..._where.$and, ...conditions] : conditions;
+      _where.$and = conditions;
     }
+
+    const pipeline = [
+      { $match: _where },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+          pipeline: [
+            { $match: { isDeleted: false } },
+            {
+              $project: {
+                name: 1,
+                fullName: 1,
+                employeeCode: 1,
+                profilePicture: 1,
+              },
+            },
+          ],
+        },
+      },
+      { $unwind: "$user" },
+      // search
+      ...(search
+        ? (() => {
+            const dateQuery = dateSearchQuery("date", search);
+            const fromDateQuery = dateSearchQuery("fromDate", search);
+            return [
+              {
+                $match: {
+                  $or: [
+                    searchConditions(search, "user.fullName"),
+                    {
+                      "user.employeeCode": {
+                        $regex: search,
+                        $options: "i",
+                      },
+                    },
+                    { reasonType: { $regex: search, $options: "i" } },
+                    { reason: { $regex: search, $options: "i" } },
+                    { numberOfDays: { $regex: search, $options: "i" } },
+                    { declineReason: { $regex: search, $options: "i" } },
+                    ...(dateQuery ? [dateQuery] : []),
+                    ...(fromDateQuery ? [fromDateQuery] : []),
+                  ],
+                },
+              },
+            ];
+          })()
+        : []),
+      {
+        $lookup: {
+          from: "users",
+          localField: "approvedByPM",
+          foreignField: "_id",
+          as: "approvedByPM",
+          pipeline: [{ $project: { name: 1, role: 1 } }],
+        },
+      },
+      {
+        $unwind: {
+          path: "$approvedByPM",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "approvedByHR",
+          foreignField: "_id",
+          as: "approvedByHR",
+          pipeline: [{ $project: { name: 1, role: 1 } }],
+        },
+      },
+      {
+        $unwind: {
+          path: "$approvedByHR",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "declinedBy",
+          foreignField: "_id",
+          as: "declinedBy",
+          pipeline: [{ $project: { name: 1, role: 1 } }],
+        },
+      },
+      {
+        $unwind: {
+          path: "$declinedBy",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          reasonType: 1,
+          reason: 1,
+          numberOfDays: 1,
+          date: 1,
+          isFullDay: 1,
+          fromDate: 1,
+          toDate: 1,
+          fromTime: 1,
+          toTime: 1,
+          declineReason: 1,
+          declinedBy: 1,
+          isPMApproved: 1,
+          approvedByPM: 1,
+          approvedByHR: 1,
+          isHRApproved: 1,
+          approvedBy: 1,
+          createdAt: 1,
+          totalDays: 1,
+          user: 1,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ];
 
     const { data, pagination } = await paginate({
       model: LEAVE,
-      query: _where,
+      pipeline,
       page,
       limit,
-      sort: { createdAt: -1 },
-      populate: [
-        {
-          path: "user",
-          select: "profilePicture employeeCode name",
-          match: { isDeleted: false },
-          options: { lean: true },
-        },
-      ],
-      select: getProjection(),
     });
+
+    const formatted = data.map((item) => {
+      if (item.user?.profilePicture?.fileName) {
+        item.user.profilePicture = {
+          ...item.user.profilePicture,
+          url: getFileUrl(`profile/${item.user.profilePicture.fileName}`),
+        };
+      }
+      return item;
+    });
+
     return successResponse(res, 200, "Leave history fetched", {
-      data,
+      data: formatted,
       pagination,
     });
   } catch (error) {
@@ -278,12 +386,21 @@ exports.updateLeaveRequest = async (req, res, next) => {
 
     //--------------- Approve ----------------
     //if hrapproved - approved , pmapproved auto - approved
+    // PM Approval
+    if (
+      role === ROLES.PROJECT_MANAGER &&
+      payload.isPMApproved === LEAVE_STATUS.APPROVED
+    ) {
+      payload.approvedByPM = userId;
+    }
+
+    // HR/Admin Approval
     if (
       [ROLES.ADMIN, ROLES.HR].includes(role) &&
       payload.isHRApproved === LEAVE_STATUS.APPROVED
     ) {
       payload.isPMApproved = LEAVE_STATUS.APPROVED;
-      payload.approvedBy = userId;
+      payload.approvedByHR = userId;
     }
 
     await LEAVE.updateOne({ _id: id }, { $set: payload });
@@ -337,7 +454,10 @@ exports.getTeamLeaveRequests = async (req, res, next) => {
         memberIdsSet.add(memberId.toString());
       }
     }
-    const memberIds = [...memberIdsSet];
+
+    const memberIds = [...memberIdsSet].map(
+      (id) => new mongoose.Types.ObjectId(id),
+    );
 
     if (!memberIds.length) {
       return successResponse(res, 200, "No team member assigned to you", {
@@ -351,19 +471,6 @@ exports.getTeamLeaveRequests = async (req, res, next) => {
     };
 
     const conditions = [];
-
-    // -------- search filed --------
-    if (search) {
-      const fields = ["reasonType", "reason", "numberOfDays", "declineReason"];
-      const searchCondition = fields.map((field) => ({
-        [field]: { $regex: search, $options: "i" },
-      }));
-      const dateQuery = dateSearchQuery("date", search);
-      const fromDateQuery = dateSearchQuery("fromDate", search);
-      if (dateQuery) searchCondition.push(dateQuery);
-      if (fromDateQuery) searchCondition.push(fromDateQuery);
-      _where.$and = [{ $or: searchCondition }];
-    }
 
     // -------- filter year --------
     if (year) {
@@ -418,29 +525,268 @@ exports.getTeamLeaveRequests = async (req, res, next) => {
       _where.$and = _where.$and ? [..._where.$and, ...conditions] : conditions;
     }
 
+    const pipeline = [
+      { $match: _where },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+          pipeline: [
+            { $match: { isDeleted: false } },
+            {
+              $project: {
+                name: 1,
+                employeeCode: 1,
+                fullName: 1,
+                profilePicture: 1,
+              },
+            },
+          ],
+        },
+      },
+      { $unwind: "$user" },
+      // search
+      ...(search
+        ? (() => {
+            const dateQuery = dateSearchQuery("date", search);
+            const fromDateQuery = dateSearchQuery("fromDate", search);
+            return [
+              {
+                $match: {
+                  $or: [
+                    { reasonType: { $regex: search, $options: "i" } },
+                    { reason: { $regex: search, $options: "i" } },
+                    { numberOfDays: { $regex: search, $options: "i" } },
+                    { declineReason: { $regex: search, $options: "i" } },
+                    {
+                      "user.employeeCode": {
+                        $regex: search,
+                        $options: "i",
+                      },
+                    },
+                    {
+                      "user.fullName": {
+                        $regex: search,
+                        $options: "i",
+                      },
+                    },
+                    ...(dateQuery ? [dateQuery] : []),
+                    ...(fromDateQuery ? [fromDateQuery] : []),
+                  ],
+                },
+              },
+            ];
+          })()
+        : []),
+      {
+        $lookup: {
+          from: "users",
+          localField: "approvedByPM",
+          foreignField: "_id",
+          as: "approvedByPM",
+          pipeline: [{ $project: { name: 1, role: 1 } }],
+        },
+      },
+      {
+        $unwind: {
+          path: "$approvedByPM",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "approvedByHR",
+          foreignField: "_id",
+          as: "approvedByHR",
+          pipeline: [{ $project: { name: 1, role: 1 } }],
+        },
+      },
+      {
+        $unwind: {
+          path: "$approvedByHR",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "declinedBy",
+          foreignField: "_id",
+          as: "declinedBy",
+          pipeline: [{ $project: { name: 1, role: 1 } }],
+        },
+      },
+      {
+        $unwind: {
+          path: "$declinedBy",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          reasonType: 1,
+          reason: 1,
+          numberOfDays: 1,
+          date: 1,
+          isFullDay: 1,
+          fromDate: 1,
+          toDate: 1,
+          fromTime: 1,
+          toTime: 1,
+          declineReason: 1,
+          declinedBy: 1,
+          isPMApproved: 1,
+          isHRApproved: 1,
+          approvedByPM: 1,
+          approvedByHR: 1,
+          createdAt: 1,
+          totalDays: 1,
+          user: 1,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ];
+
     const { data, pagination } = await paginate({
       model: LEAVE,
-      query: _where,
+      pipeline,
       page,
       limit,
-      sort: { createdAt: -1 },
-      populate: [
-        {
-          path: "user",
-          select: "profilePicture employeeCode name",
-          match: {
-            isDeleted: false,
-          },
-          options: { lean: true },
-        },
-      ],
+    });
+
+    const formatted = data.map((item) => {
+      if (item.user?.profilePicture?.fileName) {
+        item.user.profilePicture = {
+          ...item.user.profilePicture,
+          url: getFileUrl(`profile/${item.user.profilePicture.fileName}`),
+        };
+      }
+      return item;
     });
 
     return successResponse(res, 200, "Team leave requests fetched", {
-      data,
+      data: formatted,
       pagination,
     });
   } catch (error) {
     next(error);
+  }
+};
+
+// ================= TODAY ON LEAVE =================
+exports.getTodayOnLeave = async (req, res, next) => {
+  try {
+    const { startOfDay, endOfDay } = getDayRange(
+      moment.tz(TIMEZONES.INDIA).format("YYYY-MM-DD"),
+    );
+
+    const data = await LEAVE.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+          isPMApproved: LEAVE_STATUS.APPROVED,
+          isHRApproved: LEAVE_STATUS.APPROVED,
+          $or: [
+            {
+              date: { $gte: startOfDay, $lte: endOfDay },
+            },
+            {
+              fromDate: { $lte: endOfDay },
+              toDate: { $gte: startOfDay },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+          pipeline: [
+            {
+              $match: { isDeleted: false },
+            },
+            {
+              $lookup: {
+                from: "departments",
+                localField: "departmentId",
+                foreignField: "_id",
+                as: "department",
+                pipeline: [
+                  {
+                    $project: {
+                      _id: 1,
+                      departmentName: 1,
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              $unwind: {
+                path: "$department",
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $project: {
+                name: 1,
+                profilePicture: 1,
+                departmentName: "$department.departmentName",
+              },
+            },
+          ],
+        },
+      },
+
+      {
+        $unwind: "$user",
+      },
+      {
+        $project: {
+          numberOfDays: 1,
+          isFullDay: 1,
+          fromTime: 1,
+          toTime: 1,
+          name: "$user.name",
+          department: "$user.departmentName",
+          profilePicture: "$user.profilePicture",
+        },
+      },
+    ]);
+
+    const formatted = data.map((item) => {
+      if (item.profilePicture?.fileName) {
+        item.profilePicture = {
+          ...item.profilePicture,
+          url: getFileUrl(`profile/${item.profilePicture.fileName}`),
+        };
+      }
+
+      return {
+        name: item.name,
+        department: item.department,
+        profilePicture: item.profilePicture,
+        leaveType:
+          item.numberOfDays === LEAVE_DAY_TYPE.SINGLE
+            ? item.isFullDay
+              ? "FULL"
+              : "HALF"
+            : "MULTIPLE",
+        leaveTiming: item.isFullDay
+          ? "-"
+          : `${item.fromTime} to ${item.toTime}`,
+      };
+    });
+
+    return successResponse(res, 200, "Today on leave fetched", {
+      data: formatted,
+    });
+  } catch (err) {
+    next(err);
   }
 };

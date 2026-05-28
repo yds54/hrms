@@ -25,8 +25,8 @@ exports.createLeaveValidation = {
 
     isFullDay: Joi.boolean().optional(),
 
-    fromTime: Joi.string().pattern(timeRegex).required(),
-    toTime: Joi.string().pattern(timeRegex).required(),
+    fromTime: Joi.string().pattern(timeRegex).optional(),
+    toTime: Joi.string().pattern(timeRegex).optional(),
 
     fromDate: Joi.date().optional(),
     toDate: Joi.date().optional(),

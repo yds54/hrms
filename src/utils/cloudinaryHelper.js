@@ -76,6 +76,23 @@ const deleteFolderFromCloudinary = async (folderPath) => {
   await cloudinary.api.delete_folder(folderPath);
 };
 
+const uploadMultipleFilesSingleField = async (files = [], options = {}) => {
+  if (!files?.length) return [];
+  const uploadedFiles = [];
+  for (const file of files) {
+    const tempPath = `${file.path}_copy_${Date.now()}`;
+    fs.copyFileSync(file.path, tempPath);
+
+    const clonedFile = {
+      ...file,
+      path: tempPath,
+    };
+    const uploaded = await uploadToCloudinary(clonedFile, options);
+    uploadedFiles.push(uploaded);
+  }
+  return uploadedFiles;
+};
+
 module.exports = {
   uploadToCloudinary,
   uploadMultipleToCloudinary,
@@ -84,4 +101,5 @@ module.exports = {
   deleteFromCloudinary,
   deleteMultipleFromCloudinary,
   deleteFolderFromCloudinary,
+  uploadMultipleFilesSingleField,
 };
