@@ -11,7 +11,7 @@ const {
   deleteMultipleFromCloudinary,
   deleteFromCloudinary,
 } = require("../utils/cloudinaryHelper");
-const { getFileUrl } = require("../utils/fileUrl");
+const { formatComment } = require("../utils/cloudinaryFormatUrl");
 
 //================ CREATE COMMENT =================
 exports.createComment = async (req, res, next) => {
@@ -48,7 +48,7 @@ exports.createComment = async (req, res, next) => {
     let attachFile = [];
     if (files?.length) {
       const uploadedRawFiles = await uploadMultipleFilesSingleField(files, {
-        folder: "tickets/comments",
+        folder: `comments/${ticketId}/${userId}`,
       });
       uploadedFilePublicIds = uploadedRawFiles.map((f) => f.publicId);
       attachFile = uploadedRawFiles.map(({ fileName, fileType, size }) => ({
@@ -122,24 +122,8 @@ exports.getComments = async (req, res, next) => {
       ])
       .lean();
 
-    const formattedComments = comments.map((item) => {
-      if (item.attachFile?.length) {
-        item.attachFile = item.attachFile.map((file) => ({
-          ...file,
-          url: file.fileName
-            ? getFileUrl(`tickets/comments/${file.fileName}`)
-            : null,
-        }));
-      }
+    const formattedComments = comments.map(formatComment);
 
-      if (item.createdBy?.profilePicture?.fileName) {
-        item.createdBy.profilePicture.url = getFileUrl(
-          `profile/${item.createdBy.profilePicture.fileName}`,
-        );
-      }
-
-      return item;
-    });
     return successResponse(res, 200, "Comments fetched", {
       comments: formattedComments,
     });
@@ -183,7 +167,8 @@ exports.deleteComment = async (req, res, next) => {
     // delete files from cloiudinary
     if (isCommentExists.attachFile?.length) {
       const publicIds = isCommentExists.attachFile.map(
-        (file) => `tickets/comments/${file.fileName}`,
+        (file) =>
+          `comments/${isCommentExists.ticketId}/${isCommentExists.createdBy}/${file.fileName}`,
       );
       await deleteMultipleFromCloudinary(publicIds);
     }
@@ -243,7 +228,9 @@ exports.deleteSingleCommentFile = async (req, res, next) => {
     }
 
     // delete single file from cloudinary
-    await deleteFromCloudinary(`tickets/comments/${fileName}`);
+    await deleteFromCloudinary(
+      `comments/${comment.ticketId}/${comment.createdBy}/${fileName}`,
+    );
 
     await TICKETCOMMENT.updateOne(
       { _id: commentId },

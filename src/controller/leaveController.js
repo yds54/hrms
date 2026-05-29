@@ -4,7 +4,10 @@ const { LEAVE, TEAMS } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 const { paginate } = require("../utils/pagination");
-const { getFileUrl } = require("../utils/fileUrl");
+const {
+  formatProfilePicture,
+  formatLeaveUser,
+} = require("../utils/cloudinaryFormatUrl");
 const { searchConditions } = require("../utils/searchHelper");
 const {
   LEAVE_DAY_TYPE,
@@ -317,15 +320,7 @@ exports.getLeaveHistory = async (req, res, next) => {
       limit,
     });
 
-    const formatted = data.map((item) => {
-      if (item.user?.profilePicture?.fileName) {
-        item.user.profilePicture = {
-          ...item.user.profilePicture,
-          url: getFileUrl(`profile/${item.user.profilePicture.fileName}`),
-        };
-      }
-      return item;
-    });
+    const formatted = data.map(formatLeaveUser);
 
     return successResponse(res, 200, "Leave history fetched", {
       data: formatted,
@@ -657,15 +652,7 @@ exports.getTeamLeaveRequests = async (req, res, next) => {
       limit,
     });
 
-    const formatted = data.map((item) => {
-      if (item.user?.profilePicture?.fileName) {
-        item.user.profilePicture = {
-          ...item.user.profilePicture,
-          url: getFileUrl(`profile/${item.user.profilePicture.fileName}`),
-        };
-      }
-      return item;
-    });
+    const formatted = data.map(formatLeaveUser);
 
     return successResponse(res, 200, "Team leave requests fetched", {
       data: formatted,
@@ -760,17 +747,14 @@ exports.getTodayOnLeave = async (req, res, next) => {
     ]);
 
     const formatted = data.map((item) => {
-      if (item.profilePicture?.fileName) {
-        item.profilePicture = {
-          ...item.profilePicture,
-          url: getFileUrl(`profile/${item.profilePicture.fileName}`),
-        };
-      }
+      const user = formatProfilePicture({
+        profilePicture: item.profilePicture,
+      });
 
       return {
         name: item.name,
         department: item.department,
-        profilePicture: item.profilePicture,
+        profilePicture: user.profilePicture,
         leaveType:
           item.numberOfDays === LEAVE_DAY_TYPE.SINGLE
             ? item.isFullDay

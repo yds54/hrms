@@ -14,7 +14,10 @@ const {
   deleteMultipleFromCloudinary,
   cleanupMultipleLocalFiles,
 } = require("../utils/cloudinaryHelper");
-const { getFileUrl } = require("../utils/fileUrl");
+const {
+  formatTicket,
+  formatActivity,
+} = require("../utils/cloudinaryFormatUrl");
 
 const ALLOWED_ROLES = [
   ROLES.ADMIN,
@@ -88,7 +91,7 @@ exports.createTicket = async (req, res, next) => {
 
     if (req.files?.length) {
       const uploadedRawFiles = await uploadMultipleFilesSingleField(req.files, {
-        folder: "tickets",
+        folder: `tickets/${createdBy}`,
       });
       uploadedFilePublicIds = uploadedRawFiles.map((f) => f.publicId);
       uploadedFiles = uploadedRawFiles.map(({ fileName, fileType, size }) => ({
@@ -189,46 +192,7 @@ exports.getTickets = async (req, res, next) => {
       ])
       .lean();
 
-    const formattedData = data.map((item) => {
-      // attachFile URL
-      if (item.attachFile?.length) {
-        item.attachFile = item.attachFile.map((file) => {
-          if (file?.fileName) {
-            return {
-              ...file,
-              url: getFileUrl(`tickets/${file.fileName}`),
-            };
-          }
-          return file;
-        });
-      }
-
-      // createdBy profile pic
-      if (item.createdBy?.profilePicture?.fileName) {
-        item.createdBy.profilePicture = {
-          ...item.createdBy.profilePicture,
-          url: getFileUrl(`profile/${item.createdBy.profilePicture.fileName}`),
-        };
-      }
-
-      // assignedTo profile pic (array)
-      if (item.assignedTo?.length) {
-        item.assignedTo = item.assignedTo.map((user) => {
-          if (user?.profilePicture?.fileName) {
-            return {
-              ...user,
-              profilePicture: {
-                ...user.profilePicture,
-                url: getFileUrl(`profile/${user.profilePicture.fileName}`),
-              },
-            };
-          }
-          return user;
-        });
-      }
-
-      return item;
-    });
+    const formattedData = data.map(formatTicket);
 
     return successResponse(res, 200, "Tickets fetched", {
       data: formattedData,
@@ -395,14 +359,7 @@ exports.getTicketActivity = async (req, res, next) => {
       ])
       .lean();
 
-    const formattedActivity = activity.map((item) => {
-      if (item.changedBy?.profilePicture?.fileName) {
-        item.changedBy.profilePicture.url = getFileUrl(
-          `profile/${item.changedBy.profilePicture.fileName}`,
-        );
-      }
-      return item;
-    });
+    const formattedActivity = activity.map(formatActivity);
 
     return successResponse(res, 200, "Activity fetched", {
       activity: formattedActivity,
@@ -435,7 +392,9 @@ exports.deleteTicket = async (req, res, next) => {
     // owner , assignee , admin allowed
     const isRoleAllowed =
       isTicketExists.createdBy.toString() === userId.toString() ||
-      isTicketExists.assignedTo.toString() === userId.toString() ||
+      isTicketExists.assignedTo?.some(
+        (id) => id.toString() === userId.toString(),
+      ) ||
       role === ROLES.ADMIN;
 
     if (!isRoleAllowed) {
@@ -453,7 +412,11 @@ exports.deleteTicket = async (req, res, next) => {
     // delete multiple files from cloudinary
     if (isTicketExists.attachFile?.length) {
       const publicIds = isTicketExists.attachFile
-        .map((file) => (file.fileName ? `tickets/${file.fileName}` : null))
+        .map((file) =>
+          file.fileName
+            ? `tickets/${isTicketExists.createdBy._id}/${file.fileName}`
+            : null,
+        )
         .filter(Boolean);
       await deleteMultipleFromCloudinary(publicIds);
     }
@@ -501,20 +464,20 @@ exports.getTicketByUserId = async (req, res, next) => {
     })
       .sort({ createdAt: -1 })
       .populate([
-        { path: "assignedTo", select: "name", match: { isDeleted: false } },
-        { path: "createdBy", select: "name", match: { isDeleted: false } },
+        {
+          path: "assignedTo",
+          select: "name profilePicture",
+          match: { isDeleted: false },
+        },
+        {
+          path: "createdBy",
+          select: "name profilePicture",
+          match: { isDeleted: false },
+        },
       ])
       .lean();
 
-    const formattedData = data.map((ticket) => {
-      if (ticket.attachFile?.length) {
-        ticket.attachFile = ticket.attachFile.map((file) => ({
-          ...file,
-          url: file.fileName ? getFileUrl(`tickets/${file.fileName}`) : null,
-        }));
-      }
-      return ticket;
-    });
+    const formattedData = data.map(formatTicket);
 
     return successResponse(res, 200, "User tickets fetched", {
       data: formattedData,
