@@ -15,7 +15,6 @@ const { formatComment } = require("../utils/cloudinaryFormatUrl");
 
 //================ CREATE COMMENT =================
 exports.createComment = async (req, res, next) => {
-  let uploadedFilePublicIds = [];
   try {
     const {
       user: { _id: userId, role },
@@ -50,7 +49,6 @@ exports.createComment = async (req, res, next) => {
       const uploadedRawFiles = await uploadMultipleFilesSingleField(files, {
         folder: `comments/${ticketId}/${userId}`,
       });
-      uploadedFilePublicIds = uploadedRawFiles.map((f) => f.publicId);
       attachFile = uploadedRawFiles.map(({ fileName, fileType, size }) => ({
         fileName,
         fileType,
@@ -207,7 +205,7 @@ exports.deleteSingleCommentFile = async (req, res, next) => {
     } = req;
 
     if (!fileName) {
-      throw new AppError("fileName is required for delete single file", 400);
+      throw new AppError("fileName is required for delete single file", 422);
     }
 
     const comment = await TICKETCOMMENT.findOne({

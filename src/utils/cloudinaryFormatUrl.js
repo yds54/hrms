@@ -3,7 +3,7 @@ const { getFileUrl } = require("./fileUrl");
 // Display Single User profile picture Url
 const formatProfilePicture = (user) => {
   if (!user) return user;
-  if (user?.profilePicture?.fileName) {
+  if (user.profilePicture.fileName) {
     return {
       ...user,
       profilePicture: {
@@ -33,7 +33,7 @@ const formatUsersArray = (users = []) => {
 const formatAttachments = (files = [], folderPath) => {
   return files.map((file) => ({
     ...file,
-    url: file?.fileName ? getFileUrl(`${folderPath}/${file.fileName}`) : null,
+    url: file.fileName ? getFileUrl(`${folderPath}/${file.fileName}`) : null,
   }));
 };
 
@@ -61,7 +61,7 @@ const formatTicket = (ticket) => {
 // Display Comments with profile picture and attachment url
 const formatComment = (comment) => {
   if (!comment) return comment;
-  const userId = comment.createdBy?._id || comment.createdBy;
+  const userId = comment.createdBy._id;
   // Display Comment attachment url
   if (comment.attachFile?.length && userId) {
     comment.attachFile = formatAttachments(
@@ -70,15 +70,14 @@ const formatComment = (comment) => {
     );
   }
   // Display creator profile picture url
-  if (comment.createdBy) {
-    comment.createdBy = formatProfilePicture(comment.createdBy);
-  }
+  comment.createdBy = formatProfilePicture(comment.createdBy);
+
   return comment;
 };
 
 // Display Ticket activity with profile picture url
 const formatActivity = (activity) => {
-  if (activity?.changedBy) {
+  if (activity.changedBy) {
     activity.changedBy = formatProfilePicture(activity.changedBy);
   }
   return activity;

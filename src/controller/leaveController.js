@@ -68,17 +68,17 @@ exports.createLeaveRequest = async (req, res, next) => {
     }
 
     if (numberOfDays === LEAVE_DAY_TYPE.SINGLE) {
-      if (!date) throw new AppError("Date is required", 400);
+      if (!date) throw new AppError("Date is required", 422);
       const { startOfDay } = getDayRange(date);
       payload.date = startOfDay;
       payload.isFullDay = isFullDay === true;
 
       if (payload.isFullDay) {
-        payload.fromTime = officeTiming?.entryTime || "";
-        payload.toTime = officeTiming?.exitTime || "";
+        payload.fromTime = officeTiming?.entryTime || null;
+        payload.toTime = officeTiming?.exitTime || null;
       } else {
         if (!fromTime || !toTime) {
-          throw new AppError("From Time and To Time required", 400);
+          throw new AppError("From Time and To Time required", 422);
         }
         payload.fromTime = moment(fromTime, "HH:mm A").format("hh:mm A");
         payload.toTime = moment(toTime, "HH:mm A").format("hh:mm A");
@@ -88,7 +88,7 @@ exports.createLeaveRequest = async (req, res, next) => {
     // Multiple Day
     if (numberOfDays === LEAVE_DAY_TYPE.MULTIPLE) {
       if (!fromDate || !toDate || !fromTime || !toTime) {
-        throw new AppError("From and To date required", 400);
+        throw new AppError("From and To date required", 422);
       }
 
       const { startOfDay: startDate } = getDayRange(fromDate);
@@ -368,7 +368,7 @@ exports.updateLeaveRequest = async (req, res, next) => {
       payload.isHRApproved === LEAVE_STATUS.DECLINED
     ) {
       if (!payload.declineReason) {
-        throw new AppError("Decline reason is required", 400);
+        throw new AppError("Decline reason is required", 422);
       }
       payload.declined = true;
       payload.declinedBy = userId;

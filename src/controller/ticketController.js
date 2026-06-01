@@ -93,12 +93,17 @@ exports.createTicket = async (req, res, next) => {
       const uploadedRawFiles = await uploadMultipleFilesSingleField(req.files, {
         folder: `tickets/${createdBy}`,
       });
-      uploadedFilePublicIds = uploadedRawFiles.map((f) => f.publicId);
-      uploadedFiles = uploadedRawFiles.map(({ fileName, fileType, size }) => ({
-        fileName,
-        fileType,
-        size,
-      }));
+      ({ uploadedFilePublicIds, uploadedFiles } = uploadedRawFiles.reduce(
+        (acc, { publicId, fileName, fileType, size }) => {
+          acc.uploadedFilePublicIds.push(publicId);
+          acc.uploadedFiles.push({ fileName, fileType, size });
+          return acc;
+        },
+        {
+          uploadedFilePublicIds: [],
+          uploadedFiles: [],
+        },
+      ));
     }
 
     const ticket = await TICKET.create({

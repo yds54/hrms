@@ -8,7 +8,15 @@ exports.createCommentValidation = {
 
   body: Joi.object({
     comment: Joi.string().trim().optional(),
-    attachFile: Joi.any().optional(),
+    attachFile: Joi.array()
+      .items(
+        Joi.object({
+          fileName: Joi.string().allow(null),
+          fileType: Joi.string().allow(null),
+          size: Joi.number().allow(null),
+        }),
+      )
+      .optional(),
   }),
 };
 

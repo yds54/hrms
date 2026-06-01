@@ -18,7 +18,15 @@ exports.createTicketValidation = {
       .valid(...Object.values(PRIORITY_STATUS))
       .optional(),
     content: Joi.string().trim().required(),
-    attachFile: Joi.any().optional(),
+    attachFile: Joi.array()
+      .items(
+        Joi.object({
+          fileName: Joi.string().allow(null),
+          fileType: Joi.string().allow(null),
+          size: Joi.number().allow(null),
+        }),
+      )
+      .optional(),
     status: Joi.string()
       .valid(...Object.values(TICKET_STATUS))
       .optional(),
@@ -66,7 +74,6 @@ exports.updateTicketValidation = {
     status: Joi.string()
       .valid(...Object.values(TICKET_STATUS))
       .optional(),
-    attachFile: Joi.any().optional(),
   }),
 };
 
