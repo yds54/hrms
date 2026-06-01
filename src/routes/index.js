@@ -31,6 +31,7 @@ const appreciatedUserRoutes = require("./appreciatedUserRoutes");
 const evaluationReportRoutes = require("./evaluationReportRoutes");
 const interviewRoutes = require("./interviewRoutes");
 const eventRoutes = require("./eventRoutes");
+const techStackRoutes = require("./techStackRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -62,5 +63,6 @@ router.use("/appreciation", appreciatedUserRoutes);
 router.use("/evaluationReport", evaluationReportRoutes);
 router.use("/interviews", interviewRoutes);
 router.use("/events", eventRoutes);
+router.use("/techstacks", techStackRoutes);
 
 module.exports = router;

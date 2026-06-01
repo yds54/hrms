@@ -8,6 +8,7 @@ const {
   getAllProjects,
   getProjectById,
   updateProject,
+  getProjectCountByStatus,
 } = require("../controller/projectController");
 const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
@@ -19,6 +20,7 @@ const {
   getProjectByIdValidation,
   getProjectValidation,
   updateProjectValidation,
+  getProjectCountByStatusValidation,
 } = require("../validation/projectValidation");
 
 router.post(
@@ -27,6 +29,20 @@ router.post(
   authorizeRoles(ROLES.ADMIN),
   validate(addProjectValidation),
   addProject,
+);
+router.get(
+  "/count-by-status",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN),
+  validate(getProjectCountByStatusValidation),
+  getProjectCountByStatus,
+);
+router.get(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(...Object.values(ROLES)),
+  validate(getProjectByIdValidation),
+  getProjectById,
 );
 
 router.get(
@@ -37,14 +53,6 @@ router.get(
   getAllProjects,
 );
 
-router.get(
-  "/:id",
-  authenticateJWT,
-  authorizeRoles(...Object.values(ROLES)),
-  validate(getProjectByIdValidation),
-  getProjectById,
-);
-
 router.put(
   "/:id",
   authenticateJWT,
@@ -52,7 +60,6 @@ router.put(
   validate(updateProjectValidation),
   updateProject,
 );
-
 router.delete(
   "/:id",
   authenticateJWT,
