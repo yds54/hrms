@@ -21,9 +21,9 @@ exports.createTicketValidation = {
     attachFile: Joi.array()
       .items(
         Joi.object({
-          fileName: Joi.string().allow(null),
-          fileType: Joi.string().allow(null),
-          size: Joi.number().allow(null),
+          fileName: Joi.string().allow(null).required(),
+          fileType: Joi.string().allow(null).required(),
+          size: Joi.number().allow(null).required(),
         }),
       )
       .optional(),
