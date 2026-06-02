@@ -5,6 +5,7 @@ const { successResponse } = require("../utils/sucess");
 const { PROJECTS, TEAMS } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { dateSearchQuery } = require("../utils/dateFormat");
+const { PROJECT_STATUS } = require("../utils/enum");
 
 exports.addProject = async (req, res, next) => {
   try {
@@ -163,6 +164,14 @@ exports.getProjectById = async (req, res, next) => {
       },
       {
         $lookup: {
+          from: "techstacks",
+          localField: "techStackId",
+          foreignField: "_id",
+          as: "techStacks",
+        },
+      },
+      {
+        $lookup: {
           from: "users",
           let: {
             pmIds: {
@@ -256,8 +265,18 @@ exports.getProjectById = async (req, res, next) => {
           clientName: 1,
           startDate: 1,
           endDate: 1,
-          techStack: 1,
           description: 1,
+
+          techStacks: {
+            $map: {
+              input: "$techStacks",
+              as: "tech",
+              in: {
+                _id: "$$tech._id",
+                techName: "$$tech.techName",
+              },
+            },
+          },
 
           teamNames: {
             $map: {
@@ -282,6 +301,67 @@ exports.getProjectById = async (req, res, next) => {
 
     return successResponse(res, 200, "Project fetched successfully", {
       data: data[0],
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getProjectCountByStatus = async (req, res, next) => {
+  try {
+    let { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      startDate = moment().startOf("month").format("YYYY-MM-DD");
+      endDate = moment().endOf("month").format("YYYY-MM-DD");
+    }
+
+    const start = moment(startDate).startOf("day").toDate();
+    const end = moment(endDate).endOf("day").toDate();
+
+    const statusData = await PROJECTS.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+          startDate: {
+            $gte: start,
+            $lte: end,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const newArrivalCount = await PROJECTS.countDocuments({
+      isDeleted: false,
+      startDate: {
+        $gte: start,
+        $lte: end,
+      },
+    });
+
+    const formattedData = Object.values(PROJECT_STATUS).map((status) => {
+      const found = statusData.find((item) => item._id === status);
+
+      return {
+        status,
+        count: found ? found.count : 0,
+      };
+    });
+
+    formattedData.push({
+      status: "newArrival",
+      count: newArrivalCount,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: formattedData,
     });
   } catch (error) {
     next(error);

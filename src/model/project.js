@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { PROJECT_STATUS } = require("../utils/enum");
 
 const projectSchema = new mongoose.Schema(
   {
@@ -9,9 +10,8 @@ const projectSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["inProgress", "Completed", "OnHold", "Pending", "Terminated"],
+      enum: Object.values(PROJECT_STATUS),
       required: true,
-      default: "In Progress",
     },
     type: {
       type: String,
@@ -31,16 +31,16 @@ const projectSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    techStack: [
+    techStackId: [
       {
-        type: String,
-        trim: true,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "techStack",
       },
     ],
     description: {
       type: String,
       trim: true,
-      default: "",
+      default: null,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
