@@ -11,12 +11,14 @@ const {
   createComment,
   getComments,
   deleteComment,
+  deleteSingleCommentFile,
 } = require("../controller/ticketCommentController");
 
 const {
   createCommentValidation,
   getCommentValidation,
   deleteCommentValidation,
+  deleteSingleCommentFileValidation,
 } = require("../validation/ticketCommentValidation");
 
 //================ CREATE COMMENT =================
@@ -48,6 +50,15 @@ router.delete(
   authorizeRoles(...Object.values(ROLES)),
   validate(deleteCommentValidation),
   deleteComment,
+);
+
+//========= DELETE SINGLE FILE FROM COMMENT =========
+router.delete(
+  "/comment/:commentId/file",
+  authenticateJWT,
+  authorizeRoles(...Object.values(ROLES)),
+  validate(deleteSingleCommentFileValidation),
+  deleteSingleCommentFile,
 );
 
 module.exports = router;

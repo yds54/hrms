@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.42:5000",
+  "host": "192.168.0.158:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -891,6 +891,21 @@
         "responses": {
           "200": {
             "description": "Leave history fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/leaveRequest/today-on-leave": {
+      "get": {
+        "tags": ["Leave Request"],
+        "summary": "Get Today On Leave (Admin/HR)",
+        "description": "Fetch employees who are on leave today (approved only)",
+        "responses": {
+          "200": {
+            "description": "Today On Leave fetched successfully"
           },
           "403": {
             "description": "Forbidden"
@@ -2069,12 +2084,11 @@
           {
             "name": "attachFile",
             "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "attachFile",
-            "in": "formData",
-            "type": "file"
+            "type": "array",
+            "items": {
+              "type": "file"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "responses": {
@@ -2189,16 +2203,6 @@
             "enum": ["To Do", "In Progress", "On Hold", "Completed", "Reopen"]
           },
           {
-            "name": "attachFile",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "attachFile",
-            "in": "formData",
-            "type": "file"
-          },
-          {
             "name": "isArchived",
             "in": "formData",
             "type": "boolean",
@@ -2274,12 +2278,11 @@
           {
             "name": "attachFile",
             "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "attachFile",
-            "in": "formData",
-            "type": "file"
+            "type": "array",
+            "items": {
+              "type": "file"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "responses": {
@@ -2331,6 +2334,50 @@
           },
           "404": {
             "description": "Comment not found"
+          }
+        }
+      }
+    },
+    "/api/ticket/comment/{commentId}/file": {
+      "delete": {
+        "tags": ["Ticket Board"],
+        "summary": "Delete Single File From Comment",
+        "description": "Remove a specific file from a ticket comment",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "665f1c2b9f1a2c001234abcd"
+          },
+          {
+            "name": "fileName",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "fileName": {
+                  "type": "string",
+                  "example": "abc123xyz"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File deleted successfully"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "403": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Comment or file not found"
           }
         }
       }

@@ -31,7 +31,18 @@ const ticketSchema = new mongoose.Schema(
     },
     attachFile: [
       {
-        type: String,
+        fileName: {
+          type: String,
+          default: null,
+        },
+        fileType: {
+          type: String,
+          default: null,
+        },
+        size: {
+          type: Number,
+          default: null,
+        },
       },
     ],
     createdBy: {

@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const {
   USER,
   TICKET,
@@ -10,6 +9,15 @@ const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 const { getProjection } = require("../utils/projection");
 const { getDayRange, dateSearchQuery } = require("../utils/dateFormat");
+const {
+  uploadMultipleFilesSingleField,
+  deleteMultipleFromCloudinary,
+  cleanupMultipleLocalFiles,
+} = require("../utils/cloudinaryHelper");
+const {
+  formatTicket,
+  formatActivity,
+} = require("../utils/cloudinaryFormatUrl");
 
 const ALLOWED_ROLES = [
   ROLES.ADMIN,
@@ -22,6 +30,7 @@ const ALLOWED_ROLES = [
 
 //========================== CREATE TICKET ==========================
 exports.createTicket = async (req, res, next) => {
+  let uploadedFilePublicIds = [];
   try {
     const { _id: createdBy, role } = req.user;
     let { assignedTo } = req.body;
@@ -78,13 +87,29 @@ exports.createTicket = async (req, res, next) => {
       }
     }
 
-    const files =
-      req.files?.map((file) => `/uploads/tickets/${file.filename}`) || [];
+    let uploadedFiles = [];
+
+    if (req.files?.length) {
+      const uploadedRawFiles = await uploadMultipleFilesSingleField(req.files, {
+        folder: `tickets/${createdBy}`,
+      });
+      ({ uploadedFilePublicIds, uploadedFiles } = uploadedRawFiles.reduce(
+        (acc, { publicId, fileName, fileType, size }) => {
+          acc.uploadedFilePublicIds.push(publicId);
+          acc.uploadedFiles.push({ fileName, fileType, size });
+          return acc;
+        },
+        {
+          uploadedFilePublicIds: [],
+          uploadedFiles: [],
+        },
+      ));
+    }
 
     const ticket = await TICKET.create({
       ...req.body,
       assignedTo,
-      attachFile: files,
+      attachFile: uploadedFiles,
       createdBy,
     });
 
@@ -92,12 +117,14 @@ exports.createTicket = async (req, res, next) => {
       ticketId: ticket._id,
       field: "created",
       oldValue: null,
-      newValue: "Ticket created",
+      newValue: "Created Ticket",
       changedBy: createdBy,
     });
 
     return successResponse(res, 201, "Ticket created", ticket);
   } catch (err) {
+    await deleteMultipleFromCloudinary(uploadedFilePublicIds);
+    cleanupMultipleLocalFiles({ files: req.files });
     next(err);
   }
 };
@@ -111,7 +138,7 @@ exports.getTickets = async (req, res, next) => {
 
     const roleConditions = {
       [ROLES.ADMIN]: {}, // admin - all
-      [ROLES.HR]: { assignedTo: userId }, // HR - assigned only
+      [ROLES.HR]: { $or: [{ createdBy: userId }, { assignedTo: userId }] }, // HR - created ticket and assigned only
       default: {
         $or: [{ createdBy: userId }, { assignedTo: userId }],
       },
@@ -157,12 +184,24 @@ exports.getTickets = async (req, res, next) => {
       .sort({ createdAt: -1 })
       .select(getProjection())
       .populate([
-        { path: "assignedTo", select: "name", match: { isDeleted: false } },
-        { path: "createdBy", select: "name", match: { isDeleted: false } },
+        {
+          path: "assignedTo",
+          select: "name profilePicture",
+          match: { isDeleted: false },
+        },
+        {
+          path: "createdBy",
+          select: "name profilePicture",
+          match: { isDeleted: false },
+        },
       ])
       .lean();
 
-    return successResponse(res, 200, "Tickets fetched", { data });
+    const formattedData = data.map(formatTicket);
+
+    return successResponse(res, 200, "Tickets fetched", {
+      data: formattedData,
+    });
   } catch (err) {
     next(err);
   }
@@ -219,13 +258,7 @@ exports.updateTicket = async (req, res, next) => {
       }
     } else if (isOwner) {
       if (status === TICKET_STATUS.TODO || status === TICKET_STATUS.REOPEN) {
-        allowedFields = [
-          "title",
-          "dueDate",
-          "priority",
-          "content",
-          "attachFile",
-        ];
+        allowedFields = ["title", "dueDate", "priority", "content"];
       } else if (
         [TICKET_STATUS.INPROGRESS, TICKET_STATUS.ONHOLD].includes(status)
       ) {
@@ -262,12 +295,6 @@ exports.updateTicket = async (req, res, next) => {
           delete payload[key];
         }
       });
-    }
-
-    if (req.files?.length) {
-      payload.attachFile = req.files.map(
-        (file) => `/uploads/tickets/${file.filename}`,
-      );
     }
 
     //insert activity
@@ -337,7 +364,11 @@ exports.getTicketActivity = async (req, res, next) => {
       ])
       .lean();
 
-    return successResponse(res, 200, "Activity fetched", { activity });
+    const formattedActivity = activity.map(formatActivity);
+
+    return successResponse(res, 200, "Activity fetched", {
+      activity: formattedActivity,
+    });
   } catch (err) {
     next(err);
   }
@@ -366,7 +397,9 @@ exports.deleteTicket = async (req, res, next) => {
     // owner , assignee , admin allowed
     const isRoleAllowed =
       isTicketExists.createdBy.toString() === userId.toString() ||
-      isTicketExists.assignedTo.toString() === userId.toString() ||
+      isTicketExists.assignedTo?.some(
+        (id) => id.toString() === userId.toString(),
+      ) ||
       role === ROLES.ADMIN;
 
     if (!isRoleAllowed) {
@@ -379,6 +412,18 @@ exports.deleteTicket = async (req, res, next) => {
       )
     ) {
       throw new AppError("Only ToDo or Reopen tickets can be deleted", 400);
+    }
+
+    // delete multiple files from cloudinary
+    if (isTicketExists.attachFile?.length) {
+      const publicIds = isTicketExists.attachFile
+        .map((file) =>
+          file.fileName
+            ? `tickets/${isTicketExists.createdBy._id}/${file.fileName}`
+            : null,
+        )
+        .filter(Boolean);
+      await deleteMultipleFromCloudinary(publicIds);
     }
 
     //soft delete ticket related comment and it's activity
@@ -424,12 +469,24 @@ exports.getTicketByUserId = async (req, res, next) => {
     })
       .sort({ createdAt: -1 })
       .populate([
-        { path: "assignedTo", select: "name", match: { isDeleted: false } },
-        { path: "createdBy", select: "name", match: { isDeleted: false } },
+        {
+          path: "assignedTo",
+          select: "name profilePicture",
+          match: { isDeleted: false },
+        },
+        {
+          path: "createdBy",
+          select: "name profilePicture",
+          match: { isDeleted: false },
+        },
       ])
       .lean();
 
-    return successResponse(res, 200, "User tickets fetched", { data });
+    const formattedData = data.map(formatTicket);
+
+    return successResponse(res, 200, "User tickets fetched", {
+      data: formattedData,
+    });
   } catch (err) {
     next(err);
   }

@@ -8,7 +8,15 @@ exports.createCommentValidation = {
 
   body: Joi.object({
     comment: Joi.string().trim().optional(),
-    attachFile: Joi.array().items(Joi.string()).optional(),
+    attachFile: Joi.array()
+      .items(
+        Joi.object({
+          fileName: Joi.string().allow(null).required(),
+          fileType: Joi.string().allow(null).required(),
+          size: Joi.number().allow(null).required(),
+        }),
+      )
+      .optional(),
   }),
 };
 
@@ -23,5 +31,15 @@ exports.getCommentValidation = {
 exports.deleteCommentValidation = {
   params: Joi.object({
     commentId: Joi.string().hex().length(24).required(),
+  }),
+};
+
+//========= DELETE SINGLE FILE FROM COMMENT =========
+exports.deleteSingleCommentFileValidation = {
+  params: Joi.object({
+    commentId: Joi.string().required().label("Comment Id"),
+  }),
+  body: Joi.object({
+    fileName: Joi.string().required().label("File Name"),
   }),
 };

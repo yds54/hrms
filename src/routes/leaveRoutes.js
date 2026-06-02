@@ -11,6 +11,7 @@ const {
   updateLeaveRequest,
   deleteLeaveRequest,
   getTeamLeaveRequests,
+  getTodayOnLeave,
 } = require("../controller/leaveController");
 
 const {
@@ -46,6 +47,14 @@ router.get(
   authorizeRoles(ROLES.PROJECT_MANAGER),
   validate(teamLeaveRequestValidation),
   getTeamLeaveRequests,
+);
+
+// ================= TODAY ON LEAVE =================
+router.get(
+  "/today-on-leave",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  getTodayOnLeave,
 );
 
 //==================== UPDATE LEAVE REQUEST ==========================
