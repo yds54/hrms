@@ -29,3 +29,4 @@ exports.APPRECIATEDUSER = require("./appreciatedUser");
 exports.EVALUATIONREPORT = require("./evaluationReport");
 exports.INTERVIEW = require("./interview");
 exports.TECHSTACK = require("./techStack");
+exports.DRSMONTHLYREPORT = require("./drsMonthlyReport");

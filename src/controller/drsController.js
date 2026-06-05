@@ -11,6 +11,7 @@ const {
   dateSearchQuery,
   formatDate,
 } = require("../utils/dateFormat");
+const { formatProfilePicture } = require("../utils/cloudinaryFormatUrl");
 
 //================ TEAM MEMBER MAP HELPER =================
 const addTeamMembers = (teams, memberMap) => {
@@ -197,11 +198,16 @@ exports.getDrsByUserId = async (req, res, next) => {
       if (userId) {
         _where.user = userId;
       }
-    } else if (role === ROLES.PROJECT_MANAGER) {
-      const teams = await TEAMS.find({
-        projectManagers: loggedInUser,
+    } else if ([ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD].includes(role)) {
+      const teamQuery = {
         isDeleted: false,
-      }).select("members");
+      };
+      if (role === ROLES.PROJECT_MANAGER) {
+        teamQuery.projectManagers = loggedInUser;
+      } else {
+        teamQuery.teamLeaders = loggedInUser;
+      }
+      const teams = await TEAMS.find(teamQuery).select("members");
 
       // team members
       const memberIds = teams.flatMap((t) =>
@@ -523,10 +529,11 @@ exports.getTeamNotFilledDrs = async (req, res, next) => {
       }
 
       if (missingDates.length) {
+        const formattedMember = formatProfilePicture(member);
         acc.push({
           userId: member._id,
           employeeName: member.name,
-          profileImage: member.profilePicture || "",
+          profilePicture: formattedMember.profilePicture.url,
           projectManagers,
           dates: missingDates,
           totalDays: missingDates.length,

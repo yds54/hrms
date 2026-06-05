@@ -676,6 +676,103 @@
       }
     },
 
+    "/api/drsMonthlyReport": {
+      "post": {
+        "tags": ["DRS Monthly Report"],
+        "summary": "Create DRS Monthly Report ",
+        "description": "Create Monthly Report (Target)",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user": { "example": "69e08c6bbe446554694365fc" },
+                "month": { "example": "2026-05" },
+                "workingDays": {
+                  "example": 20,
+                  "required": false
+                },
+                "workingHours": {
+                  "example": 160,
+                  "required": false
+                },
+                "monthlyReport": {
+                  "type": "array",
+                  "required": false,
+                  "example": [
+                    { "factor": "bugSolvingHours", "target": 2 },
+                    { "factor": "nonBillableHours", "target": 15 }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": { "description": "Created successfully" }
+        }
+      }
+    },
+    "/api/drsMonthlyReport/{userId}": {
+      "get": {
+        "tags": ["DRS Monthly Report"],
+        "summary": "Get DRS Monthly Report",
+        "description": "Get Monthly Report (Actual vs Target)",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "example": "2026-05"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Monthly report fetched"
+          }
+        }
+      }
+    },
+
+    "/api/drsMonthlyReport/organization": {
+      "get": {
+        "tags": ["Organization Monthly DRS Report"],
+        "summary": "Get Organization DRS Report",
+        "description": "Get aggregated DRS factors for all active employees",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "fromDate",
+            "required": true,
+            "type": "string",
+            "example": "2026-05-01"
+          },
+          {
+            "in": "query",
+            "name": "toDate",
+            "required": true,
+            "type": "string",
+            "example": "2026-05-31"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization Monthly DRS Report fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
     "/api/leaveRequest": {
       "post": {
         "tags": ["Leave Request"],
@@ -6005,6 +6102,7 @@
         }
       }
     },
+
     "/api/techStacks": {
       "post": {
         "tags": ["TechStack"],
@@ -6061,7 +6159,6 @@
         }
       }
     },
-
     "/api/techStacks/{id}": {
       "get": {
         "tags": ["TechStack"],
@@ -6094,7 +6191,6 @@
           }
         }
       },
-
       "put": {
         "tags": ["TechStack"],
         "summary": "Update Tech Stack",
@@ -6129,7 +6225,6 @@
           }
         }
       },
-
       "delete": {
         "tags": ["TechStack"],
         "summary": "Delete Tech Stack",
@@ -6151,6 +6246,7 @@
         }
       }
     },
+
     "/api/projects/count-by-status": {
       "get": {
         "tags": ["Project"],
