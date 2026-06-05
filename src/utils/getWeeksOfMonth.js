@@ -19,6 +19,9 @@ const getWeeksOfMonth = (year, month) => {
       currentEnd = currentStart.clone().day(6);
     } else {
       currentStart = currentStart.clone().day(1);
+      if (currentStart.isAfter(end)) {
+        break;
+      }
       currentEnd = currentStart.clone().day(6);
     }
 

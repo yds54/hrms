@@ -15,6 +15,7 @@ const { USER_STATUS } = require("../utils/enum");
 const { renameFile } = require("../utils/fileHandler");
 const cloudinary = require("../config/cloudinary");
 const { sendMail } = require("../utils/sendMail");
+const resetPasswordTemplate = require("../templates/resetPasswordTemplate");
 
 exports.registerUser = async (req, res, next) => {
   let uploadedFilePublicId = null;
@@ -170,11 +171,7 @@ exports.forgotPassword = async (req, res, next) => {
     await sendMail({
       to: email,
       subject: "Reset Password",
-      html: `
-        <h3>Reset Password</h3>
-        <p>Click below link to reset password:</p>
-        <a href="${resetUrl}">${resetUrl}</a>
-      `,
+      html: resetPasswordTemplate(resetUrl),
     });
 
     return successResponse(res, 200, "Reset link sent to email");

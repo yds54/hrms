@@ -997,7 +997,7 @@ exports.getTeamMembers = async (req, res, next) => {
           from: "users",
           let: {
             memberIds: {
-              $setUnion: ["$members", "$teamLeaders"],
+              $setUnion: ["$members"],
             },
           },
           pipeline: [
