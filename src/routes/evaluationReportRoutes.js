@@ -20,7 +20,7 @@ const {
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
   validate(createEvaluationReportValidation),
   upsertEvaluationReport,
 );
@@ -38,7 +38,7 @@ router.get(
 router.get(
   "/remaining",
   authenticateJWT,
-  authorizeRoles(ROLES.PROJECT_MANAGER),
+  authorizeRoles(ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
   getRemainingEvaluation,
 );
 

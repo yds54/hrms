@@ -7,6 +7,7 @@ const { dateSearchQuery } = require("../utils/dateFormat");
 const { ROLES } = require("../utils/enum");
 const { searchConditions } = require("../utils/searchHelper");
 const { getFileUrl } = require("../utils/fileUrl");
+const { formatDate } = require("../utils/dateFormat");
 
 // ================= CREATE APPRECIATED USER ====================
 exports.createAppreciation = async (req, res, next) => {
@@ -215,6 +216,7 @@ exports.getAppreciations = async (req, res, next) => {
     });
 
     const formattedData = result.data.map((item) => {
+      item.date = formatDate(item.date);
       if (item.user?.profilePicture?.fileName) {
         item.user.profilePicture = {
           ...item.user.profilePicture,
@@ -236,6 +238,7 @@ exports.getAppreciations = async (req, res, next) => {
 exports.updateAppreciation = async (req, res, next) => {
   try {
     const { id } = req.params;
+    let updateData = { ...req.body };
 
     const isAppreciatedUserExists = await APPRECIATEDUSER.findOne({
       _id: id,
@@ -246,10 +249,15 @@ exports.updateAppreciation = async (req, res, next) => {
     }
 
     if (req.body.date) {
-      req.body.date = moment(req.body.date).toDate();
+      const date = moment(req.body.date).toDate();
+      updateData = {
+        ...updateData,
+        date,
+        expiresAt: moment(date).endOf("month").toDate(),
+      };
     }
 
-    await APPRECIATEDUSER.updateOne({ _id: id }, { $set: req.body });
+    await APPRECIATEDUSER.updateOne({ _id: id }, { $set: updateData });
 
     return successResponse(res, 200, "Appreciation Updated successfully");
   } catch (err) {
