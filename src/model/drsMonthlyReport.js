@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const monthlyReportSchema = new mongoose.Schema(
   {
-    user: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
@@ -46,6 +46,6 @@ const monthlyReportSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-monthlyReportSchema.index({ user: 1, month: 1 }, { unique: true });
+monthlyReportSchema.index({ userId: 1, month: 1 }, { unique: true });
 
 module.exports = mongoose.model("drsMonthlyReport", monthlyReportSchema);

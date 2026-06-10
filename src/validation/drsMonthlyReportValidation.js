@@ -3,7 +3,7 @@ const { Joi } = require("express-validation");
 //============== CERATE AND UPDATE DRS MONTHLY REPORT TARGET VALIDATION ==========================
 exports.createMonthlyReportValidation = {
   body: Joi.object({
-    user: Joi.string().required(),
+    userId: Joi.string().required(),
     month: Joi.string()
       .pattern(/^\d{4}-\d{2}$/)
       .required()

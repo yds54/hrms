@@ -15,9 +15,9 @@ const { ROLES, TIMEZONES, USER_STATUS } = require("../utils/enum");
 //============== CERATE AND UPDATE DRS MONTHLY REPORT TARGET ==========================
 exports.upsertMonthlyReport = async (req, res, next) => {
   try {
-    const { _id: loggedInUser, role } = req.user;
+    const { _id: loggedInUserId, role } = req.user;
     const {
-      user,
+      userId,
       month,
       workingDays,
       workingHours,
@@ -26,7 +26,7 @@ exports.upsertMonthlyReport = async (req, res, next) => {
 
     if (
       role === ROLES.PROJECT_MANAGER &&
-      user.toString() === loggedInUser.toString()
+      userId.toString() === loggedInUserId.toString()
     ) {
       throw new AppError(
         "Project Manager cannot create or update their own monthly report",
@@ -36,14 +36,14 @@ exports.upsertMonthlyReport = async (req, res, next) => {
 
     if ([ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD].includes(role)) {
       const _where = {
-        members: user,
+        members: userId,
         isDeleted: false,
       };
 
       if (role === ROLES.PROJECT_MANAGER) {
-        _where.projectManagers = loggedInUser;
+        _where.projectManagers = loggedInUserId;
       } else {
-        _where.teamLeaders = loggedInUser;
+        _where.teamLeaders = loggedInUserId;
       }
 
       const isMemberExists = await TEAMS.findOne(_where).select("_id");
@@ -63,7 +63,7 @@ exports.upsertMonthlyReport = async (req, res, next) => {
     const allowedFactors = new Set(drsFactorCriteria.map((f) => f.criteria));
     for (const item of monthlyReport) {
       if (!allowedFactors.has(item.factor)) {
-        throw new AppError(`${item.factor} is not valid factor`, 400);
+        throw new AppError(`${item.factor} is not valid factor`, 422);
       }
     }
 
@@ -77,7 +77,7 @@ exports.upsertMonthlyReport = async (req, res, next) => {
 
     //=========== UPSERT TARGET =====================
     let report = await DRSMONTHLYREPORT.findOne({
-      user,
+      userId,
       month,
       isDeleted: false,
     });
@@ -91,12 +91,12 @@ exports.upsertMonthlyReport = async (req, res, next) => {
       report = await report.save();
     } else {
       report = await DRSMONTHLYREPORT.create({
-        user,
+        userId,
         month,
         workingDays,
         workingHours,
         monthlyReport: finalMonthlyReport,
-        createdBy: loggedInUser,
+        createdBy: loggedInUserId,
       });
     }
 
@@ -114,16 +114,16 @@ exports.upsertMonthlyReport = async (req, res, next) => {
 //============== DISPLAY DRS MONTHLY REPORT ==========================
 exports.getMonthlyReport = async (req, res, next) => {
   try {
-    const { _id: loggedInUser, role } = req.user;
+    const { _id: loggedInUserId, role } = req.user;
     const { userId } = req.params;
     let { month } = req.query;
 
-    if (role === ROLES.USER && userId !== loggedInUser.toString()) {
+    if (role === ROLES.USER && userId !== loggedInUserId.toString()) {
       throw new AppError("You are not authorized to access this resource", 403);
     }
 
     if ([ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD].includes(role)) {
-      const isOwnReport = userId === loggedInUser.toString();
+      const isOwnReport = userId === loggedInUserId.toString();
       if (!(role === ROLES.PROJECT_MANAGER && isOwnReport)) {
         const _where = {
           members: userId,
@@ -131,9 +131,9 @@ exports.getMonthlyReport = async (req, res, next) => {
         };
 
         if (role === ROLES.PROJECT_MANAGER) {
-          _where.projectManagers = loggedInUser;
+          _where.projectManagers = loggedInUserId;
         } else {
-          _where.teamLeaders = loggedInUser;
+          _where.teamLeaders = loggedInUserId;
         }
 
         const isMemberExists = await TEAMS.findOne(_where).select("_id");
@@ -155,7 +155,7 @@ exports.getMonthlyReport = async (req, res, next) => {
     const { startOfMonth, endOfMonth } = getMonthRange(year, monthNumber);
 
     const report = await DRSMONTHLYREPORT.findOne({
-      user: userId,
+      userId,
       month,
       isDeleted: false,
     }).lean();

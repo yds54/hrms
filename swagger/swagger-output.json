@@ -666,6 +666,12 @@
             "in": "query",
             "type": "string",
             "description": "2026"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "Employee Name or Project Manager Name"
           }
         ],
         "responses": {
@@ -689,7 +695,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "user": { "example": "69e08c6bbe446554694365fc" },
+                "userId": { "example": "69e08c6bbe446554694365fc" },
                 "month": { "example": "2026-05" },
                 "workingDays": {
                   "example": 20,
