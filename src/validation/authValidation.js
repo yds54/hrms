@@ -17,7 +17,7 @@ exports.userRegisterValidation = {
     marriageDate: Joi.date(),
     rentalAllowance: Joi.boolean(),
     rentalAllowanceAmount: Joi.number(),
-    leavecreaditType: Joi.string(),
+    leaveCreditType: Joi.string(),
     leaveTotalMinutes: Joi.number(),
     email: Joi.string().email().lowercase().required(),
     password: Joi.string()

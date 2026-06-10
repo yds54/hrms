@@ -4,6 +4,7 @@ const { AppError } = require("../utils/error");
 const { paginate } = require("../utils/pagination");
 const { searchConditions } = require("../utils/searchHelper");
 const { ROLES } = require("../utils/enum");
+const { createLog } = require("../utils/createLog");
 const { successResponse } = require("../utils/sucess");
 const {
   uploadToCloudinary,
@@ -21,7 +22,7 @@ exports.addInterview = async (req, res, next) => {
   let uploadedFilePublicId = null;
 
   try {
-    const { body, file, user } = req;
+    const { body, file } = req;
 
     const isInterviewCandidateExists = await INTERVIEW.findOne({
       email: body.email,
@@ -45,7 +46,16 @@ exports.addInterview = async (req, res, next) => {
       uploadedFilePublicId = uploadedFile.publicId;
       body.resume = uploadedFile;
     }
-    await INTERVIEW.create(body);
+
+    const interview = await INTERVIEW.create(body);
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "interview",
+      recordId: interview._id,
+      action: "CREATE",
+      newRecord: interview.toObject(),
+    });
 
     return successResponse(res, 200, "Interview added successfully");
   } catch (error) {
@@ -217,6 +227,10 @@ exports.getInterviewById = async (req, res, next) => {
         path: "hrRoundUser",
         select: "name.firstName name.lastName",
       },
+      {
+        path: "referenceUser",
+        select: "name.firstName name.lastName",
+      },
     ]);
 
     if (!isInterviewExists) {
@@ -242,13 +256,14 @@ exports.updateInterview = async (req, res, next) => {
 
   try {
     const { params, body: payload, file } = req;
-
     const { id } = params;
 
     const existingInterview = await INTERVIEW.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id resume");
+    })
+      .select("_id resume")
+      .lean();
 
     if (!existingInterview) {
       throw new AppError("Interview not found for given ID", 404);
@@ -270,11 +285,24 @@ exports.updateInterview = async (req, res, next) => {
         $set: payload,
       },
     );
+
+    const updatedInterview = await INTERVIEW.findById(id).lean();
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "interview",
+      recordId: id,
+      action: "UPDATE",
+      oldRecord: existingInterview,
+      newRecord: updatedInterview,
+    });
+
     if (uploadedFilePublicId && existingInterview.resume?.fileName) {
       await deleteFromCloudinary(
         `interviewResume/${existingInterview.resume.fileName}`,
       );
     }
+
     return successResponse(res, 200, "Interview updated successfully");
   } catch (error) {
     await deleteFromCloudinary(uploadedFilePublicId);
@@ -303,7 +331,17 @@ exports.deleteInterview = async (req, res, next) => {
     }
     isInterviewExists.isDeleted = true;
     isInterviewExists.deletedAt = moment().toDate();
+
     await isInterviewExists.save();
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "interview",
+      recordId: id,
+      action: "DELETE",
+      oldRecord: isInterviewExists,
+    });
+
     return successResponse(res, 200, "Interview deleted successfully");
   } catch (error) {
     next(error);

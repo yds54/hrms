@@ -26,6 +26,7 @@ const {
 //================ REGISTER USER ================
 router.post(
   "/register",
+  authenticateJWT,
   uploads("profile").single("profilePicture"),
   validate(userRegisterValidation),
   registerUser,
