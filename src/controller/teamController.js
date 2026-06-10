@@ -6,6 +6,7 @@ const { AppError } = require("../utils/error");
 const { searchConditions } = require("../utils/searchHelper");
 const { ROLES } = require("../utils/enum");
 const { dateSearchQuery } = require("../utils/dateFormat");
+const { createLog } = require("../utils/createLog");
 const { getFileUrl } = require("../utils/fileUrl");
 
 exports.addTeam = async (req, res, next) => {
@@ -75,7 +76,15 @@ exports.addTeam = async (req, res, next) => {
 
     body.createdBy = req.user._id;
 
-    await TEAMS.create(body);
+    const team = await TEAMS.create(body);
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "teams",
+      recordId: team._id,
+      action: "CREATE",
+      newRecord: team.toObject(),
+    });
 
     return successResponse(res, 200, "Team added successfully");
   } catch (error) {
@@ -91,7 +100,7 @@ exports.updateTeam = async (req, res, next) => {
     const isTeamExists = await TEAMS.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id");
+    }).lean();
 
     if (!isTeamExists) {
       throw new AppError("Team not found for given Id", 404);
@@ -111,6 +120,17 @@ exports.updateTeam = async (req, res, next) => {
       { _id: id, isDeleted: false },
       { $set: { ...payload } },
     );
+
+    const updatedTeam = await TEAMS.findById(id).lean();
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "teams",
+      recordId: id,
+      action: "UPDATE",
+      oldRecord: isTeamExists,
+      newRecord: updatedTeam,
+    });
 
     return successResponse(res, 200, "Team updated successfully", {
       data: payload.teamName,
@@ -133,10 +153,21 @@ exports.deleteTeam = async (req, res, next) => {
       throw new AppError("Team not found for given Id", 404);
     }
 
+    const oldTeam = isTeamExists.toObject();
+
     isTeamExists.isDeleted = true;
     isTeamExists.deletedAt = new Date();
 
     await isTeamExists.save();
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "teams",
+      recordId: id,
+      action: "DELETE",
+      oldRecord: oldTeam,
+      newRecord: null,
+    });
 
     return successResponse(res, 200, "Team deleted successfully");
   } catch (error) {

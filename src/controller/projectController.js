@@ -4,6 +4,7 @@ const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { PROJECTS, TEAMS } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
+const { createLog } = require("../utils/createLog");
 const { dateSearchQuery } = require("../utils/dateFormat");
 const { PROJECT_STATUS } = require("../utils/enum");
 
@@ -18,7 +19,15 @@ exports.addProject = async (req, res, next) => {
     if (isProjectExists)
       throw new AppError("Project with the given name is already exists", 409);
     body.createdBy = req.user._id;
-    await PROJECTS.create(body);
+    const project = await PROJECTS.create(body);
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "projects",
+      recordId: project._id,
+      action: "CREATE",
+      newRecord: project.toObject(),
+    });
 
     return successResponse(res, 200, "Project Add sucessfully");
   } catch (error) {
@@ -34,7 +43,7 @@ exports.updateProject = async (req, res, next) => {
     const isProjectExists = await PROJECTS.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id");
+    }).lean();
 
     if (!isProjectExists)
       throw new AppError("Project not found for given Id", 404);
@@ -54,6 +63,17 @@ exports.updateProject = async (req, res, next) => {
       { $set: { ...payload } },
     );
 
+    const updatedProject = await PROJECTS.findById(id).lean();
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "projects",
+      recordId: id,
+      action: "UPDATE",
+      oldRecord: isProjectExists,
+      newRecord: updatedProject,
+    });
+
     return successResponse(res, 200, "Project updated successfully", {
       data: payload.projectName,
     });
@@ -69,14 +89,13 @@ exports.deleteProject = async (req, res, next) => {
     const isProjectExists = await PROJECTS.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id");
+    }).select("_id projectName");
 
     if (!isProjectExists) {
       throw new AppError("Project not found for given ID", 404);
     }
 
     const deletedAt = moment().toDate();
-
     isProjectExists.isDeleted = true;
     isProjectExists.deletedAt = deletedAt;
 
@@ -96,6 +115,14 @@ exports.deleteProject = async (req, res, next) => {
         },
       ),
     ]);
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "projects",
+      recordId: id,
+      action: "DELETE",
+      oldRecord: isProjectExists,
+    });
 
     return successResponse(res, 200, "Project deleted successfully");
   } catch (error) {

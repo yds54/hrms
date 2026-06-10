@@ -3,6 +3,7 @@ const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { USERPAYROLL } = require("../model/modelIndex");
 const { getDayRange } = require("../utils/dateFormat");
+const { createLog } = require("../utils/createLog");
 const { getFileUrl } = require("../utils/fileUrl");
 const { AppError } = require("../utils/error");
 
@@ -20,7 +21,17 @@ exports.addUserPayroll = async (req, res, next) => {
     }
 
     body.createdBy = req.user._id;
-    await USERPAYROLL.create(body);
+
+    const payroll = await USERPAYROLL.create(body);
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "userpayroll",
+      recordId: payroll._id,
+      action: "CREATE",
+      newRecord: payroll.toObject(),
+    });
+
     return successResponse(res, 200, "User payroll add sucessfully");
   } catch (error) {
     next(error);
@@ -32,18 +43,30 @@ exports.updateUserPayroll = async (req, res, next) => {
     const { params, body: payload } = req;
     const { id } = params;
 
-    const isUserPayrollExists = await USERPAYROLL.findOne({
+    const oldPayroll = await USERPAYROLL.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id isDeleted");
+    }).lean();
 
-    if (!isUserPayrollExists)
+    if (!oldPayroll) {
       throw new AppError("User's Payroll not found for given ID", 404);
+    }
 
     await USERPAYROLL.updateOne(
       { _id: id, isDeleted: false },
       { $set: { ...payload } },
     );
+
+    const updatedPayroll = await USERPAYROLL.findById(id).lean();
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "userpayroll",
+      recordId: id,
+      action: "UPDATE",
+      oldRecord: oldPayroll,
+      newRecord: updatedPayroll,
+    });
 
     return successResponse(res, 200, "User updated successfully", {
       data: payload,
@@ -120,10 +143,21 @@ exports.deleteUserPayroll = async (req, res, next) => {
       throw new AppError("User payroll not found for given ID", 404);
     }
 
+    const oldPayroll = isUserPayrollExists.toObject();
+
     isUserPayrollExists.isDeleted = true;
     isUserPayrollExists.deletedAt = moment().toDate();
 
     await isUserPayrollExists.save();
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "userpayroll",
+      recordId: id,
+      action: "DELETE",
+      oldRecord: oldPayroll,
+      newRecord: null,
+    });
 
     return successResponse(res, 200, "User payroll deleted successfully");
   } catch (error) {

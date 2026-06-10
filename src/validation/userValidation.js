@@ -59,7 +59,7 @@ exports.updateUserValidation = {
     marriageDate: Joi.date(),
     rentalAllowance: Joi.boolean(),
     rentalAllowanceAmount: Joi.number(),
-    leavecreaditType: Joi.string(),
+    leaveCreditType: Joi.string(),
     leaveTotalMinutes: Joi.number(),
     designationId: Joi.string().hex().length(24),
     position: Joi.string(),

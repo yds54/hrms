@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const { successResponse } = require("../utils/sucess");
 const { USER, AUTH } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
+const { createLog } = require("../utils/createLog");
 const {
   uploadToCloudinary,
   cleanupLocalFile,
@@ -71,7 +72,16 @@ exports.registerUser = async (req, res, next) => {
         .toLowerCase();
     }
 
-    await USER.create(body);
+    const createdUser = await USER.create(body);
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "user",
+      recordId: createdUser._id,
+      action: "CREATE",
+      oldRecord: null,
+      newRecord: createdUser.toObject(),
+    });
 
     return successResponse(res, 200, "User Registered Successfully", {
       employeeCode: body.employeeCode,

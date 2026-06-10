@@ -6,6 +6,7 @@ const { searchConditions } = require("../utils/searchHelper");
 const { successResponse } = require("../utils/sucess");
 const { USER, OFFBORADINGCRITERIA } = require("../model/modelIndex");
 const { USER_STATUS } = require("../utils/enum");
+const { createLog } = require("../utils/createLog");
 const { AppError } = require("../utils/error");
 const {
   uploadToCloudinary,
@@ -145,7 +146,7 @@ exports.updateUser = async (req, res, next) => {
         isDeleted: false,
       },
       "_id profilePicture email contactNumber",
-    );
+    ).lean();
 
     if (!isUserExists) {
       throw new AppError("User not found with ID", 404);
@@ -193,9 +194,10 @@ exports.updateUser = async (req, res, next) => {
 
       payload.profilePicture = uploadedFile;
     }
+
     if (payload.name) {
       const name = {
-        ...isUserExists.name?.toObject?.(),
+        ...isUserExists.name,
         ...payload.name,
       };
 
@@ -204,8 +206,26 @@ exports.updateUser = async (req, res, next) => {
         .join(" ")
         .toLowerCase();
     }
+    const oldUser = await USER.findOne({
+      _id: id,
+      isDeleted: false,
+    }).lean();
 
     await USER.updateOne({ _id: id, isDeleted: false }, { $set: payload });
+
+    const updatedUser = await USER.findById(id).lean();
+
+    const changedFields = Object.keys(payload);
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "user",
+      recordId: id,
+      action: "UPDATE",
+      oldRecord: oldUser,
+      newRecord: updatedUser,
+      changedFields,
+    });
 
     if (uploadedFilePublicId && isUserExists.profilePicture?.fileName) {
       await deleteFromCloudinary(
@@ -232,16 +252,30 @@ exports.deleteUser = async (req, res, next) => {
     const isUserExists = await USER.findOne({
       _id: userID,
       isDeleted: false,
-    }).select("_id profilePicture");
+    }).lean();
 
     if (!isUserExists) {
       throw new AppError("User not found for given ID", 404);
     }
 
-    isUserExists.isDeleted = true;
-    isUserExists.deletedAt = moment().toDate();
+    await USER.updateOne(
+      { _id: userID, isDeleted: false },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: moment().toDate(),
+        },
+      },
+    );
 
-    await isUserExists.save();
+    await createLog({
+      userId: req.user._id,
+      tableName: "user",
+      recordId: userID,
+      action: "DELETE",
+      oldRecord: isUserExists,
+      newRecord: null,
+    });
 
     if (isUserExists.profilePicture?.fileName) {
       await deleteFromCloudinary(
@@ -459,7 +493,7 @@ exports.userInfo = async (req, res, next) => {
       isDeleted: false,
       isLeft: false,
     })
-      .select("fullName email designationId")
+      .select("fullName email designationId profilePicture")
       .populate({
         path: "designationId",
         select: "designationName",
@@ -470,8 +504,11 @@ exports.userInfo = async (req, res, next) => {
 
     const formattedData = {
       userName: data.fullName,
-      userDesignation: data.designationId.designationName,
+      userDesignation: data.designationId?.designationName || null,
       email: data.email,
+      profilePictureUrl: data.profilePicture?.fileName
+        ? getFileUrl(`profile/${data.profilePicture.fileName}`)
+        : null,
     };
 
     return successResponse(res, 200, "User info fetched successfully", {
