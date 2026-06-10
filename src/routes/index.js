@@ -66,5 +66,6 @@ router.use("/interviews", interviewRoutes);
 router.use("/events", eventRoutes);
 router.use("/techstacks", techStackRoutes);
 router.use("/drsMonthlyReport", drsMonthlyReportRoutes);
+router.use("/logs", require("./logsRoutes"));
 
 module.exports = router;

@@ -30,12 +30,19 @@ exports.upsertEvaluationReport = async (req, res, next) => {
       throw new AppError("User not found with given Id", 404);
     }
 
-    if (role === ROLES.PROJECT_MANAGER) {
-      const isMemberExists = await TEAMS.findOne({
-        projectManagers: evaluatedBy,
+    if ([ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD].includes(role)) {
+      const _where = {
         members: userId,
         isDeleted: false,
-      }).select("_id");
+      };
+
+      if (role === ROLES.PROJECT_MANAGER) {
+        _where.projectManagers = evaluatedBy;
+      } else {
+        _where.teamLeaders = evaluatedBy;
+      }
+
+      const isMemberExists = await TEAMS.findOne(_where).select("_id");
       if (!isMemberExists) {
         throw new AppError(
           "You are not authorized, user is not part of your team.",
@@ -109,11 +116,18 @@ exports.getEvaluationReport = async (req, res, next) => {
     // ================= ROLE WISE DISPLAY =================
     if (role === ROLES.USER) {
       query.userId = loggedInUser;
-    } else if (role === ROLES.PROJECT_MANAGER) {
-      const teams = await TEAMS.find({
-        projectManagers: loggedInUser,
+    } else if ([ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD].includes(role)) {
+      const teamQuery = {
         isDeleted: false,
-      }).select("members");
+      };
+
+      if (role === ROLES.PROJECT_MANAGER) {
+        teamQuery.projectManagers = loggedInUser;
+      } else {
+        teamQuery.teamLeaders = loggedInUser;
+      }
+
+      const teams = await TEAMS.find(teamQuery).select("members");
 
       const memberIds = teams.flatMap((t) =>
         t.members.map((id) => id.toString()),
@@ -250,7 +264,14 @@ exports.getRemainingEvaluation = async (req, res, next) => {
     const teamData = await TEAMS.aggregate([
       {
         $match: {
-          projectManagers: new mongoose.Types.ObjectId(loggedInUser),
+          $or: [
+            {
+              projectManagers: new mongoose.Types.ObjectId(loggedInUser),
+            },
+            {
+              teamLeaders: new mongoose.Types.ObjectId(loggedInUser),
+            },
+          ],
           isDeleted: false,
         },
       },

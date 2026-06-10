@@ -2,6 +2,7 @@ const moment = require("moment");
 const { paginate } = require("../utils/pagination");
 const { successResponse } = require("../utils/sucess");
 const { BANK } = require("../model/modelIndex");
+const { createLog } = require("../utils/createLog");
 const { AppError } = require("../utils/error");
 
 exports.addBank = async (req, res, next) => {
@@ -17,7 +18,16 @@ exports.addBank = async (req, res, next) => {
       throw new AppError("Bank with the given name already exists", 409);
 
     body.createdBy = req.user._id;
-    await BANK.create(body);
+
+    const bank = await BANK.create(body);
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "bank",
+      recordId: bank._id,
+      action: "CREATE",
+      newRecord: bank.toObject(),
+    });
 
     return successResponse(res, 200, "Bank Add sucessfully", {
       bankName: body.bankName,
@@ -68,7 +78,9 @@ exports.updateBank = async (req, res, next) => {
     const isBankExists = await BANK.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id");
+    })
+      .select("_id")
+      .lean();
 
     if (!isBankExists) {
       throw new AppError("Bank not found for given ID", 404);
@@ -84,13 +96,21 @@ exports.updateBank = async (req, res, next) => {
       throw new AppError("bank with the given name already exists", 409);
     }
 
-    await BANK.updateOne(
-      { _id: id, isDeleted: false },
-      { $set: { ...payload } },
-    );
+    await BANK.updateOne({ _id: id, isDeleted: false }, { $set: payload });
+
+    const updatedBank = await BANK.findById(id).lean();
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "bank",
+      recordId: id,
+      action: "UPDATE",
+      oldRecord: isBankExists,
+      newRecord: updatedBank,
+    });
 
     return successResponse(res, 200, "Bank updated successfully", {
-      data: payload.bankName,
+      data: updatedBank,
     });
   } catch (error) {
     next(error);

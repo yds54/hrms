@@ -16,8 +16,8 @@ exports.createEvaluationReportValidation = {
       .min(1)
       .optional(),
     weeklyAverage: Joi.number().optional(),
-    publicNote: Joi.string().allow(null),
-    privateNote: Joi.string().allow(null),
+    publicNote: Joi.string().allow(null).optional(),
+    privateNote: Joi.string().allow(null).optional(),
   }),
 };
 //========================= GET EVALUATION REPORT VALIDATION ==========================

@@ -3,6 +3,7 @@ const { successResponse } = require("../utils/sucess");
 const { USERPAYROLL, INCREMENT } = require("../model/modelIndex");
 const { getProjection } = require("../utils/projection");
 const { AppError } = require("../utils/error");
+const { createLog } = require("../utils/createLog");
 const moment = require("moment");
 
 exports.addIncrement = async (req, res, next) => {
@@ -12,24 +13,31 @@ exports.addIncrement = async (req, res, next) => {
     const isPayrollExists = await USERPAYROLL.findOne({
       userId: body.userId,
       isDeleted: false,
-    }).select("_id ");
+    }).select("_id");
 
     if (!isPayrollExists) {
       throw new AppError("Payroll not found for given userId", 404);
     }
 
-    await Promise.all([
-      USERPAYROLL.updateOne(
-        { _id: isPayrollExists._id, isDeleted: false },
-        {
-          $set: {
-            salaryAmount: body.totalSalary,
-            incrementType: body.incrementMethod,
-          },
+    await USERPAYROLL.updateOne(
+      { _id: isPayrollExists._id, isDeleted: false },
+      {
+        $set: {
+          salaryAmount: body.totalSalary,
+          incrementType: body.incrementMethod,
         },
-      ),
-      INCREMENT.create(body),
-    ]);
+      },
+    );
+
+    const increment = await INCREMENT.create(body);
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "increment",
+      recordId: increment._id,
+      action: "CREATE",
+      newRecord: increment.toObject(),
+    });
 
     return successResponse(res, 200, "Increment added successfully", {
       salary: body.totalSalary,
@@ -102,16 +110,45 @@ exports.deleteIncrement = async (req, res, next) => {
     const isIncrementExists = await INCREMENT.findOne({
       _id: id,
       isDeleted: false,
-    }).select("_id");
+    });
 
     if (!isIncrementExists) {
-      throw new AppError("User Increment not found for given userId", 404);
+      throw new AppError("User Increment not found", 404);
     }
+
+    const isPayrollExists = await USERPAYROLL.findOne({
+      userId: isIncrementExists.userId,
+      isDeleted: false,
+    }).select("_id");
+
+    if (!isPayrollExists) {
+      throw new AppError("Payroll record not found", 404);
+    }
+
+    await USERPAYROLL.updateOne(
+      {
+        _id: isPayrollExists._id,
+        isDeleted: false,
+      },
+      {
+        $set: {
+          salaryAmount: isIncrementExists.previousSalary,
+        },
+      },
+    );
 
     isIncrementExists.isDeleted = true;
     isIncrementExists.deletedAt = moment().toDate();
 
     await isIncrementExists.save();
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "increment",
+      recordId: id,
+      action: "DELETE",
+      oldRecord: isIncrementExists,
+    });
 
     return successResponse(res, 200, "User Increment deleted successfully");
   } catch (error) {

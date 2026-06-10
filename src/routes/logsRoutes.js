@@ -5,20 +5,15 @@ const { authenticateJWT } = require("../middleware/authentication");
 const { authorizeRoles } = require("../middleware/roleAuthorization");
 const { ROLES } = require("../utils/enum");
 
-const {
-  getCelebrationAndIncrementData,
-} = require("../controller/eventController");
-
-const {
-  getCelebrationAndIncrementDataValidation,
-} = require("../validation/eventValidation");
+const { getLogs } = require("../controller/logsController");
+const { getLogsValidation } = require("../validation/logsValidation");
 
 router.get(
-  "/monthly-records",
+  "/",
   authenticateJWT,
-  authorizeRoles(...Object.values(ROLES)),
-  validate(getCelebrationAndIncrementDataValidation),
-  getCelebrationAndIncrementData,
+  authorizeRoles(ROLES.ADMIN),
+  validate(getLogsValidation),
+  getLogs,
 );
 
 module.exports = router;

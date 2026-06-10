@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const { successResponse } = require("../utils/sucess");
 const { USER, AUTH } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
+const { createLog } = require("../utils/createLog");
 const {
   uploadToCloudinary,
   cleanupLocalFile,
@@ -15,6 +16,7 @@ const { USER_STATUS } = require("../utils/enum");
 const { renameFile } = require("../utils/fileHandler");
 const cloudinary = require("../config/cloudinary");
 const { sendMail } = require("../utils/sendMail");
+const resetPasswordTemplate = require("../templates/resetPasswordTemplate");
 
 exports.registerUser = async (req, res, next) => {
   let uploadedFilePublicId = null;
@@ -71,7 +73,16 @@ exports.registerUser = async (req, res, next) => {
         .toLowerCase();
     }
 
-    await USER.create(body);
+    const createdUser = await USER.create(body);
+
+    await createLog({
+      userId: req.user._id,
+      tableName: "user",
+      recordId: createdUser._id,
+      action: "CREATE",
+      oldRecord: null,
+      newRecord: createdUser.toObject(),
+    });
 
     return successResponse(res, 200, "User Registered Successfully", {
       employeeCode: body.employeeCode,
@@ -170,11 +181,7 @@ exports.forgotPassword = async (req, res, next) => {
     await sendMail({
       to: email,
       subject: "Reset Password",
-      html: `
-        <h3>Reset Password</h3>
-        <p>Click below link to reset password:</p>
-        <a href="${resetUrl}">${resetUrl}</a>
-      `,
+      html: resetPasswordTemplate(resetUrl),
     });
 
     return successResponse(res, 200, "Reset link sent to email");
