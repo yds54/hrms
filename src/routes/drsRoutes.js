@@ -65,11 +65,11 @@ router.get(
   getTeamNotFilledDrs,
 );
 
-//=================== DISPLAY DRS BY USER ID (ADMIN,PM) =========================
+//=================== DISPLAY DRS BY USER ID (ADMIN,PM, TL) =========================
 router.get(
   "/:userId",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.PROJECT_MANAGER),
+  authorizeRoles(ROLES.ADMIN, ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
   validate(getDrsByUserIdValidation),
   getDrsByUserId,
 );

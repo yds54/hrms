@@ -32,6 +32,7 @@ const evaluationReportRoutes = require("./evaluationReportRoutes");
 const interviewRoutes = require("./interviewRoutes");
 const eventRoutes = require("./eventRoutes");
 const techStackRoutes = require("./techStackRoutes");
+const drsMonthlyReportRoutes = require("./drsMonthlyReportRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -64,6 +65,7 @@ router.use("/evaluationReport", evaluationReportRoutes);
 router.use("/interviews", interviewRoutes);
 router.use("/events", eventRoutes);
 router.use("/techstacks", techStackRoutes);
+router.use("/drsMonthlyReport", drsMonthlyReportRoutes);
 router.use("/logs", require("./logsRoutes"));
 
 module.exports = router;

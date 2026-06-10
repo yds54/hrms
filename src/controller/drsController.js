@@ -11,6 +11,8 @@ const {
   dateSearchQuery,
   formatDate,
 } = require("../utils/dateFormat");
+const { formatProfilePicture } = require("../utils/cloudinaryFormatUrl");
+const { searchConditions } = require("../utils/searchHelper");
 
 //================ TEAM MEMBER MAP HELPER =================
 const addTeamMembers = (teams, memberMap) => {
@@ -197,11 +199,16 @@ exports.getDrsByUserId = async (req, res, next) => {
       if (userId) {
         _where.user = userId;
       }
-    } else if (role === ROLES.PROJECT_MANAGER) {
-      const teams = await TEAMS.find({
-        projectManagers: loggedInUser,
+    } else if ([ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD].includes(role)) {
+      const teamQuery = {
         isDeleted: false,
-      }).select("members");
+      };
+      if (role === ROLES.PROJECT_MANAGER) {
+        teamQuery.projectManagers = loggedInUser;
+      } else {
+        teamQuery.teamLeaders = loggedInUser;
+      }
+      const teams = await TEAMS.find(teamQuery).select("members");
 
       // team members
       const memberIds = teams.flatMap((t) =>
@@ -369,8 +376,9 @@ exports.getNotFilledDrs = async (req, res, next) => {
 //================ TEAM NOT FILLED DRS =================
 exports.getTeamNotFilledDrs = async (req, res, next) => {
   try {
-    const { page, limit, month, year } = req.query;
+    const { page, limit, month, year, search } = req.query;
     const { _id: userId, role } = req.user;
+    const memberSearch = search ? searchConditions(search, "fullName") : {};
 
     const now = moment.tz(TIMEZONES.INDIA).subtract(1, "day");
     const selectedMonth = Number(month) || now.month() + 1;
@@ -407,6 +415,7 @@ exports.getTeamNotFilledDrs = async (req, res, next) => {
                 isLeft: false,
                 drsRequired: true,
                 role: ROLES.USER,
+                ...(search ? memberSearch : {}),
               },
             },
             {
@@ -426,14 +435,30 @@ exports.getTeamNotFilledDrs = async (req, res, next) => {
           foreignField: "_id",
           pipeline: [
             {
+              $match: search ? memberSearch : {},
+            },
+            {
               $project: {
                 name: 1,
+                fullName: 1,
               },
             },
           ],
           as: "projectManagers",
         },
       },
+      ...(search
+        ? [
+            {
+              $match: {
+                $or: [
+                  { members: { $ne: [] } },
+                  { projectManagers: { $ne: [] } },
+                ],
+              },
+            },
+          ]
+        : []),
     ];
 
     const teams = await TEAMS.aggregate(teamPipeline);
@@ -448,6 +473,7 @@ exports.getTeamNotFilledDrs = async (req, res, next) => {
         role: {
           $in: [ROLES.USER, ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD],
         },
+        ...(search ? memberSearch : {}),
       })
         .select("name profilePicture")
         .lean();
@@ -523,10 +549,11 @@ exports.getTeamNotFilledDrs = async (req, res, next) => {
       }
 
       if (missingDates.length) {
+        const formattedMember = formatProfilePicture(member);
         acc.push({
           userId: member._id,
           employeeName: member.name,
-          profileImage: member.profilePicture || "",
+          profilePicture: formattedMember.profilePicture.url,
           projectManagers,
           dates: missingDates,
           totalDays: missingDates.length,
