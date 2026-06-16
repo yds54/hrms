@@ -12,12 +12,15 @@ const {
   deleteFromCloudinary,
 } = require("../utils/cloudinaryHelper");
 const { formatComment } = require("../utils/cloudinaryFormatUrl");
+const {
+  ticketCommentNotification,
+} = require("../services/notificationEventService");
 
 //================ CREATE COMMENT =================
 exports.createComment = async (req, res, next) => {
   try {
     const {
-      user: { _id: userId, role },
+      user: { _id: userId, role, fullName },
       params: { ticketId },
       body: { comment },
       files,
@@ -26,7 +29,7 @@ exports.createComment = async (req, res, next) => {
     const isTicketExists = await TICKET.findOne({
       _id: ticketId,
       isDeleted: false,
-    }).select("createdBy assignedTo");
+    }).select("createdBy assignedTo title");
 
     if (!isTicketExists) {
       throw new AppError("Ticket not found with given id", 404);
@@ -63,13 +66,21 @@ exports.createComment = async (req, res, next) => {
       createdBy: userId,
     });
 
-    await TICKETACTIVITY.create({
-      ticketId,
-      field: "created",
-      oldValue: null,
-      newValue: "Created Comment",
-      changedBy: userId,
-    });
+    await Promise.all([
+      TICKETACTIVITY.create({
+        ticketId,
+        field: "created",
+        oldValue: null,
+        newValue: "Created Comment",
+        changedBy: userId,
+      }),
+
+      ticketCommentNotification({
+        ticket: isTicketExists,
+        commenterId: userId,
+        commenterName: fullName,
+      }),
+    ]);
 
     return successResponse(res, 201, "Comment added Success", comments);
   } catch (err) {

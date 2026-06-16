@@ -17,6 +17,9 @@ const {
   dateSearchQuery,
 } = require("../utils/dateFormat");
 const { getFileUrl } = require("../utils/fileUrl");
+const {
+  interviewScheduledNotification,
+} = require("../services/notificationEventService");
 
 exports.addInterview = async (req, res, next) => {
   let uploadedFilePublicId = null;
@@ -48,6 +51,7 @@ exports.addInterview = async (req, res, next) => {
     }
 
     const interview = await INTERVIEW.create(body);
+    await interviewScheduledNotification(interview);
 
     await createLog({
       userId: req.user._id,
@@ -262,7 +266,7 @@ exports.updateInterview = async (req, res, next) => {
       _id: id,
       isDeleted: false,
     })
-      .select("_id resume")
+      .select("_id resume interviewTime technicalRoundUser hrRoundUser")
       .lean();
 
     if (!existingInterview) {
@@ -285,6 +289,16 @@ exports.updateInterview = async (req, res, next) => {
         $set: payload,
       },
     );
+
+    const shouldNotify =
+      payload.interviewTime ||
+      payload.technicalRoundUser ||
+      payload.hrRoundUser;
+
+    if (shouldNotify) {
+      const interview = await INTERVIEW.findById(id);
+      await interviewScheduledNotification(interview);
+    }
 
     const updatedInterview = await INTERVIEW.findById(id).lean();
 

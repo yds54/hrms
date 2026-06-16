@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.42:5000",
+  "host": "192.168.0.158:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -1009,6 +1009,21 @@
         "responses": {
           "200": {
             "description": "Today On Leave fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/leaveRequest/today-didnt-come": {
+      "get": {
+        "tags": ["Leave Request"],
+        "summary": "Get Today Didn't Come Employees",
+        "description": "Fetch employees who didn't come today and whose leave request is still pending PM approval",
+        "responses": {
+          "200": {
+            "description": "Today didn't come fetched successfully"
           },
           "403": {
             "description": "Forbidden"
@@ -5309,6 +5324,13 @@
         "consumes": ["multipart/form-data"],
         "parameters": [
           {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          },
+          {
             "name": "name",
             "in": "formData",
             "type": "string",
@@ -6387,6 +6409,84 @@
           },
           "500": {
             "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+
+    "/api/notifications": {
+      "get": {
+        "tags": ["Notification"],
+        "summary": "Get Notifications",
+        "description": "Get All Notifications for logged in user",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "default": 1,
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "default": 10,
+            "example": 10
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "type": "string",
+            "example": "all",
+            "enum": [
+              "all",
+              "birthday",
+              "marriage_anniversary",
+              "resignation",
+              "employment",
+              "employee_anniversary",
+              "bond_complete",
+              "interview",
+              "evaluation",
+              "ticket",
+              "leave"
+            ]
+          },
+          {
+            "name": "isRead",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "example": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification Fetched successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "404": {
+            "description": "Notification not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/notifications/read-all": {
+      "put": {
+        "tags": ["Notification"],
+        "summary": "Mark All Notifications As Read",
+        "description": "Mark all notifications as read for logged in user",
+        "responses": {
+          "200": {
+            "description": "All notifications marked as read"
           }
         }
       }

@@ -2,6 +2,7 @@ const moment = require("moment-timezone");
 const { TIMEZONES } = require("../utils/enum");
 const TZ = TIMEZONES.INDIA;
 const DATE_FORMAT = "YYYY-MM-DD";
+const { getWeeksOfMonth } = require("./getWeeksOfMonth");
 
 const parseISTDate = (date) => moment.tz(date, DATE_FORMAT, true, TZ);
 
@@ -85,6 +86,42 @@ const getPreviousWeekRange = () => {
   };
 };
 
+const getTodayMonthDay = () => {
+  const today = moment.tz(TZ);
+
+  return {
+    day: today.date(),
+    month: today.month() + 1,
+  };
+};
+
+const getDateDiffFromToday = (date) => {
+  const today = moment.tz(TZ).startOf("day");
+  const target = moment.tz(date, TZ).startOf("day");
+
+  return target.diff(today, "days");
+};
+
+const getWeekDay = (date) => {
+  return moment.tz(date, TZ).format("dddd");
+};
+
+const addDaysAndFormat = (date, days, format = "DD MMM YYYY") => {
+  return moment.tz(date, TZ).add(days, "days").format(format);
+};
+
+const getCurrentEvaluationWeek = () => {
+  const today = moment.tz(TZ).startOf("day");
+  const weeks = getWeeksOfMonth(today.year(), today.month() + 1);
+  return weeks.find((week) => {
+    const notificationDate = moment
+      .tz(week.toDate, TZ)
+      .add(1, "day")
+      .startOf("day");
+    return today.isSame(notificationDate, "day");
+  });
+};
+
 module.exports = {
   parseISTDate,
   isValidDate,
@@ -94,4 +131,9 @@ module.exports = {
   dateSearchQuery,
   getYearRange,
   getPreviousWeekRange,
+  getTodayMonthDay,
+  getDateDiffFromToday,
+  getWeekDay,
+  addDaysAndFormat,
+  getCurrentEvaluationWeek,
 };
