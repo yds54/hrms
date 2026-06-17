@@ -7,7 +7,7 @@ const {
   bondCompleteNotifications,
   interviewReminderNotifications,
   evaluationNotifications,
-} = require("../src/services/notificationEventService");
+} = require("./notificationEventService");
 
 module.exports = async () => {
   await birthdayNotifications();

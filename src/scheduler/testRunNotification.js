@@ -1,9 +1,10 @@
+const path = require("path");
 require("dotenv").config({
-  path: require("path").resolve(__dirname, "../.env"),
+  path: path.resolve(__dirname, "../../.env"),
 });
 
-const { connectDB } = require("../src/config/dbconnection");
-const runNotifications = require("./notificationRunner");
+const { connectDB } = require("../config/dbconnection");
+const runNotifications = require("../services/notificationRunner");
 
 (async () => {
   try {
