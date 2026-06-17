@@ -68,10 +68,32 @@ const attendanceSchema = new mongoose.Schema(
       type: String,
     },
     entry: {
-      type: String,
+      fileName: {
+        type: String,
+        default: null,
+      },
+      fileType: {
+        type: String,
+        default: null,
+      },
+      size: {
+        type: Number,
+        default: null,
+      },
     },
     exit: {
-      type: String,
+      fileName: {
+        type: String,
+        default: null,
+      },
+      fileType: {
+        type: String,
+        default: null,
+      },
+      size: {
+        type: Number,
+        default: null,
+      },
     },
     deductedMinutes: {
       type: Number,

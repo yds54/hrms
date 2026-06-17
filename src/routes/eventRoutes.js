@@ -7,11 +7,19 @@ const { ROLES } = require("../utils/enum");
 
 const {
   getCelebrationAndIncrementData,
+  getTodayCelebrations,
 } = require("../controller/eventController");
 
 const {
   getCelebrationAndIncrementDataValidation,
 } = require("../validation/eventValidation");
+
+router.get(
+  "/todays-celebrations",
+  authenticateJWT,
+  authorizeRoles(...Object.values(ROLES)),
+  getTodayCelebrations,
+);
 
 router.get(
   "/monthly-records",

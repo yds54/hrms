@@ -10,23 +10,27 @@ const {
   createAttendance,
   getAttendance,
   getAttendanceHistory,
+  updateAttendance,
+  deleteAttendance,
+  getAttendanceReport,
+  getSandwichLeaveReport,
 } = require("../controller/attendanceController");
 
 const {
   createAttendanceValidation,
   getAttendanceValidation,
   getAttendanceHistoryValidation,
+  updateAttendanceValidation,
+  deleteAttendanceValidation,
+  getAttendanceReportValidation,
+  getSandwichLeaveReportValidation,
 } = require("../validation/attendanceValidation");
 
 //------------------ CREATE ATTENDANCE ---------------------------
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.USER),
-  upload("attendance", {
-    useUserFolder: true,
-    useTimestamp: true,
-  }).fields([
+  upload("attendance").fields([
     { name: "entry", maxCount: 1 },
     { name: "exit", maxCount: 1 },
   ]),
@@ -38,7 +42,7 @@ router.post(
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   validate(getAttendanceValidation),
   getAttendance,
 );
@@ -47,9 +51,40 @@ router.get(
 router.get(
   "/history",
   authenticateJWT,
-  authorizeRoles(ROLES.USER, ROLES.ADMIN),
+  authorizeRoles(...Object.values(ROLES)),
   validate(getAttendanceHistoryValidation),
   getAttendanceHistory,
+);
+
+router.get(
+  "/report",
+  authenticateJWT,
+  authorizeRoles(...Object.values(ROLES)),
+  validate(getAttendanceReportValidation),
+  getAttendanceReport,
+);
+
+router.get(
+  "/sandwich-report",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  validate(getSandwichLeaveReportValidation),
+  getSandwichLeaveReport,
+);
+
+router.put(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  validate(updateAttendanceValidation),
+  updateAttendance,
+);
+
+router.delete(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  deleteAttendance,
 );
 
 module.exports = router;
