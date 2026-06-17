@@ -216,10 +216,7 @@ exports.createAttendance = async (req, res, next) => {
       );
     }
 
-    await Promise.all(
-      attendancePayloads.map((payload) => ATTENDANCE.create(payload)),
-    );
-
+    await ATTENDANCE.insertMany(attendancePayloads);
     return successResponse(res, 200, "Attendance created successfully");
   } catch (error) {
     await deleteMultipleFromCloudinary(uploadedPublicIds);

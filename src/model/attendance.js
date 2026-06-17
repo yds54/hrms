@@ -16,9 +16,11 @@ const attendanceSchema = new mongoose.Schema(
     },
     inTime: {
       type: String,
+      default: null,
     },
     outTime: {
       type: String,
+      default: null,
     },
     totalTime: {
       type: Number,
@@ -133,46 +135,57 @@ const attendanceSchema = new mongoose.Schema(
   },
 );
 
-attendanceSchema.pre("save", function () {
-  const inMinutes = parseTime(this.inTime);
-  const outMinutes = parseTime(this.outTime);
+attendanceSchema.pre("insertMany", function (attendances) {
+  attendances.forEach((attendance) => {
+    const inMinutes = parseTime(attendance.inTime);
+    const outMinutes = parseTime(attendance.outTime);
 
-  // Reset leave , deduction , overtime
-  this.leaveDay = LEAVE_DURATION.NONE;
-  this.leaveStatus = "";
-  this.deductedMinutes = 0;
-  this.overTime = 0;
-  this.usedCounter = 0;
+    // Reset values
+    attendance.leaveDay = LEAVE_DURATION.NONE;
+    attendance.leaveStatus = "";
+    attendance.deductedMinutes = 0;
+    attendance.overTime = 0;
+    attendance.usedCounter = 0;
 
-  // calculate total working min
-  if (this.inTime && this.outTime) {
-    this.totalTime = outMinutes - inMinutes;
-  }
+    // Calculate total working time
+    if (attendance.inTime && attendance.outTime) {
+      attendance.totalTime = outMinutes - inMinutes;
+    }
 
-  // Full Day - no outTime
-  if (this.inTime && !this.outTime) {
-    this.leaveDay = LEAVE_DURATION.FULL;
-    this.leaveStatus = "-";
-    this.deductedMinutes = this.totalMinutes || 0;
-    return;
-  }
+    // Full day
+    if (attendance.inTime && !attendance.outTime) {
+      attendance.leaveDay = LEAVE_DURATION.FULL;
+      attendance.leaveStatus = "-";
+      attendance.deductedMinutes = attendance.totalMinutes || 0;
+      return;
+    }
 
-  // Half Day - workiing less
-  if (this.inTime && this.outTime && this.totalTime < this.totalMinutes) {
-    const diff = this.totalMinutes - this.totalTime;
-    this.leaveDay = LEAVE_DURATION.HALF;
-    this.leaveStatus = `${diff} minutes early`;
-    this.deductedMinutes = diff;
-  }
+    // Half day
+    if (
+      attendance.inTime &&
+      attendance.outTime &&
+      attendance.totalTime < attendance.totalMinutes
+    ) {
+      const diff = attendance.totalMinutes - attendance.totalTime;
 
-  // Overtime - working more
-  if (this.inTime && this.outTime && this.totalTime > this.totalMinutes) {
-    this.overTime = this.totalTime - this.totalMinutes;
-  }
+      attendance.leaveDay = LEAVE_DURATION.HALF;
+      attendance.leaveStatus = `${diff} minutes early`;
+      attendance.deductedMinutes = diff;
+    }
+
+    // Overtime
+    if (
+      attendance.inTime &&
+      attendance.outTime &&
+      attendance.totalTime > attendance.totalMinutes
+    ) {
+      attendance.overTime = attendance.totalTime - attendance.totalMinutes;
+    }
+  });
 });
 
 attendanceSchema.set("toJSON", {
-  transform: (doc, ret) => {
+  transform: (attendance, ret) => {
     if (ret.date) {
       ret.date = formatDate(ret.date);
     }
