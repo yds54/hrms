@@ -34,9 +34,8 @@ exports.getAppreciations = async (req, res, next) => {
     const { page, limit, search } = req.query;
     const query = { isDeleted: false };
 
-    const isAdminOrHR =
-      req.user.role === ROLES.ADMIN || req.user.role === ROLES.HR;
-    if (!isAdminOrHR) {
+    const isAdmin = req.user.role === ROLES.ADMIN;
+    if (!isAdmin) {
       query.expiresAt = { $gte: moment().toDate() };
     }
 

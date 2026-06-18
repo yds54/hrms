@@ -58,7 +58,7 @@ router.get(
 router.get(
   "/unassigned-users",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(getUnassignedUsersValidation),
   getUnassignedUsers,
 );
@@ -77,6 +77,7 @@ router.get(
   authorizeRoles(ROLES.PROJECT_MANAGER),
   getTeamMembers,
 );
+
 router.get(
   "/:id",
   authenticateJWT,

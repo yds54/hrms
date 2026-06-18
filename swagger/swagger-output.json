@@ -398,635 +398,17 @@
       }
     },
 
-    "/api/drs": {
-      "post": {
-        "tags": ["Drs"],
-        "summary": "Add Drs",
-        "description": "FILL DRS",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "date": {
-                  "example": "2026-03-01"
-                },
-                "factors": {
-                  "type": "object",
-                  "example": {
-                    "billableHours": 4,
-                    "nonBillableHours": 1,
-                    "projectsWorkedOn": 1,
-                    "estimationsGiven": 2,
-                    "interviewsGiven": 1,
-                    "interviewsCracked": 0,
-                    "bugSolvingHours": 2,
-                    "meetingsAttended": 2
-                  }
-                },
-                "onLeave": {
-                  "example": "false"
-                },
-                "notes": {
-                  "type": "string",
-                  "example": "any"
-                },
-                "done": {
-                  "type": "string",
-                  "example": "Worked on API integration"
-                },
-                "inProgress": {
-                  "type": "string",
-                  "example": "any"
-                },
-                "nextPlan": {
-                  "type": "string",
-                  "example": "Start reporting module"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
+    "/api/quotes": {
       "get": {
-        "tags": ["Drs"],
-        "summary": "Display Drs",
-        "description": "Display DRS",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "month",
-            "in": "query",
-            "type": "string",
-            "description": "03"
-          },
-          {
-            "name": "year",
-            "in": "query",
-            "type": "string",
-            "description": "2026"
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "type": "string",
-            "example": "Done / 2026-03-25"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/drs/{userId}": {
-      "get": {
-        "tags": ["Drs"],
-        "summary": "Get DRS by UserId",
-        "description": "Get DRS by UserId (Admin & Project Manager)",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "User ID whose DRS needs to be fetched"
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "type": "string",
-            "example": "1"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string",
-            "example": "10"
-          },
-          {
-            "name": "month",
-            "in": "query",
-            "type": "string",
-            "example": "5"
-          },
-          {
-            "name": "year",
-            "in": "query",
-            "type": "string",
-            "example": "2026"
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "type": "string",
-            "example": "done / 2026-05-10"
-          }
-        ],
+        "tags": ["Quotes"],
+        "summary": "Display daily quote (different per user)",
+        "description": "Get daily quote (different per user) (ROLES : ALL)",
         "responses": {
           "200": {
-            "description": "DRS fetched successfully"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": "Quote fetched successfully"
           },
           "404": {
-            "description": "No team members found"
-          }
-        }
-      }
-    },
-    "/api/drs/{id}": {
-      "put": {
-        "tags": ["Drs"],
-        "summary": "Update Drs",
-        "description": "EDIT DRS",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "factors": {
-                  "type": "object",
-                  "example": {
-                    "billableHours": 4,
-                    "nonBillableHours": 1,
-                    "projectsWorkedOn": 1,
-                    "estimationsGiven": 2,
-                    "interviewsGiven": 1,
-                    "interviewsCracked": 0,
-                    "bugSolvingHours": 2,
-                    "meetingsAttended": 2
-                  }
-                },
-                "notes": {
-                  "type": "string",
-                  "example": "Worked on API integration"
-                },
-                "done": {
-                  "type": "string",
-                  "example": "Completed login module"
-                },
-                "inProgress": {
-                  "type": "string",
-                  "example": "User profile module"
-                },
-                "nextPlan": {
-                  "type": "string",
-                  "example": "Start reporting module"
-                },
-                "onLeave": { "type": "boolean", "example": false }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/drs/not-filled": {
-      "get": {
-        "tags": ["Drs"],
-        "summary": "Display Not Filled Drs",
-        "description": "GET NOT FILLED DRS",
-        "parameters": [
-          {
-            "name": "month",
-            "in": "query",
-            "type": "string",
-            "description": "04"
-          },
-          {
-            "name": "year",
-            "in": "query",
-            "type": "string",
-            "description": "2026"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/drs/team-not-filled": {
-      "get": {
-        "tags": ["Drs"],
-        "summary": "Display Team Not Filled Drs",
-        "description": "GET TEAM NOT FILLED DRS",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "month",
-            "in": "query",
-            "type": "string",
-            "description": "04"
-          },
-          {
-            "name": "year",
-            "in": "query",
-            "type": "string",
-            "description": "2026"
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "type": "string",
-            "example": "Employee Name or Project Manager Name"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-
-    "/api/drsMonthlyReport": {
-      "post": {
-        "tags": ["DRS Monthly Report"],
-        "summary": "Create DRS Monthly Report ",
-        "description": "Create Monthly Report (Target)",
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userId": { "example": "69e08c6bbe446554694365fc" },
-                "month": { "example": "2026-05" },
-                "workingDays": {
-                  "example": 20,
-                  "required": false
-                },
-                "workingHours": {
-                  "example": 160,
-                  "required": false
-                },
-                "monthlyReport": {
-                  "type": "array",
-                  "required": false,
-                  "example": [
-                    { "factor": "bugSolvingHours", "target": 2 },
-                    { "factor": "nonBillableHours", "target": 15 }
-                  ]
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": { "description": "Created successfully" }
-        }
-      }
-    },
-    "/api/drsMonthlyReport/{userId}": {
-      "get": {
-        "tags": ["DRS Monthly Report"],
-        "summary": "Get DRS Monthly Report",
-        "description": "Get Monthly Report (Actual vs Target)",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true
-          },
-          {
-            "name": "month",
-            "in": "query",
-            "example": "2026-05"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Monthly report fetched"
-          }
-        }
-      }
-    },
-
-    "/api/drsMonthlyReport/organization": {
-      "get": {
-        "tags": ["Organization Monthly DRS Report"],
-        "summary": "Get Organization DRS Report",
-        "description": "Get aggregated DRS factors for all active employees",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "fromDate",
-            "required": true,
-            "type": "string",
-            "example": "2026-05-01"
-          },
-          {
-            "in": "query",
-            "name": "toDate",
-            "required": true,
-            "type": "string",
-            "example": "2026-05-31"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Organization Monthly DRS Report fetched successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-
-    "/api/leaveRequest": {
-      "post": {
-        "tags": ["Leave Request"],
-        "summary": "Add Leave Request",
-        "description": "SEND LEAVE REQUEST",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "reasonType": {
-                  "example": "Sick Leave"
-                },
-                "reason": {
-                  "example": "Due to"
-                },
-                "numberOfDays": {
-                  "example": "Single Day/Multiple Day"
-                },
-                "date": {
-                  "example": "2026-03-01"
-                },
-                "isFullDay": {
-                  "example": true
-                },
-                "fromDate": {
-                  "example": "2026-04-01"
-                },
-                "toDate": {
-                  "example": "2026-04-05"
-                },
-                "fromTime": {
-                  "example": "09:15 AM"
-                },
-                "toTime": {
-                  "example": "04:15 PM"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/leaveRequest/history": {
-      "get": {
-        "tags": ["Leave Request"],
-        "summary": "Display Leave Request History ",
-        "description": "LEAVE REQUEST HISTORY",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "number"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "number"
-          },
-          {
-            "name": "year",
-            "in": "query",
-            "type": "number",
-            "description": "2026"
-          },
-          {
-            "name": "filter",
-            "in": "query",
-            "type": "string",
-            "description": "Single Day | Multiple Day | Half Day | March ..."
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "type": "string",
-            "description": "Sick Leave | Casual Leave etc.."
-          },
-          {
-            "name": "pmFilter",
-            "in": "query",
-            "type": "string",
-            "description": "Pending | Approved | Declined"
-          },
-          {
-            "name": "hrFilter",
-            "in": "query",
-            "type": "string",
-            "description": "Pending | Approved | Declined"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Leave history fetched successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/leaveRequest/{id}": {
-      "put": {
-        "tags": ["Leave Request"],
-        "summary": "Update Leave Request",
-        "description": "Approve Leave Request by PM and HR",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "example": "66123abc123abc123abc1234"
-          },
-          {
-            "name": "isPMApproved",
-            "in": "formData",
-            "type": "string",
-            "enum": ["Pending", "Approved", "Declined"]
-          },
-          {
-            "name": "isHRApproved",
-            "in": "formData",
-            "type": "string",
-            "enum": ["Pending", "Approved", "Declined"],
-            "example": "Approved"
-          },
-          {
-            "name": "declineReason",
-            "in": "formData",
-            "type": "string",
-            "example": "Too many leave"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Leave Request updated successfully"
-          }
-        }
-      },
-      "delete": {
-        "tags": ["Leave Request"],
-        "summary": "Delete Leave Request",
-        "description": "Admin Delete Leave Request",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/leaveRequest/team-leave-request": {
-      "get": {
-        "tags": ["Leave Request"],
-        "summary": "Display Leave Request History ",
-        "description": "LEAVE REQUEST HISTORY",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "number"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "number"
-          },
-          {
-            "name": "year",
-            "in": "query",
-            "type": "number",
-            "description": "2026"
-          },
-          {
-            "name": "filter",
-            "in": "query",
-            "type": "string",
-            "description": "Single Day | Multiple Day | Half Day | March ..."
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "type": "string",
-            "description": "Sick Leave | Casual Leave etc.."
-          },
-          {
-            "name": "pmFilter",
-            "in": "query",
-            "type": "string",
-            "description": "Pending | Approved | Declined"
-          },
-          {
-            "name": "hrFilter",
-            "in": "query",
-            "type": "string",
-            "description": "Pending | Approved | Declined"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Leave history fetched successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/leaveRequest/today-on-leave": {
-      "get": {
-        "tags": ["Leave Request"],
-        "summary": "Get Today On Leave (Admin/HR)",
-        "description": "Fetch employees who are on leave today (approved only)",
-        "responses": {
-          "200": {
-            "description": "Today On Leave fetched successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/leaveRequest/today-didnt-come": {
-      "get": {
-        "tags": ["Leave Request"],
-        "summary": "Get Today Didn't Come Employees",
-        "description": "Fetch employees who didn't come today and whose leave request is still pending PM approval",
-        "responses": {
-          "200": {
-            "description": "Today didn't come fetched successfully"
-          },
-          "403": {
-            "description": "Forbidden"
+            "description": "No quotes found"
           }
         }
       }
@@ -1108,7 +490,7 @@
       "get": {
         "tags": ["User"],
         "summary": "Display User By Id",
-        "description": "Get User  by ID",
+        "description": "Get User  by ID (ROLES : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "id",
@@ -1135,7 +517,7 @@
       "put": {
         "tags": ["User"],
         "summary": "Update User",
-        "description": "Update user with profile picture upload",
+        "description": "Update user with profile picture upload (ROLES : ALL (CAUSE : USER CAN UPDATE PHOTO))",
         "consumes": ["multipart/form-data"],
         "parameters": [
           {
@@ -1264,7 +646,7 @@
       "delete": {
         "tags": ["User"],
         "summary": "Delete User",
-        "description": "",
+        "description": "Delete User (ROLES : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "id",
@@ -1281,11 +663,1854 @@
       }
     },
 
+    "/api/userpayroll": {
+      "post": {
+        "tags": ["User-Payroll"],
+        "summary": "Add User Payroll",
+        "description": "Add User Payroll (ROLES : ADMIN, HR, HR_RECRUITER)",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "64f1a2b3c4d5e6f7890a1234(user_id)"
+                },
+                "stipendAmount": {
+                  "example": 15000
+                },
+                "salaryAmount": {
+                  "example": 40000
+                },
+                "incrementType": {
+                  "example": "yearly"
+                },
+                "trainingStartDate": {
+                  "example": "2026-01-01"
+                },
+                "trainingDurationInMonths": {
+                  "example": 3
+                },
+                "trainingEndDate": {
+                  "example": "2026-04-01"
+                },
+                "joiningDate": {
+                  "example": "2026-04-05"
+                },
+                "isBond": {
+                  "example": true
+                },
+                "bondDurationInMonths": {
+                  "example": 12
+                },
+                "bondCompletedDate": {
+                  "example": "2027-04-05"
+                },
+                "nda": {
+                  "example": true
+                },
+                "ctcTemplate": {
+                  "example": "64f1a2b3c4d5e6f7890a9999(ctc_template_id)"
+                },
+                "remark": {
+                  "example": "Joined as trainee with bond agreement"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User payroll add sucessfully"
+          },
+          "409": {
+            "description": "User payroll already exist"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "tags": ["User-Payroll"],
+        "summary": "Get All User Payrolls",
+        "description": "Get All User Payrolls (ROLES : ADMIN, HR, HR_RECRUITER)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User payroll fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/userpayroll/{id}": {
+      "get": {
+        "tags": ["User-Payroll"],
+        "summary": "Display User Payroll by ID",
+        "description": "Get User Payroll by ID (ROLES : ALL)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User payroll retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string"
+                },
+                "userId": {
+                  "type": "string"
+                },
+                "salaryAmount": {
+                  "type": "number"
+                },
+                "incrementType": {
+                  "type": "string"
+                },
+                "effectiveFrom": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User's Payroll not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "put": {
+        "tags": ["User-Payroll"],
+        "summary": "Update User Payroll",
+        "description": "Update User Payroll (ROLES : ADMIN, HR, HR_RECRUITER)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "salaryAmount": {
+                  "example": 35000
+                },
+                "incrementType": {
+                  "example": "monthly"
+                },
+                "effectiveFrom": {
+                  "example": "2026-05-01"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User updated successfully"
+          },
+          "404": {
+            "description": "User's Payroll not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["User-Payroll"],
+        "summary": "Delete User Payroll",
+        "description": "Delete User Payroll (ROLES : ADMIN, HR, HR_RECRUITER)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User payroll deleted successfully"
+          },
+          "404": {
+            "description": "User's Payroll not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/userpayroll/bond-completed": {
+      "get": {
+        "tags": ["Payroll"],
+        "summary": "Get Bond Completed Employees",
+        "description": "Fetch all employees whose bond completion date is completed till today's date (ROLES : ADMIN, HR)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "example": "1"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "example": "10"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bond completed users fetched successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/users/user-info": {
+      "get": {
+        "summary": "Get logged-in user basic information",
+        "description": "Get logged-in user basic information (ROLES : ALL)",
+        "tags": ["User"],
+        "responses": {
+          "200": {
+            "description": "User info fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "User info fetched successfully"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "69f1f923fe3b8e0e4fd16f1d"
+                        },
+                        "fullName": {
+                          "type": "string",
+                          "example": "Krunal Bhai Kewat"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "krunal@gmail.com"
+                        },
+                        "designationId": {
+                          "type": "object",
+                          "properties": {
+                            "_id": {
+                              "type": "string",
+                              "example": "69ca544451e27dd860867e71"
+                            },
+                            "designationName": {
+                              "type": "string",
+                              "example": "Project Manager"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+
+    "/api/increments": {
+      "post": {
+        "tags": ["Increment"],
+        "summary": "Add Increment",
+        "description": "Add Increment (ROLES : ADMIN, HR)",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "example": "64f1a2b3c4d5e6f7890a1234(user_id)"
+                },
+                "previousSalary": {
+                  "example": 40000
+                },
+                "incrementPercentage": {
+                  "example": 10
+                },
+                "incrementAmount": {
+                  "example": 4000
+                },
+                "totalSalary": {
+                  "example": 44000
+                },
+                "incrementMethod": {
+                  "example": "yearly"
+                },
+                "effectiveFrom": {
+                  "example": "2026-05-01"
+                }
+              },
+              "required": [
+                "user",
+                "previousSalary",
+                "totalSalary",
+                "effectiveFrom"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Increment added successfully"
+          },
+          "404": {
+            "description": "Payroll not found for this user"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Increment"],
+        "summary": "Get All User's Increments",
+        "description": "Get All Increments (ROLES : ADMIN, HR)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "example": "1",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "example": "10",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Increments fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/increments/{id}": {
+      "get": {
+        "tags": ["Increment"],
+        "summary": "Get Increment By UserID",
+        "description": "Get Increment By ID (ROLES : ADMIN, HR)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Increment fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string"
+                },
+                "user": {
+                  "type": "string"
+                },
+                "previousSalary": {
+                  "type": "number"
+                },
+                "incrementPercentage": {
+                  "type": "number"
+                },
+                "incrementAmount": {
+                  "type": "number"
+                },
+                "totalSalary": {
+                  "type": "number"
+                },
+                "incrementMethod": {
+                  "type": "string",
+                  "enum": ["monthly", "yearly"]
+                },
+                "effectiveFrom": {
+                  "type": "string"
+                },
+                "createdBy": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Increment not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Increment"],
+        "summary": "Delete User's Increment",
+        "description": "Delete Increment (ROLES : ADMIN, HR)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User Increment deleted successfully"
+          },
+          "404": {
+            "description": "User Increment not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/userDocuments": {
+      "post": {
+        "tags": ["User-Documents"],
+        "summary": "Add User Documents",
+        "description": "Upload user documents with remarks and other documents (ROLES : ADMIN, HR, HR_RECRUITER)",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "example": "661234abcd1234abcd123456"
+          },
+          {
+            "name": "documentsTakenDate",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "example": "2026-03-14"
+          },
+          {
+            "name": "twelfthOrDiplomaType",
+            "in": "formData",
+            "type": "string",
+            "enum": ["12th", "Diploma"]
+          },
+
+          {
+            "name": "offerLetter",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "offerLetter[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "appointmentLetter",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "appointmentLetter[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "tenthMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "tenthMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "twelfthOrDiplomaMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "twelfthOrDiplomaMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "bachelorsCertificate",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "bachelorsCertificate[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "mastersDegreeMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "mastersDegreeMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "panCard",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "panCard[panNumber]",
+            "in": "formData",
+            "type": "string",
+            "example": "ABCDE1234F"
+          },
+          {
+            "name": "panCard[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "string",
+            "description": "JSON metadata array for other documents. Order must match uploaded files. Each object requires documentName and remark fields.",
+            "example": "[{\"documentName\":\"Aadhar Card\",\"remark\":\"Front Side\"},{\"documentName\":\"Driving License\",\"remark\":\"Valid Copy\"}]"
+          },
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "file",
+            "description": "Upload document file 1 (First file - corresponds to first object in JSON metadata)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User documents created successfully"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "tags": ["User-Documents"],
+        "summary": "Display all user documents",
+        "description": "Get all user documents (ADMIN, HR, HR_RECRUITER)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/userDocuments/{id}": {
+      "get": {
+        "tags": ["User-Documents"],
+        "summary": "Display User's Documents By ID",
+        "description": "Get User Documents By ID (ROLES : ALL)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User documents fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "404": {
+            "description": "Increment not found"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "put": {
+        "tags": ["User-Documents"],
+        "summary": "Update User Documents",
+        "description": "Update user documents with file uploads, remarks and other documents (ROLES : ADMIN, HR, HR_RECRUITER)",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "661234abcd1234abcd123456"
+          },
+
+          {
+            "name": "documentsTakenDate",
+            "in": "formData",
+            "type": "string",
+            "example": "2026-03-14"
+          },
+          {
+            "name": "twelfthOrDiplomaType",
+            "in": "formData",
+            "type": "string",
+            "enum": ["12th", "Diploma"]
+          },
+
+          {
+            "name": "offerLetter",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "offerLetter[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "appointmentLetter",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "appointmentLetter[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "tenthMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "tenthMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "twelfthOrDiplomaMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "twelfthOrDiplomaMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "bachelorsCertificate",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "bachelorsCertificate[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "mastersDegreeMarksheet",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "mastersDegreeMarksheet[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "panCard",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "panCard[panNumber]",
+            "in": "formData",
+            "type": "string",
+            "example": "ABCDE1234F"
+          },
+          {
+            "name": "panCard[remark]",
+            "in": "formData",
+            "type": "string"
+          },
+
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "string",
+            "description": "JSON metadata array for other documents. Order must match uploaded files. Each object requires documentName and remark fields.",
+            "example": "[{\"documentName\":\"Aadhar Card\",\"remark\":\"Front Side\"},{\"documentName\":\"Driving License\",\"remark\":\"Valid Copy\"}]"
+          },
+          {
+            "name": "otherDocuments",
+            "in": "formData",
+            "type": "file",
+            "description": "Upload document file 1 (First file - corresponds to first object in JSON metadata)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User documents updated successfully"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User documents not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["User-Documents"],
+        "summary": "Delete User Documents",
+        "description": "Soft delete user documents by ID (ROLES : ADMIN, HR, HR_RECRUITER)",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "661234abcd1234abcd123456"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User documents deleted successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "User documents not found"
+          }
+        }
+      }
+    },
+
+    "/api/users/organization": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Display all users from the logged-in user's organization.",
+        "description": "Get all users from the logged-in user's organization. (ROLES : ALL)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Search by first name, middle name, last name, or employee code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization users fetched successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+
+    "/api/users/randomusers": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Display Random User",
+        "description": "Get random active users from the logged-in user's organization based on selected number of records (ROLES : ADMIN)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Number of random users to fetch"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Random organization users fetched successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+
+    "/api/users/{id}/left": {
+      "put": {
+        "tags": ["Left Employees"],
+        "summary": "Update employee offboarding details",
+        "description": "Update employee resignation and offboarding process details (ROLES : ADMIN, HR, HR_RECRUITER)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID"
+          },
+
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+
+              "properties": {
+                "resignationDetails": {
+                  "type": "object",
+
+                  "properties": {
+                    "leftType": {
+                      "type": "string",
+                      "enum": ["self", "company", "absconding"],
+                      "example": "self"
+                    },
+
+                    "reason": {
+                      "type": "string",
+                      "example": "Personal reason"
+                    },
+
+                    "resignationDate": {
+                      "type": "string",
+                      "format": "date",
+                      "example": "2026-05-01"
+                    },
+
+                    "noticePeriod": {
+                      "type": "number",
+                      "example": 30
+                    },
+
+                    "lastWorkingDate": {
+                      "type": "string",
+                      "format": "date",
+                      "example": "2026-05-30"
+                    },
+
+                    "relievedDate": {
+                      "type": "string",
+                      "format": "date",
+                      "example": "2026-05-30"
+                    },
+
+                    "offboardingCriteria": {
+                      "type": "array",
+
+                      "items": {
+                        "type": "object",
+
+                        "properties": {
+                          "criteriaId": {
+                            "type": "string",
+                            "example": "682f11111111111111111111"
+                          },
+
+                          "criteria": {
+                            "type": "string",
+                            "example": "Remove Mini Orange access"
+                          },
+
+                          "isChecked": {
+                            "type": "boolean",
+                            "example": true
+                          },
+
+                          "notes": {
+                            "type": "string",
+                            "example": "Completed successfully"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+
+              "example": {
+                "resignationDetails": {
+                  "leftType": "self",
+                  "reason": "Personal reason",
+                  "resignationDate": "2026-05-01",
+                  "lastWorkingDate": "2026-05-30",
+
+                  "offboardingCriteria": [
+                    {
+                      "id": "682f11111111111111111111",
+                      "criteria": "Remove Mini Orange access",
+                      "isChecked": true,
+                      "notes": "Completed successfully"
+                    },
+                    {
+                      "id": "682f22222222222222222222",
+                      "criteria": "Recover company laptop",
+                      "isChecked": false,
+                      "notes": "Pending from employee"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Offboarding details updated successfully"
+          },
+
+          "400": {
+            "description": "Validation Error"
+          },
+
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/rejoin": {
+      "put": {
+        "tags": ["Left Employees"],
+        "summary": "Rejoin employee",
+        "description": "Rejoin left employee and remove resignation details (ROLES : ADMIN, HR, HR_RECRUITER)",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Employee rejoined successfully",
+
+            "schema": {
+              "type": "object",
+
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+
+                "message": {
+                  "type": "string",
+                  "example": "Employee rejoined successfully"
+                }
+              }
+            }
+          },
+
+          "400": {
+            "description": "Validation Error"
+          },
+
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+
+    "/api/drsfactor": {
+      "post": {
+        "tags": ["DRS Factor"],
+        "summary": "Add DRS Factor",
+        "description": "Create DRS Factor (ROLES : ADMIN)",
+        "parameters": [
+          {
+            "name": "criteria",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "criteria": {
+                  "type": "string",
+                  "example": "Team Collaboration"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Criteria created successfully"
+          }
+        }
+      },
+      "get": {
+        "tags": ["DRS Factor"],
+        "summary": "Display DRS Factor List",
+        "description": "Get DRS Factor List (ROLES : ALL)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number",
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number",
+            "example": 10
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "team"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Criteria fetched successfully"
+          }
+        }
+      }
+    },
+    "/api/drsfactor/{id}": {
+      "delete": {
+        "tags": ["DRS Factor"],
+        "summary": "Delete DRS Factor",
+        "description": "Delete DRS Factor (ROLES : ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "64f1c9e2a1234567890abcd1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drs Factor Criteria deleted successfully"
+          },
+          "404": {
+            "description": "Drs Factor Criteria not found"
+          }
+        }
+      }
+    },
+
+    "/api/drs": {
+      "post": {
+        "tags": ["Drs"],
+        "summary": "Add Drs",
+        "description": "FILL DRS (ROLES : USER, PM, TL, HR_RECRUITER)",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "example": "2026-03-01"
+                },
+                "factors": {
+                  "type": "object",
+                  "example": {
+                    "billableHours": 4,
+                    "nonBillableHours": 1,
+                    "projectsWorkedOn": 1,
+                    "estimationsGiven": 2,
+                    "interviewsGiven": 1,
+                    "interviewsCracked": 0,
+                    "bugSolvingHours": 2,
+                    "meetingsAttended": 2
+                  }
+                },
+                "onLeave": {
+                  "example": "false"
+                },
+                "notes": {
+                  "type": "string",
+                  "example": "any"
+                },
+                "done": {
+                  "type": "string",
+                  "example": "Worked on API integration"
+                },
+                "inProgress": {
+                  "type": "string",
+                  "example": "any"
+                },
+                "nextPlan": {
+                  "type": "string",
+                  "example": "Start reporting module"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Drs"],
+        "summary": "Display Drs",
+        "description": "Display DRS (ROLES : ALL )",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "type": "string",
+            "description": "03"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "string",
+            "description": "2026"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "Done / 2026-03-25"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/drs/{userId}": {
+      "get": {
+        "tags": ["Drs"],
+        "summary": "Get DRS by UserId",
+        "description": "Get DRS by UserId (ROLES : ADMIN, HR, HR_RECRUITER, PM, TL)",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID whose DRS needs to be fetched"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string",
+            "example": "1"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "example": "10"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "type": "string",
+            "example": "5"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "string",
+            "example": "2026"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "done / 2026-05-10"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "DRS fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "No team members found"
+          }
+        }
+      }
+    },
+    "/api/drs/{id}": {
+      "put": {
+        "tags": ["Drs"],
+        "summary": "Update Drs",
+        "description": "EDIT DRS (ROLES : CAN UPDATE ONLY OWN DRS FOR ALL)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "factors": {
+                  "type": "object",
+                  "example": {
+                    "billableHours": 4,
+                    "nonBillableHours": 1,
+                    "projectsWorkedOn": 1,
+                    "estimationsGiven": 2,
+                    "interviewsGiven": 1,
+                    "interviewsCracked": 0,
+                    "bugSolvingHours": 2,
+                    "meetingsAttended": 2
+                  }
+                },
+                "notes": {
+                  "type": "string",
+                  "example": "Worked on API integration"
+                },
+                "done": {
+                  "type": "string",
+                  "example": "Completed login module"
+                },
+                "inProgress": {
+                  "type": "string",
+                  "example": "User profile module"
+                },
+                "nextPlan": {
+                  "type": "string",
+                  "example": "Start reporting module"
+                },
+                "onLeave": { "type": "boolean", "example": false }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/drs/not-filled": {
+      "get": {
+        "tags": ["Drs"],
+        "summary": "Display Not Filled Drs",
+        "description": "GET NOT FILLED DRS[WHILE REGISTER DRS REQUIRED - TRUE - FOR DASHBOARD] (ROLES : ALL )",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "type": "string",
+            "description": "04"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "string",
+            "description": "2026"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/drs/team-not-filled": {
+      "get": {
+        "tags": ["Drs"],
+        "summary": "Display Team Not Filled Drs",
+        "description": "GET NOT FILLED DRS (ROLES : ADMIN, PM, TL)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "type": "string",
+            "description": "04"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "string",
+            "description": "2026"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "example": "Employee Name or Project Manager Name"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/drsMonthlyReport": {
+      "post": {
+        "tags": ["DRS Monthly Report"],
+        "summary": "Create DRS Monthly Report ",
+        "description": "Create Monthly Report (Target) (ROLES : ADMIN, PM, TL)",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": { "example": "69e08c6bbe446554694365fc" },
+                "month": { "example": "2026-05" },
+                "workingDays": {
+                  "example": 20,
+                  "required": false
+                },
+                "workingHours": {
+                  "example": 160,
+                  "required": false
+                },
+                "monthlyReport": {
+                  "type": "array",
+                  "required": false,
+                  "example": [
+                    { "factor": "bugSolvingHours", "target": 2 },
+                    { "factor": "nonBillableHours", "target": 15 }
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": { "description": "Created successfully" }
+        }
+      }
+    },
+    "/api/drsMonthlyReport/{userId}": {
+      "get": {
+        "tags": ["DRS Monthly Report"],
+        "summary": "Get DRS Monthly Report",
+        "description": "Get Monthly Report (Actual vs Target) (ROLES : ALL)",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "example": "2026-05"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Monthly report fetched"
+          }
+        }
+      }
+    },
+
+    "/api/drsMonthlyReport/organization": {
+      "get": {
+        "tags": ["Organization Monthly DRS Report"],
+        "summary": "Get Organization DRS Report",
+        "description": "Get aggregated DRS factors for all active employees (ROLES : ADMIN)",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "fromDate",
+            "required": true,
+            "type": "string",
+            "example": "2026-05-01"
+          },
+          {
+            "in": "query",
+            "name": "toDate",
+            "required": true,
+            "type": "string",
+            "example": "2026-05-31"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization Monthly DRS Report fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
+    "/api/leaveRequest": {
+      "post": {
+        "tags": ["Leave Request"],
+        "summary": "Add Leave Request",
+        "description": "SEND LEAVE REQUEST (ROLES : ALL)",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "reasonType": {
+                  "example": "Sick Leave"
+                },
+                "reason": {
+                  "example": "Due to"
+                },
+                "numberOfDays": {
+                  "example": "Single Day/Multiple Day"
+                },
+                "date": {
+                  "example": "2026-03-01"
+                },
+                "isFullDay": {
+                  "example": true
+                },
+                "fromDate": {
+                  "example": "2026-04-01"
+                },
+                "toDate": {
+                  "example": "2026-04-05"
+                },
+                "fromTime": {
+                  "example": "09:15 AM"
+                },
+                "toTime": {
+                  "example": "04:15 PM"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/leaveRequest/history": {
+      "get": {
+        "tags": ["Leave Request"],
+        "summary": "Display Leave Request History ",
+        "description": "LEAVE REQUEST HISTORY (ROLES : ALL)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "number",
+            "description": "2026"
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "type": "string",
+            "description": "Single Day | Multiple Day | Half Day | March ..."
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "description": "Sick Leave | Casual Leave etc.."
+          },
+          {
+            "name": "pmFilter",
+            "in": "query",
+            "type": "string",
+            "description": "Pending | Approved | Declined"
+          },
+          {
+            "name": "hrFilter",
+            "in": "query",
+            "type": "string",
+            "description": "Pending | Approved | Declined"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leave history fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/leaveRequest/{id}": {
+      "put": {
+        "tags": ["Leave Request"],
+        "summary": "Update Leave Request",
+        "description": "Approve Leave Request by PM and HR (ROLES : ADMIN, HR, PM, TL)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "66123abc123abc123abc1234"
+          },
+          {
+            "name": "isPMApproved",
+            "in": "formData",
+            "type": "string",
+            "enum": ["Pending", "Approved", "Declined"]
+          },
+          {
+            "name": "isHRApproved",
+            "in": "formData",
+            "type": "string",
+            "enum": ["Pending", "Approved", "Declined"],
+            "example": "Approved"
+          },
+          {
+            "name": "declineReason",
+            "in": "formData",
+            "type": "string",
+            "example": "Too many leave"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leave Request updated successfully"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Leave Request"],
+        "summary": "Delete Leave Request",
+        "description": "Admin Delete Leave Request (ROLES : ADMIN, HR)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/leaveRequest/team-leave-request": {
+      "get": {
+        "tags": ["Leave Request"],
+        "summary": "Display Leave Request History ",
+        "description": "LEAVE REQUEST HISTORY (ROLES : ADMIN, HR, PM, TL)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "type": "number",
+            "description": "2026"
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "type": "string",
+            "description": "Single Day | Multiple Day | Half Day | March ..."
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "description": "Sick Leave | Casual Leave etc.."
+          },
+          {
+            "name": "pmFilter",
+            "in": "query",
+            "type": "string",
+            "description": "Pending | Approved | Declined"
+          },
+          {
+            "name": "hrFilter",
+            "in": "query",
+            "type": "string",
+            "description": "Pending | Approved | Declined"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leave history fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/leaveRequest/today-on-leave": {
+      "get": {
+        "tags": ["Leave Request"],
+        "summary": "Get Today On Leave (Admin/HR)",
+        "description": "Fetch employees who are on leave today (approved only)",
+        "responses": {
+          "200": {
+            "description": "Today On Leave fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/leaveRequest/today-didnt-come": {
+      "get": {
+        "tags": ["Leave Request"],
+        "summary": "Get Today Didn't Come Employees",
+        "description": "Fetch employees who didn't come today and whose leave request is still pending PM approval (ROLES : ADMIN, HR, HR_RECRUITER)",
+        "responses": {
+          "200": {
+            "description": "Today didn't come fetched successfully"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+
     "/api/holidays": {
       "post": {
         "tags": ["Holiday"],
         "summary": "Add Holiday",
-        "description": "",
+        "description": "Add Holiday (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "body",
@@ -1312,7 +2537,7 @@
       "get": {
         "tags": ["Holiday"],
         "summary": "Display Holiday",
-        "description": "",
+        "description": "Display Holiday (ROLES : ALL)",
         "parameters": [
           {
             "name": "page",
@@ -1348,7 +2573,7 @@
       "delete": {
         "tags": ["Holiday"],
         "summary": "Delete Holiday",
-        "description": "",
+        "description": "Delete Holiday (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "id",
@@ -1366,7 +2591,7 @@
       "put": {
         "tags": ["Holiday"],
         "summary": "Update Holiday",
-        "description": "",
+        "description": "Update Holiday (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "id",
@@ -1402,7 +2627,7 @@
       "post": {
         "tags": ["Department"],
         "summary": "Add Department",
-        "description": "",
+        "description": "Add Department (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "body",
@@ -1426,7 +2651,7 @@
       "get": {
         "tags": ["Department"],
         "summary": "Display Department",
-        "description": "",
+        "description": "Display Department (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "page",
@@ -1457,7 +2682,7 @@
       "get": {
         "tags": ["Department"],
         "summary": "Display Department By Id",
-        "description": "Get Department  by ID",
+        "description": "Get Department  by ID (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "id",
@@ -1484,7 +2709,7 @@
       "put": {
         "tags": ["Department"],
         "summary": "Update Department",
-        "description": "",
+        "description": "Update Department (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "id",
@@ -1514,7 +2739,7 @@
       "delete": {
         "tags": ["Department"],
         "summary": "Delete Department",
-        "description": "",
+        "description": "Delete Department (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "id",
@@ -1679,7 +2904,7 @@
       "post": {
         "tags": ["Bank"],
         "summary": "Add Bank",
-        "description": "",
+        "description": "Add Bank (ROLE : ADMIN, HR)",
         "parameters": [
           {
             "name": "body",
@@ -1703,7 +2928,7 @@
       "get": {
         "tags": ["Bank"],
         "summary": "Display All BAnk",
-        "description": "",
+        "description": "Display All Bank (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "page",
@@ -1734,7 +2959,7 @@
       "get": {
         "tags": ["Bank"],
         "summary": "Display Bank By Id",
-        "description": "Get Bank  by ID",
+        "description": "Get Bank  by ID (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "id",
@@ -1761,7 +2986,7 @@
       "put": {
         "tags": ["Bank"],
         "summary": "Update Bank",
-        "description": "",
+        "description": "Update Bank (ROLE : ADMIN, HR)",
         "parameters": [
           {
             "name": "id",
@@ -1791,7 +3016,7 @@
       "delete": {
         "tags": ["Bank"],
         "summary": "Delete Bank",
-        "description": "",
+        "description": "Delete Bank (ROLE: ADMIN, HR)",
         "parameters": [
           {
             "name": "id",
@@ -1812,7 +3037,7 @@
       "post": {
         "tags": ["Criterias"],
         "summary": "Add Offboarding Criteria",
-        "description": "",
+        "description": "Add Offboarding Criteria (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "body",
@@ -1839,7 +3064,7 @@
       "get": {
         "tags": ["Criterias"],
         "summary": "Display All Offboarding Criteria",
-        "description": "",
+        "description": "Display All Offboarding Criteria (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "page",
@@ -1870,7 +3095,7 @@
       "get": {
         "tags": ["Criterias"],
         "summary": "Display Offboarding Criteria By Id",
-        "description": "Get criteria  by ID",
+        "description": "Get criteria  by ID  (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "id",
@@ -1897,7 +3122,7 @@
       "put": {
         "tags": ["Criterias"],
         "summary": "Update Offboarding Criteria",
-        "description": "",
+        "description": "Update Offboarding Criteria (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "id",
@@ -1927,7 +3152,7 @@
       "delete": {
         "tags": ["Criterias"],
         "summary": "Delete Offboarding Criteria",
-        "description": "",
+        "description": "Delete Offboarding Criteria (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "id",
@@ -1948,7 +3173,7 @@
       "post": {
         "tags": ["Organization"],
         "summary": "Add Organization",
-        "description": "Create a new organization with logo upload",
+        "description": "Create a new organization with logo upload (ROLES : ADMIN)",
         "consumes": ["multipart/form-data"],
         "produces": ["application/json"],
         "parameters": [
@@ -2019,7 +3244,7 @@
       "get": {
         "tags": ["Organization"],
         "summary": "Display All Organization",
-        "description": "Get All Organizations",
+        "description": "Get All Organizations (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "page",
@@ -2050,7 +3275,7 @@
       "get": {
         "tags": ["Organization"],
         "summary": "Display Organization By ID",
-        "description": "Get Organization By ID",
+        "description": "Get Organization By ID (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "id",
@@ -2068,7 +3293,7 @@
       "put": {
         "tags": ["Organization"],
         "summary": "Update Organization",
-        "description": "Update organization with optional logo upload",
+        "description": "Update organization with optional logo upload (ROLES : ADMIN)",
         "consumes": ["multipart/form-data"],
         "produces": ["application/json"],
         "parameters": [
@@ -2141,7 +3366,7 @@
       },
       "delete": {
         "tags": ["Organization"],
-        "summary": "Delete Organization",
+        "summary": "Delete Organization (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "id",
@@ -2162,7 +3387,7 @@
       "post": {
         "tags": ["Ticket Board"],
         "summary": "Add Ticket",
-        "description": "CREATE TICKET",
+        "description": "CREATE TICKET (ROLES : ALL)",
         "consumes": ["multipart/form-data"],
         "parameters": [
           {
@@ -2218,7 +3443,7 @@
       "get": {
         "tags": ["Ticket Board"],
         "summary": "Display All Ticket",
-        "description": "DISPLAY TICKET BOARD",
+        "description": "DISPLAY TICKETS (ROLES : ALL)",
         "parameters": [
           {
             "name": "isArchived",
@@ -2267,7 +3492,7 @@
       "put": {
         "tags": ["Ticket Board"],
         "summary": "Update Ticket",
-        "description": "EDIT TICKET",
+        "description": "EDIT TICKET (ROLES : ALL)",
         "consumes": ["multipart/form-data"],
         "parameters": [
           {
@@ -2336,7 +3561,7 @@
       "delete": {
         "tags": ["Ticket Board"],
         "summary": "Delete Ticket",
-        "description": "DELETE TICKET",
+        "description": "DELETE TICKET (ROLES : ALL)",
         "parameters": [
           {
             "name": "id",
@@ -2356,7 +3581,7 @@
       "get": {
         "tags": ["Ticket Board"],
         "summary": "Display Ticket Activity Log",
-        "description": "GET TICKET ACTIVITY LOG",
+        "description": "GET TICKET ACTIVITY LOG (ROLES : ALL)",
         "parameters": [
           {
             "name": "ticketId",
@@ -2377,7 +3602,7 @@
       "post": {
         "tags": ["Ticket Board"],
         "summary": "Add Comment On Ticket",
-        "description": "ADD COMMENT ON TICKET",
+        "description": "ADD COMMENT ON TICKET (ROLES : ALL)",
         "consumes": ["multipart/form-data"],
         "parameters": [
           {
@@ -2414,7 +3639,7 @@
       "get": {
         "tags": ["Ticket Board"],
         "summary": "Display All Comments Of Ticket",
-        "description": "GET ALL COMMENTS OF TICKET",
+        "description": "GET ALL COMMENTS OF TICKET (ROLES : ALL)",
         "parameters": [
           {
             "name": "ticketId",
@@ -2434,7 +3659,7 @@
       "delete": {
         "tags": ["Ticket Board"],
         "summary": "Delete comment of a ticket",
-        "description": "Delete comment of a ticket",
+        "description": "Delete comment of a ticket (ROLES : ALL)",
         "parameters": [
           {
             "name": "commentId",
@@ -2460,7 +3685,7 @@
       "delete": {
         "tags": ["Ticket Board"],
         "summary": "Delete Single File From Comment",
-        "description": "Remove a specific file from a ticket comment",
+        "description": "Remove a specific file from a ticket comment (ROLES : ALL)",
         "parameters": [
           {
             "name": "commentId",
@@ -2504,7 +3729,7 @@
       "get": {
         "tags": ["Ticket Board"],
         "summary": "Display Ticket By User Id",
-        "description": "Get Ticket By User Id",
+        "description": "Get Ticket By User Id (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "userId",
@@ -2531,7 +3756,7 @@
       "put": {
         "tags": ["Ticket Board"],
         "summary": "Update Ticket Assignee",
-        "description": "Update Ticket Assignee",
+        "description": "Update Ticket Assignee (ROLES : ADMIN, HR)",
         "consumes": ["application/json"],
         "parameters": [
           {
@@ -2572,7 +3797,7 @@
       "post": {
         "tags": ["Attendance"],
         "summary": "Add Attendance",
-        "description": "Admin and HR can create attendance for any user by passing userId. Other users can create attendance only for themselves.",
+        "description": "Admin and HR can create attendance for any user by passing userId. Other users can create attendance only for themselves. (ROLES : ALL)",
         "consumes": ["multipart/form-data"],
         "parameters": [
           {
@@ -2681,7 +3906,7 @@
       "get": {
         "tags": ["Attendance"],
         "summary": "Display Attendance",
-        "description": "Admin can view all users attendance for a selected date (defaults to current date if date is not provided). Admin can also filter by gender, attendance type, organization and overtime status. Admin can pass userId to view a specific user's monthly attendance. Other users can view only their own attendance.",
+        "description": "Admin can view all users attendance for a selected date (defaults to current date if date is not provided). Admin can also filter by gender, attendance type, organization and overtime status. Admin can pass userId to view a specific user's monthly attendance. Other users can view only their own attendance. (ROLES : ALL)",
         "parameters": [
           {
             "name": "page",
@@ -2785,7 +4010,7 @@
       "get": {
         "tags": ["Attendance"],
         "summary": "Display Attendance History",
-        "description": "Get Attendance History",
+        "description": "Get Attendance History (ROLES : ALL)",
         "parameters": [
           {
             "name": "page",
@@ -2836,7 +4061,7 @@
     "/api/attendance/{id}": {
       "put": {
         "tags": ["Attendance"],
-        "summary": "Update Attendance",
+        "summary": "Update Attendance (ROLES : ADMIN, HR)",
         "consumes": ["application/json"],
         "parameters": [
           {
@@ -2877,7 +4102,7 @@
       },
       "delete": {
         "tags": ["Attendance"],
-        "summary": "Delete Attendance",
+        "summary": "Delete Attendance (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "id",
@@ -2897,7 +4122,7 @@
       "get": {
         "tags": ["Attendance"],
         "summary": "Attendance Monthly Report",
-        "description": "Returns paginated employee attendance report for a selected month along with holidays, Sundays, and employee attendance details.",
+        "description": "Returns paginated employee attendance report for a selected month along with holidays, Sundays, and employee attendance details. (ROLES : ADMIN,HR,HR_RECRUITER)",
         "produces": ["application/json"],
         "parameters": [
           {
@@ -3085,7 +4310,7 @@
       "get": {
         "tags": ["Attendance"],
         "summary": "Get Sandwich Leave Report",
-        "description": "Returns sandwich leave report for all employees or a specific employee for the selected month.",
+        "description": "Returns sandwich leave report for all employees or a specific employee for the selected month. (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "selectedDate",
@@ -3232,7 +4457,7 @@
       "post": {
         "tags": ["Asset Category"],
         "summary": "Add Asset Category",
-        "description": "Add Asset Category",
+        "description": "Add Asset Category (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "body",
@@ -3256,7 +4481,7 @@
       "get": {
         "tags": ["Asset Category"],
         "summary": "Get All Asset Categories",
-        "description": "Get All Asset Categories",
+        "description": "Get All Asset Categories (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "page",
@@ -3287,7 +4512,7 @@
       "put": {
         "tags": ["Asset Category"],
         "summary": "Update Asset Category",
-        "description": "Update Asset Category",
+        "description": "Update Asset Category (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "id",
@@ -3317,7 +4542,7 @@
       "delete": {
         "tags": ["Asset Category"],
         "summary": "Delete asset category",
-        "description": "Delete asset category",
+        "description": "Delete asset category (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "id",
@@ -3338,7 +4563,7 @@
       "post": {
         "tags": ["Asset"],
         "summary": "Add Asset ",
-        "description": "Add Asset ",
+        "description": "Add Asset (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "body",
@@ -3365,7 +4590,7 @@
       "get": {
         "tags": ["Asset"],
         "summary": "Display All Asset",
-        "description": "Get All Asset",
+        "description": "Get All Asset (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "page",
@@ -3396,7 +4621,7 @@
       "get": {
         "tags": ["Asset"],
         "summary": "Get Asset  by ID",
-        "description": "Get Asset  by ID",
+        "description": "Get Asset  by ID (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "id",
@@ -3432,7 +4657,7 @@
       "put": {
         "tags": ["Asset"],
         "summary": "Update Asset",
-        "description": "Update Asset",
+        "description": "Update Asset (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "id",
@@ -3465,7 +4690,7 @@
       "delete": {
         "tags": ["Asset"],
         "summary": "Delete asset",
-        "description": "Delete asset",
+        "description": "Delete asset (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "id",
@@ -3666,760 +4891,11 @@
       }
     },
 
-    "/api/userpayroll": {
-      "post": {
-        "tags": ["User-Payroll"],
-        "summary": "Add User Payroll",
-        "description": "Add User Payroll",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userId": {
-                  "example": "64f1a2b3c4d5e6f7890a1234(user_id)"
-                },
-                "stipendAmount": {
-                  "example": 15000
-                },
-                "salaryAmount": {
-                  "example": 40000
-                },
-                "incrementType": {
-                  "example": "yearly"
-                },
-                "trainingStartDate": {
-                  "example": "2026-01-01"
-                },
-                "trainingDurationInMonths": {
-                  "example": 3
-                },
-                "trainingEndDate": {
-                  "example": "2026-04-01"
-                },
-                "joiningDate": {
-                  "example": "2026-04-05"
-                },
-                "isBond": {
-                  "example": true
-                },
-                "bondDurationInMonths": {
-                  "example": 12
-                },
-                "bondCompletedDate": {
-                  "example": "2027-04-05"
-                },
-                "nda": {
-                  "example": true
-                },
-                "ctcTemplate": {
-                  "example": "64f1a2b3c4d5e6f7890a9999(ctc_template_id)"
-                },
-                "remark": {
-                  "example": "Joined as trainee with bond agreement"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User payroll add sucessfully"
-          },
-          "409": {
-            "description": "User payroll already exist"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "get": {
-        "tags": ["User-Payroll"],
-        "summary": "Get All User Payrolls",
-        "description": "Get All User Payrolls",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "string",
-            "required": true
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User payroll fetched successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/userpayroll/{id}": {
-      "get": {
-        "tags": ["User-Payroll"],
-        "summary": "Display User Payroll by ID",
-        "description": "Get User Payroll by ID",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User payroll retrieved successfully",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "_id": {
-                  "type": "string"
-                },
-                "userId": {
-                  "type": "string"
-                },
-                "salaryAmount": {
-                  "type": "number"
-                },
-                "incrementType": {
-                  "type": "string"
-                },
-                "effectiveFrom": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "User's Payroll not found"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "put": {
-        "tags": ["User-Payroll"],
-        "summary": "Update User Payroll",
-        "description": "Update User Payroll",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "salaryAmount": {
-                  "example": 35000
-                },
-                "incrementType": {
-                  "example": "monthly"
-                },
-                "effectiveFrom": {
-                  "example": "2026-05-01"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User updated successfully"
-          },
-          "404": {
-            "description": "User's Payroll not found"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "delete": {
-        "tags": ["User-Payroll"],
-        "summary": "Delete User Payroll",
-        "description": "Delete User Payroll",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User payroll deleted successfully"
-          },
-          "404": {
-            "description": "User's Payroll not found"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-
-    "/api/increments": {
-      "post": {
-        "tags": ["Increment"],
-        "summary": "Add Increment",
-        "description": "Add Increment",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userId": {
-                  "example": "64f1a2b3c4d5e6f7890a1234(user_id)"
-                },
-                "previousSalary": {
-                  "example": 40000
-                },
-                "incrementPercentage": {
-                  "example": 10
-                },
-                "incrementAmount": {
-                  "example": 4000
-                },
-                "totalSalary": {
-                  "example": 44000
-                },
-                "incrementMethod": {
-                  "example": "yearly"
-                },
-                "effectiveFrom": {
-                  "example": "2026-05-01"
-                }
-              },
-              "required": [
-                "user",
-                "previousSalary",
-                "totalSalary",
-                "effectiveFrom"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Increment added successfully"
-          },
-          "404": {
-            "description": "Payroll not found for this user"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "get": {
-        "tags": ["Increment"],
-        "summary": "Get All User's Increments",
-        "description": "Get All Increments",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "string",
-            "example": "1",
-            "required": true
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string",
-            "example": "10",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Increments fetched successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/increments/{id}": {
-      "get": {
-        "tags": ["Increment"],
-        "summary": "Get Increment By UserID",
-        "description": "Get Increment By ID",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Increment fetched successfully",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "_id": {
-                  "type": "string"
-                },
-                "user": {
-                  "type": "string"
-                },
-                "previousSalary": {
-                  "type": "number"
-                },
-                "incrementPercentage": {
-                  "type": "number"
-                },
-                "incrementAmount": {
-                  "type": "number"
-                },
-                "totalSalary": {
-                  "type": "number"
-                },
-                "incrementMethod": {
-                  "type": "string",
-                  "enum": ["monthly", "yearly"]
-                },
-                "effectiveFrom": {
-                  "type": "string"
-                },
-                "createdBy": {
-                  "type": "string"
-                },
-                "createdAt": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Increment not found"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "delete": {
-        "tags": ["Increment"],
-        "summary": "Delete User's Increment",
-        "description": "Delete Increment",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User Increment deleted successfully"
-          },
-          "404": {
-            "description": "User Increment not found"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/userDocuments": {
-      "post": {
-        "tags": ["User-Documents"],
-        "summary": "Add User Documents",
-        "description": "Upload user documents with remarks and other documents",
-        "consumes": ["multipart/form-data"],
-        "produces": ["application/json"],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "formData",
-            "type": "string",
-            "required": true,
-            "example": "661234abcd1234abcd123456"
-          },
-          {
-            "name": "documentsTakenDate",
-            "in": "formData",
-            "type": "string",
-            "required": true,
-            "example": "2026-03-14"
-          },
-          {
-            "name": "twelfthOrDiplomaType",
-            "in": "formData",
-            "type": "string",
-            "enum": ["12th", "Diploma"]
-          },
-
-          {
-            "name": "offerLetter",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "offerLetter[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "appointmentLetter",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "appointmentLetter[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "tenthMarksheet",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "tenthMarksheet[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "twelfthOrDiplomaMarksheet",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "twelfthOrDiplomaMarksheet[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "bachelorsCertificate",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "bachelorsCertificate[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "mastersDegreeMarksheet",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "mastersDegreeMarksheet[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "panCard",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "panCard[panNumber]",
-            "in": "formData",
-            "type": "string",
-            "example": "ABCDE1234F"
-          },
-          {
-            "name": "panCard[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "otherDocuments",
-            "in": "formData",
-            "type": "string",
-            "description": "JSON metadata array for other documents. Order must match uploaded files. Each object requires documentName and remark fields.",
-            "example": "[{\"documentName\":\"Aadhar Card\",\"remark\":\"Front Side\"},{\"documentName\":\"Driving License\",\"remark\":\"Valid Copy\"}]"
-          },
-          {
-            "name": "otherDocuments",
-            "in": "formData",
-            "type": "file",
-            "description": "Upload document file 1 (First file - corresponds to first object in JSON metadata)"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User documents created successfully"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-
-      "get": {
-        "tags": ["User-Documents"],
-        "summary": "Display all user documents",
-        "description": "Get all user documents",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "string",
-            "required": true
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string",
-            "required": true
-          },
-          {
-            "name": "userId",
-            "in": "query",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/userDocuments/{id}": {
-      "get": {
-        "tags": ["User-Documents"],
-        "summary": "Display User's Documents By ID",
-        "description": "Get User Documents By ID",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User documents fetched successfully",
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          },
-          "404": {
-            "description": "Increment not found"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "put": {
-        "tags": ["User-Documents"],
-        "summary": "Update User Documents",
-        "description": "Update user documents with file uploads, remarks and other documents",
-        "consumes": ["multipart/form-data"],
-        "produces": ["application/json"],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "example": "661234abcd1234abcd123456"
-          },
-
-          {
-            "name": "documentsTakenDate",
-            "in": "formData",
-            "type": "string",
-            "example": "2026-03-14"
-          },
-          {
-            "name": "twelfthOrDiplomaType",
-            "in": "formData",
-            "type": "string",
-            "enum": ["12th", "Diploma"]
-          },
-
-          {
-            "name": "offerLetter",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "offerLetter[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "appointmentLetter",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "appointmentLetter[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "tenthMarksheet",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "tenthMarksheet[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "twelfthOrDiplomaMarksheet",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "twelfthOrDiplomaMarksheet[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "bachelorsCertificate",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "bachelorsCertificate[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "mastersDegreeMarksheet",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "mastersDegreeMarksheet[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "panCard",
-            "in": "formData",
-            "type": "file"
-          },
-          {
-            "name": "panCard[panNumber]",
-            "in": "formData",
-            "type": "string",
-            "example": "ABCDE1234F"
-          },
-          {
-            "name": "panCard[remark]",
-            "in": "formData",
-            "type": "string"
-          },
-
-          {
-            "name": "otherDocuments",
-            "in": "formData",
-            "type": "string",
-            "description": "JSON metadata array for other documents. Order must match uploaded files. Each object requires documentName and remark fields.",
-            "example": "[{\"documentName\":\"Aadhar Card\",\"remark\":\"Front Side\"},{\"documentName\":\"Driving License\",\"remark\":\"Valid Copy\"}]"
-          },
-          {
-            "name": "otherDocuments",
-            "in": "formData",
-            "type": "file",
-            "description": "Upload document file 1 (First file - corresponds to first object in JSON metadata)"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User documents updated successfully"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "User documents not found"
-          }
-        }
-      },
-      "delete": {
-        "tags": ["User-Documents"],
-        "summary": "Delete User Documents",
-        "description": "Soft delete user documents by ID",
-        "produces": ["application/json"],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "example": "661234abcd1234abcd123456"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User documents deleted successfully"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "User documents not found"
-          }
-        }
-      }
-    },
-
     "/api/evaluationCriteria": {
       "post": {
         "tags": ["Evaluation Criteria"],
         "summary": "Add Evaluation Criteria",
-        "description": "Create Evaluation Criteria",
+        "description": "Create Evaluation Criteria (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "criteria",
@@ -4445,7 +4921,7 @@
       "get": {
         "tags": ["Evaluation Criteria"],
         "summary": "Display Evaluation Criteria List",
-        "description": "Get Evaluation Criteria List",
+        "description": "Get Evaluation Criteria List (ROLES : ALL)",
         "parameters": [
           {
             "name": "page",
@@ -4477,7 +4953,7 @@
       "delete": {
         "tags": ["Evaluation Criteria"],
         "summary": "Delete Evaluation Criteria",
-        "description": "Delete Evaluation Criteria",
+        "description": "Delete Evaluation Criteria (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "id",
@@ -4502,7 +4978,7 @@
       "post": {
         "tags": ["Evaluation Report"],
         "summary": "Create or Update Evaluation Marks (UPSERT)",
-        "description": "Creates a new evaluation report or updates existing one based on userId + fromDate + toDate",
+        "description": "Creates a new evaluation report or updates existing one based on userId + fromDate + toDate (ROLES : ADMIN, PM, TL)",
         "consumes": ["application/json"],
         "parameters": [
           {
@@ -4576,7 +5052,7 @@
       "get": {
         "tags": ["Evaluation Report"],
         "summary": "Display Evaluation Marks",
-        "description": "Get Evaluation Report",
+        "description": "Get Evaluation Report (ROLES : ALL)",
         "parameters": [
           {
             "name": "month",
@@ -4604,12 +5080,11 @@
         }
       }
     },
-
     "/api/evaluationReport/remaining": {
       "get": {
         "tags": ["Evaluation Report"],
         "summary": "Get Remaining Evaluation (Previous Week)",
-        "description": "Returns list of users whose evaluation is pending for previous week (Project Manager only)",
+        "description": "Returns list of users whose evaluation is pending for previous week (ROLES : PM,TL)",
         "responses": {
           "200": {
             "description": "Evaluation fetched successfully"
@@ -4618,100 +5093,141 @@
       }
     },
 
-    "/api/drsfactor": {
+    "/api/techStacks": {
       "post": {
-        "tags": ["DRS Factor"],
-        "summary": "Add DRS Factor",
-        "description": "Create DRS Factor",
+        "tags": ["TechStack"],
+        "summary": "Add Tech Stack",
+        "description": "Add Tech Stack (ROLES : ADMIN)",
         "parameters": [
           {
-            "name": "criteria",
+            "name": "body",
             "in": "body",
-            "required": true,
             "schema": {
               "type": "object",
               "properties": {
-                "criteria": {
-                  "type": "string",
-                  "example": "Team Collaboration"
+                "techName": {
+                  "example": "Node.js"
                 }
               }
             }
           }
         ],
         "responses": {
-          "201": {
-            "description": "Criteria created successfully"
+          "403": {
+            "description": "Forbidden"
           }
         }
       },
       "get": {
-        "tags": ["DRS Factor"],
-        "summary": "Display DRS Factor List",
-        "description": "Get DRS Factor List",
+        "tags": ["TechStack"],
+        "summary": "Display All Tech Stacks",
+        "description": "Display All Tech Stacks (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "page",
             "in": "query",
-            "type": "number",
-            "example": 1
+            "type": "string",
+            "required": true
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "number",
-            "example": 10
+            "type": "string",
+            "required": true
           },
           {
-            "name": "search",
+            "name": "techName",
             "in": "query",
-            "type": "string",
-            "example": "team"
+            "type": "string"
           }
         ],
         "responses": {
-          "200": {
-            "description": "Criteria fetched successfully"
+          "403": {
+            "description": "Forbidden"
           }
         }
       }
     },
-    "/api/drsfactor/{id}": {
-      "delete": {
-        "tags": ["DRS Factor"],
-        "summary": "Delete DRS Factor",
-        "description": "Delete DRS Factor",
+    "/api/techStacks/{id}": {
+      "get": {
+        "tags": ["TechStack"],
+        "summary": "Display Tech Stack By Id",
+        "description": "Get Tech Stack by ID (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "64f1c9e2a1234567890abcd1"
+            "type": "string"
           }
         ],
+
         "responses": {
           "200": {
-            "description": "Drs Factor Criteria deleted successfully"
+            "description": "Tech Stack retrieved successfully",
+            "schema": {
+              "type": "object"
+            }
           },
+
           "404": {
-            "description": "Drs Factor Criteria not found"
+            "description": "Tech Stack not found"
+          },
+
+          "403": {
+            "description": "Forbidden"
           }
         }
-      }
-    },
-
-    "/api/quotes": {
-      "get": {
-        "tags": ["Quotes"],
-        "summary": "Display daily quote (different per user)",
-        "description": "Get daily quote (different per user)",
-        "responses": {
-          "200": {
-            "description": "Quote fetched successfully"
+      },
+      "put": {
+        "tags": ["TechStack"],
+        "summary": "Update Tech Stack",
+        "description": "Update Tech Stack (ROLES : ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
-          "404": {
-            "description": "No quotes found"
+
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+
+              "properties": {
+                "techName": {
+                  "example": "React.js"
+                }
+              }
+            }
+          }
+        ],
+
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["TechStack"],
+        "summary": "Delete Tech Stack",
+        "description": "Delete Tech Stack (ROLES : ADMIN)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+
+        "responses": {
+          "403": {
+            "description": "Forbidden"
           }
         }
       }
@@ -4721,7 +5237,7 @@
       "post": {
         "tags": ["Project"],
         "summary": "Add Project",
-        "description": "",
+        "description": "Add Project (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "body",
@@ -4770,7 +5286,7 @@
       "get": {
         "tags": ["Project"],
         "summary": "Display All Project",
-        "description": "",
+        "description": "Display All Project (ROLES : ALL)",
         "parameters": [
           {
             "name": "page",
@@ -4806,7 +5322,7 @@
       "get": {
         "tags": ["Project"],
         "summary": "Display Project By Id",
-        "description": "Get Project by ID",
+        "description": "Get Project by ID (ROLES : ALL)",
         "parameters": [
           {
             "name": "id",
@@ -4833,7 +5349,7 @@
       "put": {
         "tags": ["Project"],
         "summary": "Update Project",
-        "description": "",
+        "description": "Update Project (ROLES : ALL)",
         "parameters": [
           {
             "name": "id",
@@ -4888,7 +5404,7 @@
       "delete": {
         "tags": ["Project"],
         "summary": "Delete Project",
-        "description": "",
+        "description": "Delete Project (ROLES : ALL)",
         "parameters": [
           {
             "name": "id",
@@ -4904,11 +5420,77 @@
         }
       }
     },
+
+    "/api/projects/count-by-status": {
+      "get": {
+        "tags": ["Project"],
+        "summary": "Get Project Status Graph",
+        "description": "Get project count grouped by status with date range filter",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date",
+            "example": "2023-01-01"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date",
+            "example": "2023-01-31"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project status graph data fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "example": "inProgress"
+                      },
+                      "count": {
+                        "type": "integer",
+                        "example": 5
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+
     "/api/teams": {
       "post": {
         "tags": ["Team"],
         "summary": "Add Team",
-        "description": "",
+        "description": "Add Team (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "body",
@@ -4965,7 +5547,7 @@
       "get": {
         "tags": ["Team"],
         "summary": "Display All Teams",
-        "description": "",
+        "description": "Display All Teams (ROLES : ALL)",
         "parameters": [
           {
             "name": "page",
@@ -4997,7 +5579,7 @@
       "get": {
         "tags": ["Team"],
         "summary": "Display Team By Id",
-        "description": "Get Team by ID",
+        "description": "Get Team by ID (ROLES : ALL)",
         "parameters": [
           {
             "name": "id",
@@ -5024,7 +5606,7 @@
       "put": {
         "tags": ["Team"],
         "summary": "Update Team",
-        "description": "",
+        "description": "Update Team (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "id",
@@ -5081,7 +5663,7 @@
       "delete": {
         "tags": ["Team"],
         "summary": "Delete Team",
-        "description": "",
+        "description": "Delete Team (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "id",
@@ -5102,7 +5684,7 @@
       "get": {
         "tags": ["Team"],
         "summary": "Display project-wise teams summary",
-        "description": "Get project-wise grouped team summary. Search supported on projectName, clientName, project status, project type, startDate, and endDate. Date search formats supported: YYYY, YYYY-MM, YYYY-MM-DD.",
+        "description": "Get project-wise grouped team summary. Search supported on projectName, clientName, project status, project type, startDate, and endDate. Date search formats supported: YYYY, YYYY-MM, YYYY-MM-DD (ROLES : ALL)",
         "parameters": [
           {
             "name": "page",
@@ -5151,7 +5733,7 @@
       "delete": {
         "tags": ["Team"],
         "summary": "Delete Team Member From Team",
-        "description": "Remove a user from team",
+        "description": "Remove a user from team (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "teamId",
@@ -5187,7 +5769,7 @@
       "get": {
         "tags": ["Team"],
         "summary": "Display users who are not assigned to any team.",
-        "description": "Get users who are not assigned to any team. Search supported on name, employeeCode, role, designation name, and department name.",
+        "description": "Get users who are not assigned to any team. Search supported on name, employeeCode, role, designation name, and department name (ROLES : ADMIN, HR)",
         "parameters": [
           {
             "name": "page",
@@ -5222,77 +5804,80 @@
       }
     },
 
-    "/api/users/organization": {
+    "/api/teams/user/{userId}/projects": {
       "get": {
-        "tags": ["User"],
-        "summary": "Display all users from the logged-in user's organization.",
-        "description": "Get all users from the logged-in user's organization. Search supported on first name, middle name, last name, and employee code.",
+        "tags": ["Team"],
+        "summary": "Get Projects by User ID",
+        "description": "Fetch projects associated with a specific user ID. Search supported on projectName, clientName, status, type, startDate, and endDate. Date search formats supported: YYYY, YYYY-MM, YYYY-MM-DD.",
         "parameters": [
           {
-            "name": "page",
-            "in": "query",
+            "name": "userId",
+            "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "description": "Search by first name, middle name, last name, or employee code"
           }
         ],
         "responses": {
           "200": {
-            "description": "Organization users fetched successfully",
+            "description": "Projects fetched successfully for the user",
             "schema": {
               "type": "object"
             }
           },
-          "401": {
-            "description": "Unauthorized"
-          },
           "403": {
             "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal server error"
           }
         }
       }
     },
-
-    "/api/users/randomusers": {
+    "/api/teams/members": {
       "get": {
-        "tags": ["User"],
-        "summary": "Display Random User",
-        "description": "Get random active users from the logged-in user's organization based on selected number of records.",
+        "tags": ["Team"],
+        "summary": "Get Team Members For Logged-in Project Manager",
+        "description": "Fetch all team members for the logged-in Project Manager. Other Project Managers are excluded from the response.",
+        "produces": ["application/json"],
         "parameters": [
           {
-            "name": "page",
             "in": "query",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": true,
+            "name": "search",
             "type": "string",
-            "description": "Number of random users to fetch"
+            "required": false,
+            "description": "Search by fullName, employeeCode"
           }
         ],
         "responses": {
           "200": {
-            "description": "Random organization users fetched successfully",
+            "description": "Team members fetched successfully",
             "schema": {
-              "type": "object"
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string"
+                      },
+                      "employeeId": {
+                        "type": "string"
+                      },
+                      "fullName": {
+                        "type": "string"
+                      },
+                      "role": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
             }
           },
           "401": {
@@ -5312,7 +5897,7 @@
       "post": {
         "tags": ["Letterhead Type"],
         "summary": "Add LetterHead Type",
-        "description": "Create Letterhead Type",
+        "description": "Create Letterhead Type (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "type",
@@ -5341,7 +5926,7 @@
       "get": {
         "tags": ["Letterhead Type"],
         "summary": "Display LetterHead Type",
-        "description": "Get Letterhead Type List",
+        "description": "Get Letterhead Type List (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "page",
@@ -5373,7 +5958,7 @@
       "put": {
         "tags": ["Letterhead Type"],
         "summary": "Update LetterHead Type",
-        "description": "Update Letterhead Type",
+        "description": "Update Letterhead Type (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "id",
@@ -5406,7 +5991,7 @@
       "delete": {
         "tags": ["Letterhead Type"],
         "summary": "Delete LetterHead Type",
-        "description": "Delete Letterhead Type",
+        "description": "Delete Letterhead Type (ROLE : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "id",
@@ -5590,7 +6175,7 @@
       "post": {
         "tags": ["Interview"],
         "summary": "Add Interview",
-        "description": "",
+        "description": "Add Interview (ROLES : ADMIN, HR, HR_RECRUITER)",
         "consumes": ["multipart/form-data"],
         "parameters": [
           {
@@ -5713,7 +6298,7 @@
       "get": {
         "tags": ["Interview"],
         "summary": "Display All Interviews",
-        "description": "Searchable fields: name, email, contactNumber",
+        "description": "Display All Interviews (ROLES : ALL)",
         "parameters": [
           {
             "name": "page",
@@ -5761,7 +6346,7 @@
       "get": {
         "tags": ["Interview"],
         "summary": "Display Interview By Id",
-        "description": "Get Interview by ID",
+        "description": "Get Interview by ID (ROLES : ALL)",
         "parameters": [
           {
             "name": "id",
@@ -5788,7 +6373,7 @@
       "put": {
         "tags": ["Interview"],
         "summary": "Update Interview",
-        "description": "Update interview details",
+        "description": "Update interview details (ROLES : ALL)",
         "consumes": ["multipart/form-data"],
         "parameters": [
           {
@@ -5984,7 +6569,7 @@
       "delete": {
         "tags": ["Interview"],
         "summary": "Delete Interview",
-        "description": "",
+        "description": "Delete Interview (ROLES : ADMIN, HR, HR_RECRUITER)",
         "parameters": [
           {
             "name": "id",
@@ -6001,111 +6586,10 @@
       }
     },
 
-    "/api/userpayroll/bond-completed": {
-      "get": {
-        "tags": ["Payroll"],
-        "summary": "Get Bond Completed Employees",
-        "description": "Fetch all employees whose bond completion date is completed till today's date",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "example": "1"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "example": "10"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Bond completed users fetched successfully",
-            "schema": {
-              "type": "object"
-            }
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/users/user-info": {
-      "get": {
-        "summary": "Get logged-in user basic information",
-        "tags": ["User"],
-        "responses": {
-          "200": {
-            "description": "User info fetched successfully",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "success": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "message": {
-                  "type": "string",
-                  "example": "User info fetched successfully"
-                },
-                "data": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "_id": {
-                          "type": "string",
-                          "example": "69f1f923fe3b8e0e4fd16f1d"
-                        },
-                        "fullName": {
-                          "type": "string",
-                          "example": "Krunal Bhai Kewat"
-                        },
-                        "email": {
-                          "type": "string",
-                          "example": "krunal@gmail.com"
-                        },
-                        "designationId": {
-                          "type": "object",
-                          "properties": {
-                            "_id": {
-                              "type": "string",
-                              "example": "69ca544451e27dd860867e71"
-                            },
-                            "designationName": {
-                              "type": "string",
-                              "example": "Project Manager"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "User not found"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
-      }
-    },
     "/api/events/monthly-records": {
       "get": {
         "summary": "Get monthly birthday, marriage anniversary and increment records",
+        "description": "Get monthly birthday, marriage anniversary and increment records (ROLES : ADIN , HR, [OTHER ROLE : FOR MONTH AND TODAY EVENT])",
         "tags": ["Event"],
         "parameters": [
           {
@@ -6172,11 +6656,74 @@
       }
     },
 
+    "/api/events/today-celebrations": {
+      "get": {
+        "tags": ["Event"],
+        "summary": "Get today's birthdays and anniversaries",
+        "description": "Returns users whose birthday or marriage anniversary falls on the current date.",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Today's celebrations fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "userName": {
+                            "type": "string"
+                          },
+                          "designation": {
+                            "type": "string"
+                          },
+                          "department": {
+                            "type": "string"
+                          },
+                          "isBirthday": {
+                            "type": "boolean"
+                          },
+                          "isAnniversary": {
+                            "type": "boolean"
+                          },
+                          "profilePictureUrl": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+
     "/api/appreciation": {
       "post": {
         "tags": ["Appreciation"],
         "summary": "Add Appreciated User",
-        "description": "Create Appreciated User",
+        "description": "Create Appreciated User (ROLE : ADMIN)",
         "consumes": ["application/json"],
         "parameters": [
           {
@@ -6220,7 +6767,7 @@
       "get": {
         "tags": ["Appreciation"],
         "summary": "Display Appreciated Users",
-        "description": "Get Appreciated Users List",
+        "description": "Get Appreciated Users List (ROLE : ALL)",
         "parameters": [
           {
             "name": "page",
@@ -6252,7 +6799,7 @@
       "put": {
         "tags": ["Appreciation"],
         "summary": "Update Appreciated User",
-        "description": "Update Appreciated User",
+        "description": "Update Appreciated User (ROLE : ADMIN)",
         "consumes": ["application/json"],
         "parameters": [
           {
@@ -6302,7 +6849,7 @@
       "delete": {
         "tags": ["Appreciation"],
         "summary": "Delete Appreciated User",
-        "description": "Delete Appreciated User",
+        "description": "Delete Appreciated User (ROLE : ADMIN)",
         "parameters": [
           {
             "name": "id",
@@ -6323,495 +6870,11 @@
       }
     },
 
-    "/api/teams/user/{userId}/projects": {
-      "get": {
-        "tags": ["Team"],
-        "summary": "Get Projects by User ID",
-        "description": "Fetch projects associated with a specific user ID. Search supported on projectName, clientName, status, type, startDate, and endDate. Date search formats supported: YYYY, YYYY-MM, YYYY-MM-DD.",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Projects fetched successfully for the user",
-            "schema": {
-              "type": "object"
-            }
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/teams/members": {
-      "get": {
-        "tags": ["Team"],
-        "summary": "Get Team Members For Logged-in Project Manager",
-        "description": "Fetch all team members for the logged-in Project Manager. Other Project Managers are excluded from the response.",
-        "produces": ["application/json"],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "search",
-            "type": "string",
-            "required": false,
-            "description": "Search by fullName, employeeCode"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Team members fetched successfully",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "success": {
-                  "type": "boolean"
-                },
-                "message": {
-                  "type": "string"
-                },
-                "data": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "_id": {
-                        "type": "string"
-                      },
-                      "employeeId": {
-                        "type": "string"
-                      },
-                      "fullName": {
-                        "type": "string"
-                      },
-                      "role": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
-      }
-    },
-    "/api/users/{id}/left": {
-      "put": {
-        "tags": ["Left Employees"],
-        "summary": "Update employee offboarding details",
-        "description": "Update employee resignation and offboarding process details",
-        "consumes": ["application/json"],
-        "produces": ["application/json"],
-
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "User ID"
-          },
-
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-
-              "properties": {
-                "resignationDetails": {
-                  "type": "object",
-
-                  "properties": {
-                    "leftType": {
-                      "type": "string",
-                      "enum": ["self", "company", "absconding"],
-                      "example": "self"
-                    },
-
-                    "reason": {
-                      "type": "string",
-                      "example": "Personal reason"
-                    },
-
-                    "resignationDate": {
-                      "type": "string",
-                      "format": "date",
-                      "example": "2026-05-01"
-                    },
-
-                    "noticePeriod": {
-                      "type": "number",
-                      "example": 30
-                    },
-
-                    "lastWorkingDate": {
-                      "type": "string",
-                      "format": "date",
-                      "example": "2026-05-30"
-                    },
-
-                    "relievedDate": {
-                      "type": "string",
-                      "format": "date",
-                      "example": "2026-05-30"
-                    },
-
-                    "offboardingCriteria": {
-                      "type": "array",
-
-                      "items": {
-                        "type": "object",
-
-                        "properties": {
-                          "criteriaId": {
-                            "type": "string",
-                            "example": "682f11111111111111111111"
-                          },
-
-                          "criteria": {
-                            "type": "string",
-                            "example": "Remove Mini Orange access"
-                          },
-
-                          "isChecked": {
-                            "type": "boolean",
-                            "example": true
-                          },
-
-                          "notes": {
-                            "type": "string",
-                            "example": "Completed successfully"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-
-              "example": {
-                "resignationDetails": {
-                  "leftType": "self",
-                  "reason": "Personal reason",
-                  "resignationDate": "2026-05-01",
-                  "lastWorkingDate": "2026-05-30",
-
-                  "offboardingCriteria": [
-                    {
-                      "id": "682f11111111111111111111",
-                      "criteria": "Remove Mini Orange access",
-                      "isChecked": true,
-                      "notes": "Completed successfully"
-                    },
-                    {
-                      "id": "682f22222222222222222222",
-                      "criteria": "Recover company laptop",
-                      "isChecked": false,
-                      "notes": "Pending from employee"
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        ],
-
-        "responses": {
-          "200": {
-            "description": "Offboarding details updated successfully"
-          },
-
-          "400": {
-            "description": "Validation Error"
-          },
-
-          "404": {
-            "description": "User not found"
-          }
-        }
-      }
-    },
-    "/api/users/{id}/rejoin": {
-      "put": {
-        "tags": ["Left Employees"],
-        "summary": "Rejoin employee",
-        "description": "Rejoin left employee and remove resignation details",
-        "consumes": ["application/json"],
-        "produces": ["application/json"],
-
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "User ID"
-          }
-        ],
-
-        "responses": {
-          "200": {
-            "description": "Employee rejoined successfully",
-
-            "schema": {
-              "type": "object",
-
-              "properties": {
-                "success": {
-                  "type": "boolean",
-                  "example": true
-                },
-
-                "message": {
-                  "type": "string",
-                  "example": "Employee rejoined successfully"
-                }
-              }
-            }
-          },
-
-          "400": {
-            "description": "Validation Error"
-          },
-
-          "404": {
-            "description": "User not found"
-          }
-        }
-      }
-    },
-
-    "/api/techStacks": {
-      "post": {
-        "tags": ["TechStack"],
-        "summary": "Add Tech Stack",
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "techName": {
-                  "example": "Node.js"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-
-      "get": {
-        "tags": ["TechStack"],
-        "summary": "Display All Tech Stacks",
-        "description": "",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "type": "string",
-            "required": true
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "string",
-            "required": true
-          },
-          {
-            "name": "techName",
-            "in": "query",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-    "/api/techStacks/{id}": {
-      "get": {
-        "tags": ["TechStack"],
-        "summary": "Display Tech Stack By Id",
-        "description": "Get Tech Stack by ID",
-
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-
-        "responses": {
-          "200": {
-            "description": "Tech Stack retrieved successfully",
-            "schema": {
-              "type": "object"
-            }
-          },
-
-          "404": {
-            "description": "Tech Stack not found"
-          },
-
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "put": {
-        "tags": ["TechStack"],
-        "summary": "Update Tech Stack",
-        "description": "",
-
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-
-              "properties": {
-                "techName": {
-                  "example": "React.js"
-                }
-              }
-            }
-          }
-        ],
-
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      },
-      "delete": {
-        "tags": ["TechStack"],
-        "summary": "Delete Tech Stack",
-        "description": "",
-
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-
-        "responses": {
-          "403": {
-            "description": "Forbidden"
-          }
-        }
-      }
-    },
-
-    "/api/projects/count-by-status": {
-      "get": {
-        "tags": ["Project"],
-        "summary": "Get Project Status Graph",
-        "description": "Get project count grouped by status with date range filter",
-        "parameters": [
-          {
-            "name": "startDate",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "date",
-            "example": "2023-01-01"
-          },
-          {
-            "name": "endDate",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "date",
-            "example": "2023-01-31"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Project status graph data fetched successfully",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "success": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "data": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "status": {
-                        "type": "string",
-                        "example": "inProgress"
-                      },
-                      "count": {
-                        "type": "integer",
-                        "example": 5
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
     "/api/logs": {
       "get": {
         "tags": ["Logs"],
         "summary": "Get Logs",
-        "description": "Fetch all logs with filters, search and pagination.",
+        "description": "Fetch all logs with filters (ROLES : ADMIN)",
         "parameters": [
           {
             "name": "startDate",
@@ -6877,69 +6940,6 @@
           },
           "500": {
             "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-
-    "/api/events/today-celebrations": {
-      "get": {
-        "tags": ["Event"],
-        "summary": "Get today's birthdays and anniversaries",
-        "description": "Returns users whose birthday or marriage anniversary falls on the current date.",
-        "produces": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "Today's celebrations fetched successfully",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "success": {
-                  "type": "boolean"
-                },
-                "message": {
-                  "type": "string"
-                },
-                "data": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "userName": {
-                            "type": "string"
-                          },
-                          "designation": {
-                            "type": "string"
-                          },
-                          "department": {
-                            "type": "string"
-                          },
-                          "isBirthday": {
-                            "type": "boolean"
-                          },
-                          "isAnniversary": {
-                            "type": "boolean"
-                          },
-                          "profilePictureUrl": {
-                            "type": "string",
-                            "nullable": true
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Internal server error"
           }
         }
       }

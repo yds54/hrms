@@ -23,7 +23,7 @@ const {
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  authorizeRoles(ROLES.ADMIN),
   validate(createAppreciationValidation),
   createAppreciation,
 );
@@ -41,7 +41,7 @@ router.get(
 router.put(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  authorizeRoles(ROLES.ADMIN),
   validate(updateAppreciationValidation),
   updateAppreciation,
 );
@@ -50,7 +50,7 @@ router.put(
 router.delete(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  authorizeRoles(ROLES.ADMIN),
   validate(deleteAppreciationValidation),
   deleteAppreciation,
 );

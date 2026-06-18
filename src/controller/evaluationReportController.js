@@ -142,7 +142,7 @@ exports.getEvaluationReport = async (req, res, next) => {
         : {
             $in: memberIds.map((id) => new mongoose.Types.ObjectId(id)),
           };
-    } else if ([ROLES.ADMIN, ROLES.HR].includes(role)) {
+    } else if ([ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER].includes(role)) {
       if (userId) query.userId = new mongoose.Types.ObjectId(userId);
     } else {
       throw new AppError("You are not authorized to access this resource", 403);

@@ -24,7 +24,7 @@ const { ROLES } = require("../utils/enum");
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(addIncrementValidation),
   addIncrement,
 );
@@ -32,7 +32,7 @@ router.post(
 router.get(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(getIncrementByIdValidation),
   getIncrementById,
 );
@@ -40,7 +40,7 @@ router.get(
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(getIncrementValidation),
   getAllUsersIncrements,
 );
@@ -48,7 +48,7 @@ router.get(
 router.delete(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(deleteIncrementValidation),
   deleteIncrement,
 );
