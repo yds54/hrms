@@ -4,6 +4,8 @@ const { USER, USERPAYROLL, INCREMENT } = require("../model/modelIndex");
 const { dateSearchQuery } = require("../utils/dateFormat");
 const { paginate, paginateArray } = require("../utils/pagination");
 const { searchConditions } = require("../utils/searchHelper");
+const { TIMEZONES } = require("../utils/enum");
+const { getFileUrl } = require("../utils/fileUrl");
 
 exports.getCelebrationAndIncrementData = async (req, res, next) => {
   try {
@@ -20,6 +22,7 @@ exports.getCelebrationAndIncrementData = async (req, res, next) => {
         {
           $addFields: {
             birthMonth: { $month: "$birthDate" },
+            birthDay: { $dayOfMonth: "$birthDate" },
           },
         },
         {
@@ -39,6 +42,11 @@ exports.getCelebrationAndIncrementData = async (req, res, next) => {
           },
         },
         {
+          $sort: {
+            birthDay: 1, // ascending
+          },
+        },
+        {
           $project: {
             _id: 0,
             fullName: 1,
@@ -53,9 +61,6 @@ exports.getCelebrationAndIncrementData = async (req, res, next) => {
         isDeleted: false,
         birthDate: { $ne: null },
       },
-      sort: {
-        birthDate: 1,
-      },
     });
 
     const marriageAnniUsersData = await paginate({
@@ -66,6 +71,7 @@ exports.getCelebrationAndIncrementData = async (req, res, next) => {
         {
           $addFields: {
             marriageMonth: { $month: "$marriageDate" },
+            marriageDay: { $dayOfMonth: "$marriageDate" },
           },
         },
         {
@@ -82,6 +88,11 @@ exports.getCelebrationAndIncrementData = async (req, res, next) => {
                   ].filter(Boolean),
                 }
               : {}),
+          },
+        },
+        {
+          $sort: {
+            marriageDay: 1,
           },
         },
         {
@@ -104,9 +115,6 @@ exports.getCelebrationAndIncrementData = async (req, res, next) => {
       query: {
         isDeleted: false,
         marriageDate: { $ne: null },
-      },
-      sort: {
-        date: 1,
       },
     });
 
@@ -224,6 +232,118 @@ exports.getCelebrationAndIncrementData = async (req, res, next) => {
         incrementUsers: incrementUsersData.data,
         incrementUsersPagination: incrementUsersData.pagination,
       },
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getTodayCelebrations = async (req, res, next) => {
+  try {
+    const today = moment().tz(TIMEZONES.INDIA).format("MM-DD");
+
+    const users = await USER.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+          isLeft: false,
+        },
+      },
+      {
+        $addFields: {
+          birthDateMMDD: {
+            $cond: [
+              { $ifNull: ["$birthDate", false] },
+              {
+                $dateToString: {
+                  format: "%m-%d",
+                  date: "$birthDate",
+                  timezone: TIMEZONES.INDIA,
+                },
+              },
+              null,
+            ],
+          },
+          marriageDateMMDD: {
+            $cond: [
+              { $ifNull: ["$marriageDate", false] },
+              {
+                $dateToString: {
+                  format: "%m-%d",
+                  date: "$marriageDate",
+                  timezone: TIMEZONES.INDIA,
+                },
+              },
+              null,
+            ],
+          },
+        },
+      },
+      {
+        $match: {
+          $or: [{ birthDateMMDD: today }, { marriageDateMMDD: today }],
+        },
+      },
+      {
+        $lookup: {
+          from: "designations",
+          localField: "designationId",
+          foreignField: "_id",
+          as: "designation",
+        },
+      },
+      {
+        $unwind: {
+          path: "$designation",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "departments",
+          localField: "departmentId",
+          foreignField: "_id",
+          as: "department",
+        },
+      },
+      {
+        $unwind: {
+          path: "$department",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          fullName: 1,
+          profilePicture: 1,
+          designation: "$designation.designationName",
+          department: "$department.departmentName",
+          isBirthday: {
+            $eq: ["$birthDateMMDD", today],
+          },
+          isAnniversary: {
+            $eq: ["$marriageDateMMDD", today],
+          },
+        },
+      },
+    ]);
+
+    const formattedData = users.map((user) => ({
+      userName: user.fullName,
+      designation: user.designation,
+      department: user.department,
+      isBirthday: user.isBirthday,
+      isAnniversary: user.isAnniversary,
+      profilePictureUrl: user.profilePicture?.fileName
+        ? getFileUrl(`profile/${user.profilePicture.fileName}`)
+        : null,
+    }));
+
+    return successResponse(
+      res,
+      200,
+      "Today's celebrations fetched successfully",
+      { data: formattedData },
     );
   } catch (error) {
     next(error);

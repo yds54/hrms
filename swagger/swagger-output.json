@@ -2572,36 +2572,57 @@
       "post": {
         "tags": ["Attendance"],
         "summary": "Add Attendance",
-        "description": "Create attendance",
+        "description": "Admin and HR can create attendance for any user by passing userId. Other users can create attendance only for themselves.",
         "consumes": ["multipart/form-data"],
         "parameters": [
           {
-            "name": "date",
+            "name": "userId",
             "in": "formData",
             "type": "string",
-            "required": true,
-            "description": "2026-04-01"
+            "required": false,
+            "example": "69c50b13cd55ac8e54ca6ea8",
+            "description": "Required only for Admin and HR when creating attendance for another user"
+          },
+          {
+            "name": "fromDate",
+            "in": "formData",
+            "type": "string",
+            "format": "date",
+            "required": false,
+            "example": "2026-04-01",
+            "description": "Start date for bulk attendance creation"
+          },
+          {
+            "name": "toDate",
+            "in": "formData",
+            "type": "string",
+            "format": "date",
+            "required": false,
+            "example": "2026-04-05",
+            "description": "End date for bulk attendance creation"
           },
           {
             "name": "inTime",
             "in": "formData",
             "type": "string",
             "required": true,
-            "description": "09:30 AM"
+            "example": "09:30 AM",
+            "description": "Attendance entry time"
           },
           {
             "name": "outTime",
             "in": "formData",
             "type": "string",
             "required": false,
-            "description": "06:30 PM"
+            "example": "06:30 PM",
+            "description": "Attendance exit time"
           },
           {
             "name": "lateReason",
             "in": "formData",
             "type": "string",
             "required": false,
-            "example": "Traffic"
+            "example": "Traffic delay"
           },
           {
             "name": "leaveReason",
@@ -2622,71 +2643,124 @@
             "in": "formData",
             "type": "string",
             "required": false,
-            "example": "Correction"
+            "example": "Manual attendance correction"
           },
           {
             "name": "entry",
             "in": "formData",
             "type": "file",
             "required": false,
-            "description": "Entry image"
+            "description": "Entry image (JPG, JPEG, PNG)"
           },
           {
             "name": "exit",
             "in": "formData",
             "type": "file",
             "required": false,
-            "description": "Exit image"
+            "description": "Exit image (JPG, JPEG, PNG)"
           }
         ],
         "responses": {
           "200": {
-            "description": "Attendance Created successfully"
+            "description": "Attendance created successfully"
+          },
+          "400": {
+            "description": "Validation error"
           },
           "403": {
             "description": "Forbidden"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "409": {
+            "description": "Attendance already exists for selected date(s)"
           }
         }
       },
       "get": {
         "tags": ["Attendance"],
-        "summary": "Display All Attendance",
-        "description": "Get Attendance",
+        "summary": "Display Attendance",
+        "description": "Admin can view all users attendance for a selected date (defaults to current date if date is not provided). Admin can also filter by gender, attendance type, organization and overtime status. Admin can pass userId to view a specific user's monthly attendance. Other users can view only their own attendance.",
         "parameters": [
           {
             "name": "page",
             "in": "query",
             "type": "number",
-            "required": false,
+            "required": true,
             "example": 1
           },
           {
             "name": "limit",
             "in": "query",
             "type": "number",
-            "required": false,
+            "required": true,
             "example": 10
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "example": "2026-06-12",
+            "description": "Admin only. Used when fetching attendance of all users. Defaults to current date."
+          },
+          {
+            "name": "gender",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "enum": ["male", "female", "other"],
+            "example": "male",
+            "description": "Filter by user gender."
+          },
+          {
+            "name": "attendanceType",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "example": "Card",
+            "description": "Filter by attendance type."
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "example": "69ccc24cf2041b075ef23882",
+            "description": "Filter by organization."
+          },
+          {
+            "name": "overtime",
+            "in": "query",
+            "type": "boolean",
+            "required": false,
+            "example": true,
+            "description": "Filter overtime attendance records."
           },
           {
             "name": "month",
             "in": "query",
             "type": "number",
             "required": false,
-            "description": "Month (1-12)"
+            "example": 6,
+            "description": "Month (1-12). Used when fetching a specific user's attendance."
           },
           {
             "name": "year",
             "in": "query",
             "type": "number",
             "required": false,
-            "description": "2026"
+            "example": 2026,
+            "description": "Year. Used when fetching a specific user's attendance."
           },
           {
             "name": "search",
             "in": "query",
             "type": "string",
-            "example": "2026-01-13",
-            "description": "Search by date"
+            "required": false,
+            "example": "2026-06-12",
+            "description": "Search attendance by date."
           },
           {
             "name": "userId",
@@ -2694,7 +2768,7 @@
             "type": "string",
             "required": false,
             "example": "69c50b13cd55ac8e54ca6ea8",
-            "description": "Only for ADMIN: pass userId to view specific user's attendance"
+            "description": "Admin only. Pass userId to view a specific user's monthly attendance."
           }
         ],
         "responses": {
@@ -2755,6 +2829,400 @@
           },
           "403": {
             "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/attendance/{id}": {
+      "put": {
+        "tags": ["Attendance"],
+        "summary": "Update Attendance",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["inTime", "updateReason"],
+              "properties": {
+                "inTime": {
+                  "type": "string",
+                  "example": "09:30 AM"
+                },
+                "outTime": {
+                  "type": "string",
+                  "example": "06:30 PM"
+                },
+                "updateReason": {
+                  "type": "string",
+                  "example": "Attendance correction"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance updated successfully"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Attendance"],
+        "summary": "Delete Attendance",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance deleted successfully"
+          }
+        }
+      }
+    },
+    "/api/attendance/report": {
+      "get": {
+        "tags": ["Attendance"],
+        "summary": "Attendance Monthly Report",
+        "description": "Returns paginated employee attendance report for a selected month along with holidays, Sundays, and employee attendance details.",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "selectedDate",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "example": "2026-06",
+            "description": "Month and year in YYYY-MM format."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "example": 1,
+            "description": "Page number."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "example": 10,
+            "description": "Number of employees per page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance report fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "totalDaysOfMonth": {
+                      "type": "integer",
+                      "example": 30
+                    },
+                    "employees": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "employee": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string"
+                              },
+                              "employeeCode": {
+                                "type": "string"
+                              },
+                              "firstName": {
+                                "type": "string"
+                              },
+                              "middleName": {
+                                "type": "string"
+                              },
+                              "lastName": {
+                                "type": "string"
+                              },
+                              "profilePicture": {
+                                "type": "object"
+                              }
+                            }
+                          },
+                          "attendance": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "date": {
+                                  "type": "string",
+                                  "example": "2026-06-01"
+                                },
+                                "inTime": {
+                                  "type": "string",
+                                  "example": "09:00"
+                                },
+                                "outTime": {
+                                  "type": "string",
+                                  "example": "18:00"
+                                },
+                                "totalTime": {
+                                  "type": "number"
+                                },
+                                "overTime": {
+                                  "type": "number"
+                                },
+                                "overtimeCheckout": {
+                                  "type": "boolean"
+                                },
+                                "attendanceType": {
+                                  "type": "string"
+                                },
+                                "totalMinutes": {
+                                  "type": "number"
+                                },
+                                "createdAt": {
+                                  "type": "string",
+                                  "format": "date-time"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "monthHolidays": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "holidayName": {
+                            "type": "string"
+                          },
+                          "holidayDate": {
+                            "type": "string",
+                            "example": "2026-06-15"
+                          }
+                        }
+                      }
+                    },
+                    "monthSundays": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "2026-06-07"
+                      }
+                    },
+                    "startOfMonth": {
+                      "type": "string",
+                      "example": "2026-06-01"
+                    },
+                    "endOfMonth": {
+                      "type": "string",
+                      "example": "2026-06-30"
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "pages": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation Error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/attendance/sandwich-report": {
+      "get": {
+        "tags": ["Attendance"],
+        "summary": "Get Sandwich Leave Report",
+        "description": "Returns sandwich leave report for all employees or a specific employee for the selected month.",
+        "parameters": [
+          {
+            "name": "selectedDate",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "example": "2026-06",
+            "description": "Month in YYYY-MM format"
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "example": "69e08c6bbe446554694365fc",
+            "description": "Filter report by user id"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "search by name"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sandwich leave report fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Sandwich leave report fetched successfully"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "holidays": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer"
+                            },
+                            "example": [21]
+                          },
+                          "leaves": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer"
+                            },
+                            "example": [20, 22]
+                          },
+                          "user": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string",
+                                "example": "69e08c6bbe446554694365fc"
+                              },
+                              "firstName": {
+                                "type": "string",
+                                "example": "Aarti"
+                              },
+                              "lastName": {
+                                "type": "string",
+                                "example": "Patil"
+                              },
+                              "isLeft": {
+                                "type": "boolean",
+                                "example": false
+                              },
+                              "leftDate": {
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": true
+                              },
+                              "createdAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "totalpages": {
+                          "type": "integer",
+                          "example": 2
+                        },
+                        "totalrecords": {
+                          "type": "integer",
+                          "example": 15
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation Error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -6409,6 +6877,69 @@
           },
           "500": {
             "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+
+    "/api/events/today-celebrations": {
+      "get": {
+        "tags": ["Event"],
+        "summary": "Get today's birthdays and anniversaries",
+        "description": "Returns users whose birthday or marriage anniversary falls on the current date.",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Today's celebrations fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "userName": {
+                            "type": "string"
+                          },
+                          "designation": {
+                            "type": "string"
+                          },
+                          "department": {
+                            "type": "string"
+                          },
+                          "isBirthday": {
+                            "type": "boolean"
+                          },
+                          "isAnniversary": {
+                            "type": "boolean"
+                          },
+                          "profilePictureUrl": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }

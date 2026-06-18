@@ -32,7 +32,7 @@ router.post(
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.USER),
+  authorizeRoles(...Object.values(ROLES)),
   validate(getholidayValidation),
   viewAllHolidays,
 );
