@@ -12,6 +12,7 @@ const {
   deleteLeaveRequest,
   getTeamLeaveRequests,
   getTodayOnLeave,
+  getTodayDidntCome,
 } = require("../controller/leaveController");
 
 const {
@@ -44,7 +45,7 @@ router.get(
 router.get(
   "/team-leave-request",
   authenticateJWT,
-  authorizeRoles(ROLES.PROJECT_MANAGER),
+  authorizeRoles(ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
   validate(teamLeaveRequestValidation),
   getTeamLeaveRequests,
 );
@@ -61,7 +62,7 @@ router.get(
 router.put(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
   validate(updateLeaveValidation),
   updateLeaveRequest,
 );
@@ -73,6 +74,14 @@ router.delete(
   authorizeRoles(ROLES.ADMIN),
   validate(deleteLeaveValidation),
   deleteLeaveRequest,
+);
+
+// ================= TODAY DIDN'T COME =================
+router.get(
+  "/today-didnt-come",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  getTodayDidntCome,
 );
 
 module.exports = router;

@@ -121,9 +121,4 @@ leaveRequestSchema.pre("save", function () {
   }
 });
 
-leaveRequestSchema.index(
-  { user: 1, date: 1 },
-  { unique: true, partialFilterExpression: { numberOfDays: "Single Day" } },
-);
-
 module.exports = mongoose.model("leaveRequest", leaveRequestSchema);

@@ -1,6 +1,6 @@
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
-const { LEAVE, TEAMS } = require("../model/modelIndex");
+const { LEAVE, TEAMS, USER } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { successResponse } = require("../utils/sucess");
 const { paginate } = require("../utils/pagination");
@@ -22,6 +22,11 @@ const {
   dateSearchQuery,
   getYearRange,
 } = require("../utils/dateFormat");
+const {
+  leaveRequestCreatedNotification,
+  leaveApprovedNotification,
+  leaveDeclinedNotification,
+} = require("../services/notificationEventService");
 
 //======================= SEND LEAVE REQUEST =================================
 exports.createLeaveRequest = async (req, res, next) => {
@@ -54,17 +59,6 @@ exports.createLeaveRequest = async (req, res, next) => {
         fromDate: { $lte: end },
         toDate: { $gte: start },
       });
-    }
-
-    const isExistingLeave =
-      orConditions.length > 0 &&
-      (await LEAVE.findOne({
-        user,
-        isDeleted: false,
-        $or: orConditions,
-      }));
-    if (isExistingLeave) {
-      throw new AppError("Leave already exists for selected date", 409);
     }
 
     if (numberOfDays === LEAVE_DAY_TYPE.SINGLE) {
@@ -104,13 +98,13 @@ exports.createLeaveRequest = async (req, res, next) => {
       payload.toTime = moment(toTime, "HH:mm A").format("hh:mm A");
     }
     const leave = await LEAVE.create(payload);
+
+    await leaveRequestCreatedNotification(leave, req.user);
+
     return successResponse(res, 201, "Leave request created", {
       data: leave,
     });
   } catch (error) {
-    if (error.code === 11000) {
-      return next(new AppError("Leave already exists for this date", 409));
-    }
     next(error);
   }
 };
@@ -338,26 +332,33 @@ exports.updateLeaveRequest = async (req, res, next) => {
     const { id } = req.params;
     const payload = { ...req.body };
 
-    const isLeaveExists = await LEAVE.findOne({ _id: id, isDeleted: false });
-    if (!isLeaveExists)
-      throw new AppError("Leave not found with given Id", 404);
+    const leave = await LEAVE.findOne({
+      _id: id,
+      isDeleted: false,
+    }).populate("user", "fullName");
 
-    if (![ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER].includes(role)) {
-      throw new AppError("You are not Authorize to Approve Leave", 403);
-    }
+    if (!leave) throw new AppError("Leave not found with given Id", 404);
 
-    if (role === ROLES.PROJECT_MANAGER) {
+    const approvingUser = await USER.findOne({
+      _id: userId,
+      isDeleted: false,
+    }).select("fullName");
+
+    if ([ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD].includes(role)) {
       const isTeamMember = await TEAMS.exists({
         isDeleted: false,
-        projectManagers: userId,
-        members: isLeaveExists.user,
+        members: leave.user._id,
+        $or: [{ projectManagers: userId }, { teamLeaders: userId }],
       });
       if (!isTeamMember) {
         throw new AppError("You can approve only your team member leave", 403);
       }
     }
 
-    if (role === ROLES.PROJECT_MANAGER && payload.isHRApproved) {
+    if (
+      [ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD].includes(role) &&
+      payload.isHRApproved
+    ) {
       throw new AppError("PM have not authorize to HR approval", 403);
     }
 
@@ -372,6 +373,10 @@ exports.updateLeaveRequest = async (req, res, next) => {
       }
       payload.declined = true;
       payload.declinedBy = userId;
+      await leaveDeclinedNotification({
+        leave,
+        approverName: approvingUser.fullName,
+      });
     }
 
     // if pmapproved - declined , hrapproved auto - declined
@@ -383,10 +388,14 @@ exports.updateLeaveRequest = async (req, res, next) => {
     //if hrapproved - approved , pmapproved auto - approved
     // PM Approval
     if (
-      role === ROLES.PROJECT_MANAGER &&
+      [ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD].includes(role) &&
       payload.isPMApproved === LEAVE_STATUS.APPROVED
     ) {
       payload.approvedByPM = userId;
+      await leaveApprovedNotification({
+        leave,
+        approverName: approvingUser.fullName,
+      });
     }
 
     // HR/Admin Approval
@@ -395,7 +404,14 @@ exports.updateLeaveRequest = async (req, res, next) => {
       payload.isHRApproved === LEAVE_STATUS.APPROVED
     ) {
       payload.isPMApproved = LEAVE_STATUS.APPROVED;
+      if (!leave.approvedByPM) {
+        payload.approvedByPM = userId;
+      }
       payload.approvedByHR = userId;
+      await leaveApprovedNotification({
+        leave,
+        approverName: approvingUser.fullName,
+      });
     }
 
     await LEAVE.updateOne({ _id: id }, { $set: payload });
@@ -438,7 +454,7 @@ exports.getTeamLeaveRequests = async (req, res, next) => {
     // -------- get team members --------
     const teams = await TEAMS.find({
       isDeleted: false,
-      projectManagers: userId,
+      $or: [{ projectManagers: userId }, { teamLeaders: userId }],
     })
       .select("members")
       .lean();
@@ -768,6 +784,206 @@ exports.getTodayOnLeave = async (req, res, next) => {
     });
 
     return successResponse(res, 200, "Today on leave fetched", {
+      data: formatted,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+//===================== TODAY DIDN'T COME =============================
+exports.getTodayDidntCome = async (req, res, next) => {
+  try {
+    const today = moment.tz(TIMEZONES.INDIA).format("YYYY-MM-DD");
+    const { startOfDay, endOfDay } = getDayRange(today);
+
+    const data = await USER.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+          role: { $ne: ROLES.ADMIN },
+        },
+      },
+      {
+        $lookup: {
+          from: "departments",
+          localField: "departmentId",
+          foreignField: "_id",
+          pipeline: [
+            {
+              $project: {
+                departmentName: 1,
+              },
+            },
+          ],
+          as: "department",
+        },
+      },
+      {
+        $unwind: {
+          path: "$department",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "attendances",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$userId", "$$userId"] },
+                date: {
+                  $gte: startOfDay,
+                  $lte: endOfDay,
+                },
+                isDeleted: false,
+              },
+            },
+          ],
+          as: "attendance",
+        },
+      },
+      {
+        $lookup: {
+          from: "leaverequests",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$user", "$$userId"] },
+                isDeleted: false,
+                isPMApproved: LEAVE_STATUS.PENDING,
+                $or: [
+                  {
+                    date: {
+                      $gte: startOfDay,
+                      $lte: endOfDay,
+                    },
+                  },
+                  {
+                    fromDate: { $lte: endOfDay },
+                    toDate: { $gte: startOfDay },
+                  },
+                ],
+              },
+            },
+          ],
+          as: "pendingLeave",
+        },
+      },
+      {
+        $lookup: {
+          from: "teams",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                isDeleted: false,
+                $expr: {
+                  $in: ["$$userId", "$members"],
+                },
+              },
+            },
+            {
+              $project: {
+                projectManagers: 1,
+              },
+            },
+          ],
+          as: "team",
+        },
+      },
+      {
+        $addFields: {
+          projectManagerId: {
+            $arrayElemAt: [
+              {
+                $arrayElemAt: ["$team.projectManagers", 0],
+              },
+              0,
+            ],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "projectManagerId",
+          foreignField: "_id",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+              },
+            },
+          ],
+          as: "projectManager",
+        },
+      },
+      {
+        $unwind: {
+          path: "$projectManager",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          $or: [
+            {
+              attendance: { $size: 0 },
+            },
+            {
+              "attendance.0.inTime": {
+                $in: [null, ""],
+              },
+            },
+            {
+              "pendingLeave.0": {
+                $exists: true,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          department: "$department.departmentName",
+          profilePicture: 1,
+          projectManager: {
+            _id: "$projectManager._id",
+            name: {
+              $ifNull: [
+                "$projectManager.name",
+                {
+                  firstName: "-",
+                  middleName: "",
+                  lastName: "",
+                },
+              ],
+            },
+          },
+        },
+      },
+      {
+        $sort: {
+          "name.firstName": 1,
+        },
+      },
+    ]);
+
+    const formatted = data.map((item) => ({
+      ...item,
+      profilePicture:
+        formatProfilePicture({
+          profilePicture: item.profilePicture,
+        }).profilePicture || null,
+    }));
+
+    return successResponse(res, 200, "Today didn't come fetched", {
       data: formatted,
     });
   } catch (err) {

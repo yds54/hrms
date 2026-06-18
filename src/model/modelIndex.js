@@ -31,3 +31,4 @@ exports.INTERVIEW = require("./interview");
 exports.TECHSTACK = require("./techStack");
 exports.DRSMONTHLYREPORT = require("./drsMonthlyReport");
 exports.LOGS = require("./logs");
+exports.NOTIFICATION = require("./notification");

@@ -91,3 +91,17 @@ exports.LEFT_TYPE = Object.freeze({
   COMPANY: "company",
   ABSCONDING: "absconding",
 });
+
+exports.NOTIFICATION_TYPE = Object.freeze({
+  ALL: "all",
+  BIRTHDAY: "birthday",
+  MARRIAGE_ANNIVERSARY: "marriage_anniversary",
+  RESIGNATION: "resignation",
+  EMPLOYMENT: "employment",
+  EMPLOYEE_ANNIVERSARY: "employee_anniversary",
+  BOND_COMPLETE: "bond_complete",
+  INTERVIEW: "interview",
+  EVALUATION: "evaluation",
+  TICKET: "ticket",
+  LEAVE: "leave",
+});

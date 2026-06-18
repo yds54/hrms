@@ -19,6 +19,12 @@ const {
   formatActivity,
 } = require("../utils/cloudinaryFormatUrl");
 
+const {
+  ticketCreatedNotification,
+  ticketStatusNotification,
+  ticketAssigneeNotification,
+  ticketCommentNotification,
+} = require("../services/notificationEventService");
 const ALLOWED_ROLES = [
   ROLES.ADMIN,
   ROLES.USER,
@@ -32,7 +38,7 @@ const ALLOWED_ROLES = [
 exports.createTicket = async (req, res, next) => {
   let uploadedFilePublicIds = [];
   try {
-    const { _id: createdBy, role } = req.user;
+    const { _id: createdBy, role, fullName: creatorName } = req.user;
     let { assignedTo } = req.body;
 
     const isPrivileged = [ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER].includes(
@@ -119,6 +125,11 @@ exports.createTicket = async (req, res, next) => {
       oldValue: null,
       newValue: "Created Ticket",
       changedBy: createdBy,
+    });
+
+    await ticketCreatedNotification({
+      ticket,
+      creatorName,
     });
 
     return successResponse(res, 201, "Ticket created", ticket);
@@ -210,7 +221,7 @@ exports.getTickets = async (req, res, next) => {
 //========================== EDIT TICKET ==========================
 exports.updateTicket = async (req, res, next) => {
   try {
-    const { _id: userId, role } = req.user;
+    const { _id: userId, role, fullName } = req.user;
     const { id } = req.params;
     const payload = { ...req.body };
 
@@ -332,6 +343,17 @@ exports.updateTicket = async (req, res, next) => {
     }
 
     await TICKET.updateOne({ _id: id }, { $set: payload });
+
+    // notification
+    if (payload.status && payload.status !== isTicketExists.status) {
+      await ticketStatusNotification({
+        ticket: isTicketExists,
+        oldStatus: isTicketExists.status,
+        newStatus: payload.status,
+        changedById: userId,
+        changedByName: fullName,
+      });
+    }
 
     return successResponse(res, 200, "Ticket updated");
   } catch (err) {
@@ -523,7 +545,7 @@ exports.updateAssignee = async (req, res, next) => {
       status,
       assignedTo: currentAssignee,
       isDeleted: false,
-    }).select("_id assignedTo");
+    }).select("_id assignedTo createdBy title");
 
     if (!tickets.length) {
       throw new AppError("No tickets found for given criteria", 404);
@@ -546,7 +568,18 @@ exports.updateAssignee = async (req, res, next) => {
       changedBy: userId,
     }));
 
-    await TICKETACTIVITY.insertMany(activities);
+    await Promise.all([
+      TICKETACTIVITY.insertMany(activities),
+      ...tickets.map((ticket) =>
+        ticketAssigneeNotification({
+          ticket,
+          oldAssigneeId: currentAssignee,
+          newAssigneeId: newAssignee,
+          changedById: userId,
+          changedByName: req.user.fullName,
+        }),
+      ),
+    ]);
 
     return successResponse(res, 200, "Assignee updated successfully");
   } catch (err) {
