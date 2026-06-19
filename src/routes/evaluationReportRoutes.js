@@ -20,7 +20,7 @@ const {
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
+  authorizeRoles(ROLES.ADMIN, ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
   validate(createEvaluationReportValidation),
   upsertEvaluationReport,
 );

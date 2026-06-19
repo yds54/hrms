@@ -195,7 +195,7 @@ exports.getDrsByUserId = async (req, res, next) => {
     };
 
     //================ ROLE =================
-    if (role === ROLES.ADMIN) {
+    if ([ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER].includes(role)) {
       if (userId) {
         _where.user = userId;
       }

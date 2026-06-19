@@ -24,35 +24,35 @@ const {
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(addAssetsValidation),
   addAsset,
 );
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.USER),
+  authorizeRoles(ROLES.ADMIN, ROLES.USER, ROLES.HR, ROLES.HR_RECRUITER),
   validate(getAssetsValidation),
   getAllAssets,
 );
 router.get(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(getAssetByIdValidation),
   getAssetById,
 );
 router.put(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(updateAssetsValidation),
   updateAsset,
 );
 router.delete(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(deleteAssetsValidation),
   deleteAsset,
 );

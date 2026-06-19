@@ -45,7 +45,7 @@ router.get(
 router.get(
   "/team-leave-request",
   authenticateJWT,
-  authorizeRoles(ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
   validate(teamLeaveRequestValidation),
   getTeamLeaveRequests,
 );
@@ -54,7 +54,7 @@ router.get(
 router.get(
   "/today-on-leave",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   getTodayOnLeave,
 );
 
@@ -71,7 +71,7 @@ router.put(
 router.delete(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(deleteLeaveValidation),
   deleteLeaveRequest,
 );
@@ -80,7 +80,7 @@ router.delete(
 router.get(
   "/today-didnt-come",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   getTodayDidntCome,
 );
 

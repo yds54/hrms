@@ -55,12 +55,7 @@ router.get(
 router.get(
   "/team-not-filled",
   authenticateJWT,
-  authorizeRoles(
-    ROLES.ADMIN,
-    ROLES.PROJECT_MANAGER,
-    ROLES.HR_RECRUITER,
-    ROLES.TEAM_LEAD,
-  ),
+  authorizeRoles(ROLES.ADMIN, ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
   validate(teamNotFilledDrsValidation),
   getTeamNotFilledDrs,
 );
@@ -69,7 +64,13 @@ router.get(
 router.get(
   "/:userId",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.PROJECT_MANAGER, ROLES.TEAM_LEAD),
+  authorizeRoles(
+    ROLES.ADMIN,
+    ROLES.HR,
+    ROLES.HR_RECRUITER,
+    ROLES.PROJECT_MANAGER,
+    ROLES.TEAM_LEAD,
+  ),
   validate(getDrsByUserIdValidation),
   getDrsByUserId,
 );

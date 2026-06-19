@@ -24,35 +24,35 @@ const { validate } = require("express-validation");
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(addDesignationValidation),
   addDesignation,
 );
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(getDesignationValidation),
   getAllDesignation,
 );
 router.get(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(getDesignationByIdValidation),
   getDesignationById,
 );
 router.put(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(updateDesignationValidation),
   updateDesignation,
 );
 router.delete(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(deleteDesignationValidation),
   deleteDesignation,
 );

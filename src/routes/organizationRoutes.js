@@ -36,7 +36,7 @@ router.post(
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(getOrganizationValidation),
   getAllOrganizations,
 );

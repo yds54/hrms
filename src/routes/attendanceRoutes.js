@@ -30,6 +30,7 @@ const {
 router.post(
   "/",
   authenticateJWT,
+  authorizeRoles(...Object.values(ROLES)),
   upload("attendance").fields([
     { name: "entry", maxCount: 1 },
     { name: "exit", maxCount: 1 },
@@ -59,7 +60,7 @@ router.get(
 router.get(
   "/report",
   authenticateJWT,
-  authorizeRoles(...Object.values(ROLES)),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(getAttendanceReportValidation),
   getAttendanceReport,
 );

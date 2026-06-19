@@ -41,7 +41,7 @@ const documentUploadFields = [
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   upload.fields(documentUploadFields),
   validate(addUserDocumentsValidation),
   addUserDocuments,
@@ -50,7 +50,7 @@ router.post(
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(getUserDocumentsValidation),
   getAllUserDocuments,
 );
@@ -58,7 +58,7 @@ router.get(
 router.get(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.USER),
+  authorizeRoles(...Object.values(ROLES)),
   validate(getUserDocumentsByIdValidation),
   getUserDocumentsById,
 );
@@ -66,7 +66,7 @@ router.get(
 router.put(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   upload.fields(documentUploadFields),
   validate(updateUserDocumentsValidation),
   updateUserDocuments,
@@ -75,7 +75,7 @@ router.put(
 router.delete(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(deleteUserDocumentsValidation),
   deleteUserDocuments,
 );

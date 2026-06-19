@@ -26,7 +26,7 @@ const {
 router.post(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(addPayrollValidation),
   addUserPayroll,
 );
@@ -34,7 +34,7 @@ router.post(
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(getPayrollValidation),
   getAllUsersPayrolls,
 );
@@ -42,7 +42,7 @@ router.get(
 router.get(
   "/bond-completed",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(BondCompletedEmployeesValidation),
   getBondCompltedUsers,
 );
@@ -50,7 +50,7 @@ router.get(
 router.get(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN, ROLES.USER),
+  authorizeRoles(...Object.values(ROLES)),
   validate(getPayrollByIdValidation),
   getUserPayrollById,
 );
@@ -58,7 +58,7 @@ router.get(
 router.put(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(updatePayrollValidation),
   updateUserPayroll,
 );
@@ -66,7 +66,7 @@ router.put(
 router.delete(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(deletePayrollValidation),
   deleteUserPayroll,
 );

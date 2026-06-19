@@ -50,7 +50,7 @@ router.get(
 router.get(
   "/randomusers",
   authenticateJWT,
-  authorizeRoles(...Object.values(ROLES)),
+  authorizeRoles(ROLES.ADMIN),
   validate(getRandomUsersValidation),
   getRandomUsers,
 );
@@ -65,7 +65,7 @@ router.get(
 router.get(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(getUserByIdValidation),
   getUserById,
 );
@@ -102,7 +102,7 @@ router.put(
 router.delete(
   "/:id",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR, ROLES.HR_RECRUITER),
   validate(userdeleteValidation),
   deleteUser,
 );
