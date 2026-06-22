@@ -2307,7 +2307,7 @@
       "get": {
         "tags": ["Leave Request"],
         "summary": "Display Leave Request History ",
-        "description": "LEAVE REQUEST HISTORY (ROLES : ALL)",
+        "description": "DISPLAY OWN LEAVE REQUEST HISTORY (ROLES : ALL)",
         "parameters": [
           {
             "name": "page",
@@ -2336,18 +2336,6 @@
             "in": "query",
             "type": "string",
             "description": "Sick Leave | Casual Leave etc.."
-          },
-          {
-            "name": "pmFilter",
-            "in": "query",
-            "type": "string",
-            "description": "Pending | Approved | Declined"
-          },
-          {
-            "name": "hrFilter",
-            "in": "query",
-            "type": "string",
-            "description": "Pending | Approved | Declined"
           }
         ],
         "responses": {
@@ -2422,7 +2410,7 @@
       "get": {
         "tags": ["Leave Request"],
         "summary": "Display Leave Request History ",
-        "description": "LEAVE REQUEST HISTORY (ROLES : ADMIN, HR, PM, TL)",
+        "description": "TEAM LEAVE REQUEST (ROLES : ADMIN, HR, PM, TL)",
         "parameters": [
           {
             "name": "page",
@@ -4445,6 +4433,39 @@
           },
           "404": {
             "description": "User Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/attendance/irregular-employees": {
+      "get": {
+        "tags": ["Attendance"],
+        "summary": "Get Irregular Employees Report",
+        "description": "Returns employees whose worked minutes are less than the configured expected minutes for the selected month (Default Current Month) (ROLES : ADMIN, HR)",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "example": 6,
+            "description": "Month number (1-12). Defaults to current month."
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "example": 2026,
+            "description": "Year. Defaults to current year."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Irregular employees fetched successfully"
           },
           "500": {
             "description": "Internal Server Error"

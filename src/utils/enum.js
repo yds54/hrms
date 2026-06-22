@@ -105,3 +105,7 @@ exports.NOTIFICATION_TYPE = Object.freeze({
   TICKET: "ticket",
   LEAVE: "leave",
 });
+
+exports.IRREGULAR_EMPLOYEES = Object.freeze({
+  EXPECTED_MINUTES: 6156,
+});

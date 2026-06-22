@@ -11,7 +11,7 @@ const { getLogsValidation } = require("../validation/logsValidation");
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles(ROLES.ADMIN),
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
   validate(getLogsValidation),
   getLogs,
 );
