@@ -1,5 +1,4 @@
 const moment = require("moment");
-const mongoose = require("mongoose");
 const { ATTENDANCE, USER, HOLIDAY, LEAVE } = require("../model/modelIndex");
 const { AppError } = require("../utils/error");
 const { getFileUrl } = require("../utils/fileUrl");
@@ -10,6 +9,7 @@ const {
   LEAVE_DURATION,
   LEAVE_STATUS,
   ROLES,
+  IRREGULAR_EMPLOYEES,
 } = require("../utils/enum");
 const { paginate, paginateArray } = require("../utils/pagination");
 const { parseTime } = require("../utils/timeFormat");
@@ -1061,6 +1061,182 @@ exports.getSandwichLeaveReport = async (req, res, next) => {
       {
         data: paginatedResult.data,
         pagination: paginatedResult.pagination,
+      },
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+//================ DISPLAY IRREGULAR EMPLOYEES ======================
+exports.getIrregularEmployees = async (req, res, next) => {
+  try {
+    const { month, year } = req.query;
+
+    const now = moment.tz(TIMEZONES.INDIA);
+    const selectedMonth = month ? Number(month) : now.month() + 1;
+    const selectedYear = year ? Number(year) : now.year();
+    const { startOfMonth, endOfMonth } = getMonthRange(
+      selectedYear,
+      selectedMonth,
+    );
+
+    const data = await USER.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+          isLeft: false,
+          role: {
+            $ne: ROLES.ADMIN,
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "attendances",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                isDeleted: false,
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                },
+                date: {
+                  $gte: startOfMonth,
+                  $lte: endOfMonth,
+                },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                workedMinutes: {
+                  $sum: {
+                    $ifNull: ["$totalTime", 0],
+                  },
+                },
+              },
+            },
+          ],
+          as: "attendance",
+        },
+      },
+      {
+        $lookup: {
+          from: "departments",
+          localField: "departmentId",
+          foreignField: "_id",
+          as: "department",
+        },
+      },
+      {
+        $unwind: {
+          path: "$department",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "teams",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                isDeleted: false,
+                $expr: {
+                  $in: ["$$userId", "$members"],
+                },
+              },
+            },
+            {
+              $lookup: {
+                from: "users",
+                localField: "projectManagers",
+                foreignField: "_id",
+                as: "projectManagers",
+              },
+            },
+            {
+              $project: {
+                projectManagers: {
+                  $map: {
+                    input: "$projectManagers",
+                    as: "pm",
+                    in: {
+                      _id: "$$pm._id",
+                      fullName: "$$pm.fullName",
+                    },
+                  },
+                },
+              },
+            },
+          ],
+          as: "team",
+        },
+      },
+      {
+        $addFields: {
+          workedMinutes: {
+            $ifNull: [
+              {
+                $arrayElemAt: ["$attendance.workedMinutes", 0],
+              },
+              0,
+            ],
+          },
+          expectedMinutes: IRREGULAR_EMPLOYEES.EXPECTED_MINUTES,
+          projectManager: {
+            $ifNull: [
+              {
+                $arrayElemAt: [
+                  {
+                    $arrayElemAt: ["$team.projectManagers", 0],
+                  },
+                  0,
+                ],
+              },
+              null,
+            ],
+          },
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $lt: ["$workedMinutes", "$expectedMinutes"],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          fullName: 1,
+          department: {
+            _id: "$department._id",
+            departmentName: "$department.departmentName",
+          },
+          projectManager: 1,
+          workedMinutes: 1,
+          expectedMinutes: 1,
+        },
+      },
+      {
+        $sort: {
+          workedMinutes: 1,
+          fullName: 1,
+        },
+      },
+    ]);
+
+    return successResponse(
+      res,
+      200,
+      "Irregular employees fetched successfully",
+      {
+        selectedMonth,
+        selectedYear,
+        data,
       },
     );
   } catch (error) {

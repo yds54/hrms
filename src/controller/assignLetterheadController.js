@@ -16,6 +16,7 @@ const {
 } = require("../utils/cloudinaryHelper");
 const { getFileUrl } = require("../utils/fileUrl");
 const { searchConditions } = require("../utils/searchHelper");
+const { formatProfilePicture } = require("../utils/cloudinaryFormatUrl");
 
 //================ CREATE ASSIGN LETTERHEAD =================
 exports.createAssignLetterhead = async (req, res, next) => {
@@ -164,6 +165,7 @@ exports.getAssignLetterhead = async (req, res, next) => {
           issueTo: {
             _id: "$issueTo._id",
             name: "$issueTo.name",
+            profilePicture: "$issueTo.profilePicture",
           },
           issuerName: {
             _id: "$issuerName._id",
@@ -187,6 +189,9 @@ exports.getAssignLetterhead = async (req, res, next) => {
 
     const formattedData = data.map((item) => {
       const obj = item;
+      if (obj.issueTo) {
+        obj.issueTo = formatProfilePicture(obj.issueTo);
+      }
       if (obj.uploadDocument?.fileName) {
         obj.uploadDocument.url = getFileUrl(
           `letterhead/${obj.uploadDocument.fileName}`,

@@ -112,12 +112,12 @@ exports.createLeaveRequest = async (req, res, next) => {
 //===================== LEAVE REQUEST HISTORY ============================
 exports.getLeaveHistory = async (req, res, next) => {
   try {
-    const { _id: userId, role } = req.user;
-    let { page, limit, year, filter, search, pmFilter, hrFilter } = req.query;
-    const _where = { isDeleted: false };
-    if (![ROLES.ADMIN, ROLES.HR].includes(role)) {
-      _where.user = userId;
-    }
+    const { _id: userId } = req.user;
+    let { page, limit, year, filter, search } = req.query;
+    const _where = {
+      isDeleted: false,
+      user: userId,
+    };
     const conditions = [];
 
     // search by year
@@ -160,24 +160,6 @@ exports.getLeaveHistory = async (req, res, next) => {
       } else {
         conditions.push({
           numberOfDays: LEAVE_DAY_TYPE.MULTIPLE,
-        });
-      }
-    }
-
-    //PM filter
-    if (pmFilter && [ROLES.ADMIN, ROLES.PROJECT_MANAGER].includes(role)) {
-      if (pmFilter !== "All") {
-        conditions.push({
-          isPMApproved: pmFilter,
-        });
-      }
-    }
-
-    //HR filter
-    if (hrFilter && [ROLES.ADMIN, ROLES.HR].includes(role)) {
-      if (hrFilter !== "All") {
-        conditions.push({
-          isHRApproved: hrFilter,
         });
       }
     }
@@ -448,38 +430,46 @@ exports.deleteLeaveRequest = async (req, res, next) => {
 //===================== TEAM LEAVE REQUESTS (PM) ============================
 exports.getTeamLeaveRequests = async (req, res, next) => {
   try {
-    const { _id: userId } = req.user;
+    const { _id: userId, role } = req.user;
     let { page, limit, search, pmFilter, hrFilter, year, filter } = req.query;
-
-    // -------- get team members --------
-    const teams = await TEAMS.find({
-      isDeleted: false,
-      $or: [{ projectManagers: userId }, { teamLeaders: userId }],
-    })
-      .select("members")
-      .lean();
-
-    const memberIdsSet = new Set();
-    for (const team of teams) {
-      for (const memberId of team.members || []) {
-        memberIdsSet.add(memberId.toString());
-      }
-    }
-
-    const memberIds = [...memberIdsSet].map(
-      (id) => new mongoose.Types.ObjectId(id),
-    );
-
-    if (!memberIds.length) {
-      return successResponse(res, 200, "No team member assigned to you", {
-        data: [],
-      });
-    }
 
     const _where = {
       isDeleted: false,
-      user: { $in: memberIds },
     };
+
+    if (role === ROLES.HR) {
+      _where.user = {
+        $ne: userId,
+      };
+    }
+
+    if (![ROLES.ADMIN, ROLES.HR].includes(role)) {
+      const teams = await TEAMS.find({
+        isDeleted: false,
+        $or: [{ projectManagers: userId }, { teamLeaders: userId }],
+      })
+        .select("members")
+        .lean();
+
+      const memberIdsSet = new Set();
+      for (const team of teams) {
+        for (const memberId of team.members || []) {
+          memberIdsSet.add(memberId.toString());
+        }
+      }
+
+      const memberIds = [...memberIdsSet].map(
+        (id) => new mongoose.Types.ObjectId(id),
+      );
+
+      if (!memberIds.length) {
+        return successResponse(res, 200, "No team member assigned to you", {
+          data: [],
+        });
+      }
+
+      _where.user = { $in: memberIds };
+    }
 
     const conditions = [];
 

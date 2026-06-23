@@ -106,12 +106,6 @@ exports.getLeaveHistoryValidation = {
       .optional(),
 
     search: Joi.string().optional(),
-    pmFilter: Joi.string()
-      .optional()
-      .valid(...Object.values(LEAVE_STATUS)),
-    hrFilter: Joi.string()
-      .optional()
-      .valid(...Object.values(LEAVE_STATUS)),
   }),
 };
 

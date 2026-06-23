@@ -14,6 +14,7 @@ const {
   deleteAttendance,
   getAttendanceReport,
   getSandwichLeaveReport,
+  getIrregularEmployees,
 } = require("../controller/attendanceController");
 
 const {
@@ -24,6 +25,7 @@ const {
   deleteAttendanceValidation,
   getAttendanceReportValidation,
   getSandwichLeaveReportValidation,
+  getIrregularEmployeesValidation,
 } = require("../validation/attendanceValidation");
 
 //------------------ CREATE ATTENDANCE ---------------------------
@@ -86,6 +88,15 @@ router.delete(
   authenticateJWT,
   authorizeRoles(ROLES.ADMIN, ROLES.HR),
   deleteAttendance,
+);
+
+//--------------- DISPLAY IRREGULAR EMPLOYEES -----------------
+router.get(
+  "/irregular-employees",
+  authenticateJWT,
+  authorizeRoles(ROLES.ADMIN, ROLES.HR),
+  validate(getIrregularEmployeesValidation),
+  getIrregularEmployees,
 );
 
 module.exports = router;
