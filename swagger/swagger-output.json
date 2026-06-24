@@ -5,7 +5,7 @@
     "description": "API documentation for your project",
     "version": "1.0.0"
   },
-  "host": "192.168.0.158:5000",
+  "host": "192.168.0.42:5000",
   "basePath": "/",
   "schemes": ["http"],
   "securityDefinitions": {
@@ -6965,7 +6965,116 @@
         }
       }
     },
-
+    "/api/chat/conversations": {
+      "get": {
+        "tags": ["Chat"],
+        "summary": "Get all conversations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Conversations retrieved",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "boolean" },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "chatId": { "type": "string" },
+                          "otherUser": { "type": "object" },
+                          "lastMessage": { "type": "object" },
+                          "otherUserStatus": {
+                            "type": "object",
+                            "properties": {
+                              "isOnline": { "type": "boolean" },
+                              "lastSeen": { "type": "string" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/user-status/{userId}": {
+      "get": {
+        "tags": ["Chat"],
+        "summary": "Get user online status",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User status",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "isOnline": { "type": "boolean" },
+                    "lastSeen": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/{userId}": {
+      "get": {
+        "tags": ["Chat"],
+        "summary": "Get or create chat with user",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat retrieved"
+          }
+        }
+      }
+    },
+    "/api/chat/{chatId}/messages": {
+      "get": {
+        "tags": ["Chat"],
+        "summary": "Get chat message history",
+        "parameters": [
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages retrieved"
+          }
+        }
+      }
+    },
     "/api/notifications": {
       "get": {
         "tags": ["Notification"],
@@ -7031,6 +7140,7 @@
         }
       }
     },
+
     "/api/notifications/read-all": {
       "put": {
         "tags": ["Notification"],

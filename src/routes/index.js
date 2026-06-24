@@ -34,6 +34,7 @@ const eventRoutes = require("./eventRoutes");
 const techStackRoutes = require("./techStackRoutes");
 const drsMonthlyReportRoutes = require("./drsMonthlyReportRoutes");
 const notificationRoutes = require("./notificationRoutes");
+const chatRoutes = require("./chatRoutes");
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
@@ -69,5 +70,6 @@ router.use("/techstacks", techStackRoutes);
 router.use("/drsMonthlyReport", drsMonthlyReportRoutes);
 router.use("/logs", require("./logsRoutes"));
 router.use("/notifications", notificationRoutes);
+router.use("/chat", chatRoutes);
 
 module.exports = router;

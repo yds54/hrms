@@ -32,3 +32,6 @@ exports.TECHSTACK = require("./techStack");
 exports.DRSMONTHLYREPORT = require("./drsMonthlyReport");
 exports.LOGS = require("./logs");
 exports.NOTIFICATION = require("./notification");
+exports.CHAT = require("./chat");
+exports.CHATMESSAGE = require("./chatMessage");
+exports.USERSTATUS = require("./userStatus");
