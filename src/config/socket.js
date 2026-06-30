@@ -22,12 +22,6 @@ const socketAuth = async (socket, next) => {
       return next(new Error(`Invalid token: ${jwtError.message}`));
     }
 
-    const session = await AUTH.findOne({
-      token,
-      isDeleted: false,
-      expiresAt: { $gt: moment().toDate() },
-    });
-
     const user = await USER.findOne({
       _id: decoded.id,
       status: USER_STATUS.ACTIVE,
@@ -41,12 +35,6 @@ const socketAuth = async (socket, next) => {
       );
     }
 
-    // console.log("Socket Auth Success:", {
-    //   userId: user._id,
-    //   role: user.role,
-    //   orgId: user.organizationId,
-    //});
-
     socket.user = {
       id: user._id.toString(),
       _id: user._id,
@@ -55,11 +43,6 @@ const socketAuth = async (socket, next) => {
     socket.organizationId = user.organizationId;
     next();
   } catch (error) {
-    // console.error("Socket Auth Critical Error:", {
-    //   message: error.message,
-    //   stack: error.stack,
-    //   name: error.name,
-    // });
     next(
       new Error(
         `Server authentication error: ${error.message || "Unknown error"}`,

@@ -58,3 +58,17 @@ exports.deleteChatValidation = {
     chatId: Joi.string().length(24).hex().required(),
   }),
 };
+
+exports.getPendingRequestsValidation = {
+  query: Joi.object({}),
+};
+
+exports.updateRequestStatusValidation = {
+  params: Joi.object({
+    chatId: Joi.string().length(24).hex().required(),
+  }),
+
+  body: Joi.object({
+    action: Joi.string().lowercase().valid("accept", "reject").required(),
+  }),
+};

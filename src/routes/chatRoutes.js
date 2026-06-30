@@ -14,6 +14,8 @@ const {
   getUserStatus,
   sendMessage,
   markMessagesAsRead,
+  getPendingRequests,
+  updateRequestStatus,
 } = require("../controller/chatController");
 
 const {
@@ -24,6 +26,8 @@ const {
   getUserStatusValidation,
   sendMessageValidation,
   markAsReadValidation,
+  getPendingRequestsValidation,
+  updateRequestStatusValidation,
 } = require("../validation/chatValidation");
 
 router.get(
@@ -55,6 +59,22 @@ router.get(
   authorizeRoles(...Object.values(ROLES)),
   validate(getChatMessagesValidation),
   getChatMessages,
+);
+
+router.get(
+  "/requests/pending",
+  authenticateJWT,
+  authorizeRoles(...Object.values(ROLES)),
+  validate(getPendingRequestsValidation),
+  getPendingRequests,
+);
+
+router.put(
+  "/request/:chatId",
+  authenticateJWT,
+  authorizeRoles(...Object.values(ROLES)),
+  validate(updateRequestStatusValidation),
+  updateRequestStatus,
 );
 
 router.get(

@@ -1,20 +1,7 @@
-const moment = require("moment");
 const { CHAT, CHATMESSAGE, USER, USERSTATUS } = require("../model/modelIndex");
 const { successResponse } = require("../utils/sucess");
 const { AppError } = require("../utils/error");
 const { paginate } = require("../utils/pagination");
-const { createLog } = require("../utils/createLog");
-
-const chatParticipantPopulate = [
-  {
-    path: "participantOne",
-    select: "fullName email employeeCode profilePicture",
-  },
-  {
-    path: "participantTwo",
-    select: "fullName email employeeCode profilePicture",
-  },
-];
 
 const getParticipantKey = (firstUserId, secondUserId) =>
   [firstUserId, secondUserId]
@@ -38,7 +25,7 @@ exports.getOrCreateChat = async (req, res, next) => {
     const { userId } = params;
 
     if (userId === user.id) {
-      throw new AppError("You cannot chat with yourself", 400);
+      throw new AppError("You cannot chat with yourself", 500);
     }
 
     const isRecipientUserExists = await USER.findOne({
@@ -47,7 +34,9 @@ exports.getOrCreateChat = async (req, res, next) => {
       isLeft: false,
       status: "active",
       organizationId: user.organizationId,
-    }).select("_id organizationId");
+    })
+      .select("_id organizationId")
+      .lean();
 
     if (!isRecipientUserExists) {
       throw new AppError("User not found with given Id", 404);
@@ -64,7 +53,6 @@ exports.getOrCreateChat = async (req, res, next) => {
     };
 
     let chat = await CHAT.findOne(chatQuery);
-    let isNewChat = false;
 
     if (!chat) {
       try {
@@ -73,6 +61,10 @@ exports.getOrCreateChat = async (req, res, next) => {
           participantTwo: userId,
           participantKey,
           organizationId: user.organizationId,
+          requestedBy: user.id,
+          status: "pending",
+          initialMessage: "",
+          requestedAt: new Date(),
         });
         isNewChat = true;
       } catch (error) {
@@ -91,42 +83,9 @@ exports.getOrCreateChat = async (req, res, next) => {
       throw new AppError("Unable to retrieve chat", 409);
     }
 
-    if (!isNewChat) {
-      await CHAT.updateOne(
-        { _id: chat._id },
-        {
-          $set: {
-            participantKey,
-            isActive: true,
-            isDeletedByOne: false,
-            isDeletedByTwo: false,
-          },
-        },
-      );
-
-      chat = await CHAT.findById(chat._id);
+    if (chat) {
+      return successResponse(res, 200, "Chat already exists", { data: chat });
     }
-
-    chat = await chat.populate(chatParticipantPopulate);
-
-    if (isNewChat) {
-      await createLog({
-        userId: user._id,
-        tableName: "chat",
-        recordId: chat._id,
-        action: "CREATE",
-        newRecord: chat.toObject(),
-      });
-    }
-
-    const otherParticipantId =
-      chat.participantOne._id.toString() === user.id
-        ? chat.participantTwo._id
-        : chat.participantOne._id;
-
-    const userStatus = await USERSTATUS.findOne({
-      userId: otherParticipantId,
-    });
 
     return successResponse(res, 200, "Chat retrieved successfully", {
       data: {
@@ -149,11 +108,12 @@ exports.getChatMessages = async (req, res, next) => {
       _id: chatId,
       organizationId: user.organizationId,
       isActive: true,
+      status: "accepted",
       $or: [
         { participantOne: user.id, isDeletedByOne: false },
         { participantTwo: user.id, isDeletedByTwo: false },
       ],
-    });
+    }).lean();
 
     if (!isChatExists) {
       throw new AppError("Chat not found or you are not a participant", 404);
@@ -203,6 +163,7 @@ exports.getConversations = async (req, res, next) => {
     const whereCondition = {
       organizationId: user.organizationId,
       isActive: true,
+      status: "accepted",
       $and: [{ $or: ownershipConditions }],
     };
 
@@ -218,7 +179,9 @@ exports.getConversations = async (req, res, next) => {
           { email: searchRegex },
           { employeeCode: searchRegex },
         ],
-      }).select("_id");
+      })
+        .select("_id")
+        .lean();
 
       const matchingUserIds = matchingUsers.map(
         (matchingUser) => matchingUser._id,
@@ -261,7 +224,7 @@ exports.getConversations = async (req, res, next) => {
 
     const userStatuses = await USERSTATUS.find({
       userId: { $in: otherParticipantIds },
-    });
+    }).lean();
     const statusByUserId = new Map(
       userStatuses.map((status) => [status.userId.toString(), status]),
     );
@@ -285,6 +248,58 @@ exports.getConversations = async (req, res, next) => {
     return successResponse(res, 200, "Conversations retrieved successfully", {
       data: formattedData,
       pagination,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getPendingRequests = async (req, res, next) => {
+  try {
+    const { user } = req;
+
+    const requests = await CHAT.find({
+      participantTwo: user.id,
+      status: "pending",
+      isActive: true,
+    })
+      .populate("participantOne", "fullName email employeeCode profilePicture")
+      .sort({ requestedAt: -1 })
+      .lean();
+
+    return successResponse(res, 200, "Pending requests retrieved", {
+      data: requests,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateRequestStatus = async (req, res, next) => {
+  try {
+    const { user, params, body } = req;
+
+    const { chatId } = params;
+    const { action } = body;
+
+    const chat = await CHAT.findOne({
+      _id: chatId,
+      participantTwo: user.id,
+      status: "pending",
+    });
+
+    if (!chat) {
+      throw new AppError("Request not found", 404);
+    }
+
+    chat.status = action === "accept" ? "accepted" : "rejected";
+
+    chat.respondedAt = new Date();
+
+    await chat.save();
+
+    return successResponse(res, 200, `Request ${action}ed successfully`, {
+      data: chat,
     });
   } catch (error) {
     next(error);
@@ -330,17 +345,6 @@ exports.deleteChat = async (req, res, next) => {
       },
     );
 
-    const updatedChat = await CHAT.findById(chatId).lean();
-
-    await createLog({
-      userId: user._id,
-      tableName: "chat",
-      recordId: chatId,
-      action: "UPDATE",
-      oldRecord: isChatExists,
-      newRecord: updatedChat,
-    });
-
     return successResponse(res, 200, "Chat deleted successfully");
   } catch (error) {
     next(error);
@@ -372,6 +376,7 @@ exports.getUnreadCount = async (req, res, next) => {
         $match: {
           "chat.organizationId": user.organizationId,
           "chat.isActive": true,
+          "chat.status": "accepted",
           $or: [
             { "chat.participantOne": user._id, "chat.isDeletedByOne": false },
             { "chat.participantTwo": user._id, "chat.isDeletedByTwo": false },
@@ -399,7 +404,9 @@ exports.getUserStatus = async (req, res, next) => {
       organizationId: user.organizationId,
       isDeleted: false,
       isLeft: false,
-    }).select("_id");
+    })
+      .select("_id")
+      .lean();
 
     if (!isUserExists) {
       throw new AppError("User not found or is not in your organization", 404);
@@ -407,11 +414,7 @@ exports.getUserStatus = async (req, res, next) => {
 
     const userStatus = await USERSTATUS.findOne({
       userId,
-    });
-    console.log({
-      requestedUserId: userId,
-      foundStatus: userStatus,
-    });
+    }).lean();
     return successResponse(res, 200, "User status retrieved successfully", {
       data: {
         userId,

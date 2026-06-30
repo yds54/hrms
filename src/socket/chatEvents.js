@@ -26,6 +26,7 @@ const getAuthorizedChat = ({
 
   if (activeOnly) {
     query.isActive = true;
+    query.status = "accepted";
   }
 
   let dbQuery = CHAT.findOne(query);
@@ -92,6 +93,7 @@ const setupChatEvents = (io, socket) => {
     }
 
     socket.join(`org:${organizationId}`);
+    socket.join(`user:${userId}`);
 
     io.to(`org:${organizationId}`).emit("user:status-changed", {
       userId,
@@ -187,6 +189,11 @@ const setupChatEvents = (io, socket) => {
         return;
       }
 
+      if (chat.status === "rejected") {
+        emitSocketError("Chat request rejected");
+        return;
+      }
+
       socket.join(`chat:${chatId}`);
 
       io.to(`chat:${chatId}`).emit("chat:user-joined", {
@@ -198,6 +205,94 @@ const setupChatEvents = (io, socket) => {
       console.log(`User ${userId} joined chat ${chatId}`);
     } catch (error) {
       console.error("Error in chat:join", error);
+      emitSocketError(error.message);
+    }
+  });
+
+  socket.on("chat:request", async (data) => {
+    try {
+      const { participantTwo, initialMessage } = data || {};
+
+      if (!participantTwo) {
+        emitSocketError("Recipient is required");
+        return;
+      }
+
+      const participantKey = [userId, participantTwo].sort().join(":");
+
+      const existingChat = await CHAT.findOne({
+        participantKey,
+        organizationId,
+      });
+
+      if (existingChat) {
+        emitSocketError("Chat already exists");
+        return;
+      }
+
+      const chat = await CHAT.create({
+        participantOne: userId,
+        participantTwo,
+        organizationId,
+        participantKey,
+
+        requestedBy: userId,
+        requestedAt: new Date(),
+        initialMessage,
+
+        status: "pending",
+      });
+
+      io.to(`user:${participantTwo}`).emit("chat:request-received", {
+        chatId: chat._id,
+        requestedBy: userId,
+        initialMessage,
+        status: "pending",
+        requestedAt: chat.requestedAt,
+      });
+    } catch (error) {
+      console.error(error);
+      emitSocketError(error.message);
+    }
+  });
+
+  socket.on("chat:request-response", async (data) => {
+    try {
+      const { chatId, action } = data || {};
+
+      if (!["accept", "reject"].includes(action)) {
+        emitSocketError("Invalid action");
+        return;
+      }
+
+      const chat = await CHAT.findOne({
+        _id: chatId,
+        participantTwo: userId,
+        status: "pending",
+      });
+
+      if (!chat) {
+        emitSocketError("Request not found");
+        return;
+      }
+
+      chat.status = action === "accept" ? "accepted" : "rejected";
+
+      chat.respondedAt = new Date();
+
+      await chat.save();
+
+      io.to(`user:${chat.requestedBy}`).emit("chat:request-updated", {
+        chatId: chat._id,
+        status: chat.status,
+      });
+
+      socket.emit("chat:request-updated", {
+        chatId: chat._id,
+        status: chat.status,
+      });
+    } catch (error) {
+      console.error(error);
       emitSocketError(error.message);
     }
   });
@@ -225,6 +320,11 @@ const setupChatEvents = (io, socket) => {
         activeOnly: true,
         populateParticipants: true,
       });
+
+      if (chat.status !== "accepted") {
+        emitSocketError("Chat request has not been accepted yet");
+        return;
+      }
 
       if (!chat) {
         emitSocketError("Chat not found");
@@ -316,6 +416,10 @@ const setupChatEvents = (io, socket) => {
         return;
       }
 
+      if (chat.status !== "accepted") {
+        return;
+      }
+
       socket.to(`chat:${chatId}`).emit("message:user-typing", {
         userId,
         chatId,
@@ -338,6 +442,10 @@ const setupChatEvents = (io, socket) => {
 
       if (!chat) {
         emitSocketError("Chat not found");
+        return;
+      }
+
+      if (chat.status !== "accepted") {
         return;
       }
 
